@@ -39,29 +39,20 @@ mod.update_tome_markers = function(self, marker)
                 local is_tome = pickup.is_side_mission_pickup
                 if is_tome then
 
-                    marker.draw = false
+                    marker.markers_aio_type = "tome"
+                    -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
                     marker.widget.alpha_multiplier = 0
+                    marker.draw = false
 
                     marker.widget.style.ring.color = mod.lookup_border_color(mod:get("tome_border_colour"))
 
                     marker.widget.style.icon.color = {255, 255, 255, 242, 0}
                     marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
-                    marker.template.check_line_of_sight = mod:get("tome_require_line_of_sight")
 
                     marker.template.screen_clamp = mod:get("tome_keep_on_screen")
                     marker.block_screen_clamp = false
 
                     -- marker.widget.content.is_clamped = false
-
-                    -- set scale
-                    local scale_settings = {}
-                    scale_settings["scale_from"] = mod:get("tome_min_size") or 0.4
-                    scale_settings["scale_to"] = mod:get("tome_max_size") or 1
-                    scale_settings["distance_max"] = 15
-                    scale_settings["distance_min"] = 1
-                    scale_settings["easing_function"] = math.easeCubic
-                    marker.scale = self._get_scale(self, scale_settings, marker.distance) or 1
-                    self._apply_scale(self, marker.widget, marker.scale)
 
                     local max_spawn_distance_sq = max_distance * max_distance
                     HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
@@ -97,26 +88,6 @@ mod.update_tome_markers = function(self, marker)
                         marker.widget.style.icon.color = {255, mod:get("script_colour_R"), mod:get("script_colour_G"), mod:get("script_colour_B")}
                     end
 
-                    if mod:get("tome_require_line_of_sight") == true then
-                        if marker.widget.content.line_of_sight_progress == 1 then
-                            if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                                marker.widget.alpha_multiplier = mod:get("tome_alpha")
-                                marker.draw = true
-                            else
-                                marker.widget.alpha_multiplier = 0
-                                marker.draw = false
-                            end
-                        end
-                    else
-                        if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                            marker.widget.alpha_multiplier = mod:get("tome_alpha")
-                            marker.draw = true
-
-                        else
-                            marker.widget.alpha_multiplier = 0
-                            marker.draw = false
-                        end
-                    end
                 end
             end
         end

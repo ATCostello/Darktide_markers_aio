@@ -4,12 +4,17 @@ local border_colours = {
     {text = "Gold", value = "Gold" },
     {text = "Silver", value = "Silver" },
     {text = "Steel", value = "Steel" }
-
 }
 
 return {
     name = mod:localize("mod_name"), description = mod:localize("mod_description"), is_togglable = false, options = {
         widgets = {
+            {
+                setting_id = "aio_settings", type = "group", sub_widgets = {
+                    {setting_id = "los_fade_enable", type = "checkbox", default_value = true},
+                    {setting_id = "los_opacity", type = "numeric", default_value = 50, range = {0, 100}},
+                }
+            },
             {
                 setting_id = "ammo_med_markers_settings", type = "group", sub_widgets = {
                     {
@@ -20,9 +25,8 @@ return {
 
                             {setting_id = "ammo_med_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "ammo_med_require_line_of_sight", type = "checkbox", default_value = true},
-                            {setting_id = "ammo_med_max_distance", type = "numeric", default_value = 30, range = {15, 100}},
-                            {setting_id = "ammo_med_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
-                            {setting_id = "ammo_med_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
+                            {setting_id = "ammo_med_max_distance", type = "numeric", default_value = 50, range = {15, 100}},
+                            {setting_id = "ammo_med_scale", type = "numeric", default_value = 100, range = {50, 150}},
                             {setting_id = "ammo_med_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
 
                             {setting_id = "display_ammo_charges", type = "checkbox", default_value = true},
@@ -86,9 +90,8 @@ return {
 
                             {setting_id = "chest_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "chest_require_line_of_sight", type = "checkbox", default_value = true},
-                            {setting_id = "chest_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
-                            {setting_id = "chest_min_size", type = "numeric", default_value = 0.2, range = {0.2, 0.4}, decimals_number = 2},
-                            {setting_id = "chest_max_size", type = "numeric", default_value = 0.4, range = {0.4, 1}, decimals_number = 2},
+                            {setting_id = "chest_max_distance", type = "numeric", default_value = 50, range = {20, 100}},
+                            {setting_id = "chest_scale", type = "numeric", default_value = 100, range = {50, 150}},
                             {setting_id = "chest_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2}
                         }
                     }, {
@@ -109,9 +112,8 @@ return {
 
                             {setting_id = "heretical_idol_keep_on_screen", type = "checkbox", default_value = true},
                             {setting_id = "heretical_idol_require_line_of_sight", type = "checkbox", default_value = false},
-                            {setting_id = "heretical_idol_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
-                            {setting_id = "heretical_idol_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
-                            {setting_id = "heretical_idol_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
+                            {setting_id = "heretical_idol_max_distance", type = "numeric", default_value = 50, range = {20, 100}},
+                            {setting_id = "heretical_idol_scale", type = "numeric", default_value = 100, range = {50, 150}},
                             {setting_id = "heretical_idol_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2}
                         }
                     }, {
@@ -132,9 +134,8 @@ return {
 
                             {setting_id = "material_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "material_require_line_of_sight", type = "checkbox", default_value = true},
-                            {setting_id = "material_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
-                            {setting_id = "material_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
-                            {setting_id = "material_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
+                            {setting_id = "material_max_distance", type = "numeric", default_value = 50, range = {20, 100}},
+                            {setting_id = "material_scale", type = "numeric", default_value = 100, range = {50, 150}},
                             {setting_id = "material_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
                             {setting_id = "material_small_border_colour", type = "dropdown", options = border_colours, default_value = "Silver"},
                             {setting_id = "material_large_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
@@ -151,10 +152,6 @@ return {
                             {setting_id = "plasteel_icon_colour_R", type = "numeric", default_value = 243, range = {0, 255}},
                             {setting_id = "plasteel_icon_colour_G", type = "numeric", default_value = 115, range = {0, 255}},
                             {setting_id = "plasteel_icon_colour_B", type = "numeric", default_value = 85, range = {0, 255}},
-                            
-
-
-
                         }
                     }, {
                         setting_id = "diamantine_icon_colour", type = "group", sub_widgets = {
@@ -172,9 +169,8 @@ return {
 
                             {setting_id = "stimm_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "stimm_require_line_of_sight", type = "checkbox", default_value = true},
-                            {setting_id = "stimm_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
-                            {setting_id = "stimm_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
-                            {setting_id = "stimm_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
+                            {setting_id = "stimm_max_distance", type = "numeric", default_value = 50, range = {20, 100}},
+                            {setting_id = "stimm_scale", type = "numeric", default_value = 100, range = {50, 150}},
                             {setting_id = "stimm_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2}
                         }
                     }, {
@@ -203,7 +199,7 @@ return {
                     }, {
                         setting_id = "speed_stimm_icon_colour", type = "group", sub_widgets = {
                             {setting_id = "speed_stimm_icon_colour_R", type = "numeric", default_value = 30, range = {0, 255}},
-                            {setting_id = "speed_stimm_icon_colour_G", type = "numeric", default_value = 30, range = {0, 255}},
+                            {setting_id = "speed_stimm_icon_colour_G", type = "numeric", default_value = 150, range = {0, 255}},
                             {setting_id = "speed_stimm_icon_colour_B", type = "numeric", default_value = 255, range = {0, 255}},
                             {setting_id = "speed_stimm_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
 
@@ -218,9 +214,8 @@ return {
 
                             {setting_id = "tome_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "tome_require_line_of_sight", type = "checkbox", default_value = true},
-                            {setting_id = "tome_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
-                            {setting_id = "tome_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
-                            {setting_id = "tome_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
+                            {setting_id = "tome_max_distance", type = "numeric", default_value = 50, range = {20, 100}},
+                            {setting_id = "tome_scale", type = "numeric", default_value = 100, range = {50, 150}},
                             {setting_id = "tome_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
                             {setting_id = "tome_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
 
@@ -247,9 +242,8 @@ return {
 
                             {setting_id = "tainted_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "tainted_require_line_of_sight", type = "checkbox", default_value = true},
-                            {setting_id = "tainted_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
-                            {setting_id = "tainted_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
-                            {setting_id = "tainted_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
+                            {setting_id = "tainted_max_distance", type = "numeric", default_value = 50, range = {20, 100}},
+                            {setting_id = "tainted_scale", type = "numeric", default_value = 100, range = {50, 150}},
                             {setting_id = "tainted_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
                             {setting_id = "tainted_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
 

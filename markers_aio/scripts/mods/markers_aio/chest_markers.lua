@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-local MarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/chest_markers/chest_markers_template")
+local MarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/chest_markers_template")
 
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local Pickups = require("scripts/settings/pickup/pickups")
@@ -62,8 +62,10 @@ end
 
 mod.remove_chest_markers = function(chest_unit, marker_list)
     for _, marker in pairs(marker_list) do
-        if marker.data and marker.data.chest_unit == chest_unit then
-            Managers.event:trigger("remove_world_marker", marker.id)
+        if Unit.alive(chest_unit) then
+            if marker.data and marker.data.chest_unit and marker.data.chest_unit == chest_unit then
+                Managers.event:trigger("remove_world_marker", marker.id)
+            end
         end
     end
     return false
@@ -131,29 +133,12 @@ mod.update_chest_markers = function(self, marker)
 
                         local max_distance = get_max_distance()
 
+                        marker.markers_aio_type = "chest"
+                        -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
+                        marker.widget.alpha_multiplier = 0
+                        marker.draw = false
                         current_marker.widget.alpha_multiplier = 0
                         current_marker.draw = false
-
-                        -- set scale
-                        local scale_settings = {}
-                        scale_settings["scale_from"] = mod:get("chest_min_size") or 0.4
-                        scale_settings["scale_to"] = mod:get("chest_max_size") or 1
-                        scale_settings["distance_max"] = 15
-                        scale_settings["distance_min"] = 1
-                        scale_settings["easing_function"] = math.easeCubic
-
-                        if current_marker.distance then
-                            current_marker.widget.content.scale_progress = current_marker.distance / 15
-
-                            if current_marker.widget.content.scale_progress > 1 then
-                                current_marker.widget.content.scale_progress = 1
-                            end
-
-                            current_marker.widget.content.scale_progress = 1 - current_marker.widget.content.scale_progress
-                        end
-
-                        current_marker.scale = self._get_scale(self, scale_settings, current_marker.distance) or 1
-                        self._apply_scale(self, current_marker.widget, current_marker.scale)
 
                         local max_spawn_distance_sq = max_distance * max_distance
                         HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
@@ -165,6 +150,7 @@ mod.update_chest_markers = function(self, marker)
                             self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
                         end
 
+                        current_marker.raycast_result = marker.raycast_result
                         current_marker.template.max_distance = max_distance
                         current_marker.template.fade_settings.distance_max = max_distance
                         current_marker.template.fade_settings.distance_min =
@@ -229,35 +215,12 @@ mod.update_chest_markers = function(self, marker)
                             current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_syringe_speed"
                             current_marker.data.type = "syringe_speed_boost_pocketable"
                         end
-
-                        if mod:get("chest_require_line_of_sight") == true then
-                            if current_marker.widget.content.line_of_sight_progress == 1 then
-                                if current_marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                                    current_marker.widget.alpha_multiplier = mod:get("chest_alpha")
-                                    current_marker.draw = true
-                                else
-                                    current_marker.widget.alpha_multiplier = 0
-                                    current_marker.draw = false
-                                end
-                            end
-                        else
-                            if current_marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                                current_marker.widget.alpha_multiplier = mod:get("chest_alpha")
-                                current_marker.draw = true
-
-                            else
-                                current_marker.widget.alpha_multiplier = 0
-                                current_marker.draw = false
-                            end
-                        end
                     end
 
                 end
 
                 if #chest_items == 0 then
                     mod.remove_chest_markers(unit, self._markers)
-                    marker.draw = false
-                    marker.widget.alpha_multiplier = 0
                 end
             end
 
@@ -265,31 +228,11 @@ mod.update_chest_markers = function(self, marker)
 
             marker.widget.style.icon.color = {255, 95, 158, 160}
             marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
-            marker.template.check_line_of_sight = mod:get("chest_require_line_of_sight")
 
             marker.template.screen_clamp = mod:get("chest_keep_on_screen")
             marker.block_screen_clamp = false
 
             -- marker.widget.content.is_clamped = false
-
-            -- set scale
-            local scale_settings = {}
-            scale_settings["scale_from"] = mod:get("chest_min_size") or 0.4
-            scale_settings["scale_to"] = mod:get("chest_max_size") or 1
-            scale_settings["distance_max"] = 15
-            scale_settings["distance_min"] = 1
-            scale_settings["easing_function"] = math.easeCubic
-
-            if marker.widget.content.distance then
-                local scale_progress = marker.widget.content.distance / 15
-                if scale_progress > 1 then
-                    scale_progress = 1
-                end
-                marker.widget.content.scale_progress = scale_progress
-            end
-
-            marker.scale = self._get_scale(self, scale_settings, marker.distance) or 1
-            self._apply_scale(self, marker.widget, marker.scale)
 
             local max_spawn_distance_sq = max_distance * max_distance
             HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
@@ -309,27 +252,6 @@ mod.update_chest_markers = function(self, marker)
             if self.fade_settings then
                 self.fade_settings.distance_max = max_distance
                 self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
-            end
-
-            if mod:get("chest_require_line_of_sight") == true then
-                if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("chest_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                end
-            else
-                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                    marker.widget.alpha_multiplier = mod:get("chest_alpha")
-                    marker.draw = true
-
-                else
-                    marker.widget.alpha_multiplier = 0
-                    marker.draw = false
-                end
             end
 
             marker.widget.style.icon.color = {255, mod:get("chest_icon_colour_R"), mod:get("chest_icon_colour_G"), mod:get("chest_icon_colour_B")}

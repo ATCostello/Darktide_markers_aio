@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-local MarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers/ammo_med_markers_template")
+local MarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers_template")
 
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local Pickups = require("scripts/settings/pickup/pickups")
@@ -208,28 +208,19 @@ mod.update_ammo_med_markers = function(self, marker)
             "medical_crate_pocketable" or marker.data and marker.data.type == "medical_crate_deployable" or marker.data and marker.data.type ==
             "ammo_cache_deployable" or marker.data and marker.data._active_interaction_type == "health_station" then
 
-            marker.draw = false
+            marker.markers_aio_type = "ammo_med"
+
+            -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
             marker.widget.alpha_multiplier = 0
+            marker.draw = false
 
             marker.widget.style.icon.color = {255, 255, 255, 242, 0}
             marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
-            marker.template.check_line_of_sight = mod:get("ammo_med_require_line_of_sight")
 
             marker.template.screen_clamp = mod:get("ammo_med_keep_on_screen")
             marker.block_screen_clamp = false
 
-            -- set scale
-            local scale_settings = {}
-            scale_settings["scale_from"] = mod:get("ammo_med_min_size") or 0.4
-            scale_settings["scale_to"] = mod:get("ammo_med_max_size") or 1
-            scale_settings["distance_max"] = 30
-            scale_settings["distance_min"] = 1
-            scale_settings["easing_function"] = math.easeCubic
-            marker.template.scale_settings = scale_settings
-
-            MarkerTemplate.scale_settings = scale_settings
             self._marker_templates[MarkerTemplate.name] = MarkerTemplate
-            self._apply_scale(self, marker.widget, marker.scale)
 
             local max_spawn_distance_sq = max_distance * max_distance
             HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
@@ -281,24 +272,12 @@ mod.update_ammo_med_markers = function(self, marker)
 
                 marker.widget.style.icon.color = {100, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")}
 
-                if mod:get("ammo_med_require_line_of_sight") == true then
-                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                else
-                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
+                if marker.position then
+                    local current_position = marker.position:unbox()
+                    local movement = Vector3(5, 5, 5)
+                    local new_position = current_position + movement
+                    marker.position:store(new_position)
                 end
-
             end
 
             local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
@@ -327,26 +306,6 @@ mod.update_ammo_med_markers = function(self, marker)
                 end
 
                 marker.widget.style.icon.color = {100, mod:get("ammo_crate_colour_R"), mod:get("ammo_crate_colour_G"), mod:get("ammo_crate_colour_B")}
-
-                if mod:get("ammo_med_require_line_of_sight") == true then
-                    if marker.widget.content.line_of_sight_progress == 1 then
-                        if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                            marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                            marker.draw = true
-                        else
-                            marker.widget.alpha_multiplier = 0
-                            marker.draw = false
-                        end
-                    end
-                else
-                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                end
             end
 
             local max_distance = get_max_distance()
@@ -451,9 +410,6 @@ mod.update_ammo_med_markers = function(self, marker)
                     marker.widget.content.field_improv = ""
                 end
 
-                marker.scale = self._get_scale(self, scale_settings, marker.distance) or 1
-                self._apply_scale(self, marker.widget, marker.scale)
-
                 marker.widget.style.background.size[1] = marker.widget.style.background.size[1] * marker.scale
                 marker.widget.style.background.size[2] = marker.widget.style.background.size[2] * marker.scale
 
@@ -470,26 +426,6 @@ mod.update_ammo_med_markers = function(self, marker)
 
                 marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1] / 3
 
-            end
-
-            if mod:get("ammo_med_require_line_of_sight") == true then
-                if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                end
-            else
-                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                    marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                    marker.draw = true
-                else
-                    marker.widget.alpha_multiplier = 0
-                    marker.draw = false
-                end
             end
 
         end

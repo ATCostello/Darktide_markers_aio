@@ -38,29 +38,17 @@ mod.update_stimm_markers = function(self, marker)
             "syringe_speed_boost_pocketable" or marker.data and marker.data.type == "syringe_ability_boost_pocketable" or marker.data and
             marker.data.type == "syringe_corruption_pocketable" then
 
-            marker.draw = false
+            marker.markers_aio_type = "stimm"
+            -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
             marker.widget.alpha_multiplier = 0
-
+            marker.draw = false
 
             marker.widget.style.icon.color = {255, 95, 158, 160}
             marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
-            marker.template.check_line_of_sight = mod:get("stimm_require_line_of_sight")
-
             marker.template.screen_clamp = mod:get("stimm_keep_on_screen")
             marker.block_screen_clamp = false
 
             -- marker.widget.content.is_clamped = false
-
-            -- set scale
-            local scale_settings = {}
-            scale_settings["scale_from"] = mod:get("stimm_min_size") or 0.4
-            scale_settings["scale_to"] = mod:get("stimm_max_size") or 1
-            scale_settings["distance_max"] = 15
-            scale_settings["distance_min"] = 1
-            scale_settings["easing_function"] = math.easeCubic
-
-            marker.scale = self._get_scale(self, scale_settings, marker.distance) or 1
-            self._apply_scale(self, marker.widget, marker.scale)
 
             local max_spawn_distance_sq = max_distance * max_distance
             HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
@@ -88,7 +76,6 @@ mod.update_stimm_markers = function(self, marker)
                     255, mod:get("power_stimm_icon_colour_R"), mod:get("power_stimm_icon_colour_G"), mod:get("power_stimm_icon_colour_B")
                 }
                 marker.widget.style.ring.color = mod.lookup_border_color(mod:get("power_stimm_border_colour"))
-                dbg_colour = mod.lookup_border_color(mod:get("power_stimm_border_colour"))
             elseif pickup_type == "syringe_speed_boost_pocketable" or marker.data and marker.data.type == "syringe_speed_boost_pocketable" then
                 marker.widget.style.icon.color = {
                     255, mod:get("speed_stimm_icon_colour_R"), mod:get("speed_stimm_icon_colour_G"), mod:get("speed_stimm_icon_colour_B")
@@ -108,27 +95,6 @@ mod.update_stimm_markers = function(self, marker)
                 }
                 marker.widget.style.ring.color = mod.lookup_border_color(mod:get("corruption_stimm_border_colour"))
 
-            end
-
-            if mod:get("stimm_require_line_of_sight") == true then
-                if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("stimm_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                end
-            else
-                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                    marker.widget.alpha_multiplier = mod:get("stimm_alpha")
-                    marker.draw = true
-
-                else
-                    marker.widget.alpha_multiplier = 0
-                    marker.draw = false
-                end
             end
         end
     end

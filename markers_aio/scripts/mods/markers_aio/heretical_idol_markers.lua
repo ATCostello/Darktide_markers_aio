@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-local HereticalIdolTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers/heretical_idol_marker_template")
+local HereticalIdolTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers_template")
 
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
@@ -31,7 +31,6 @@ mod:hook_safe(
     CLASS.DestructibleExtension, "set_collectible_data", function(self, data)
         mod.add_heretical_idol_marker(self, data.unit, data.section_id)
         self._owner_system:enable_update_function(self.__class_name, "update", data.unit, self)
-
     end
 )
 
@@ -121,16 +120,24 @@ mod.add_heretical_idol_marker = function(self, unit, section_id)
         HereticalIdolTemplate.section_id = section_id
         local marker_type = HereticalIdolTemplate.name
 
-        local unit = unit
+        Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
 
-        if section_id then
-            if Unit.alive(unit) then
-                if mod.current_heretical_idol_markers[section_id] == nil then
-                    Managers.event:trigger("add_world_marker_unit", marker_type, unit)
-                    mod.current_heretical_idol_markers[section_id] = unit
+        local marker_exists = false
+
+        if self._world_markers_list then
+            for _, marker in pairs(self._world_markers_list) do
+                if marker.unit == unit and marker.type and marker.type == "heretical_idol" then
+                    marker_exists = true
                 end
             end
         end
+
+        if marker_exists == false then
+            if Unit.alive(unit) then
+                Managers.event:trigger("add_world_marker_unit", marker_type, unit)
+            end
+        end
+
     end
 end
 
@@ -153,15 +160,15 @@ mod.update_marker_icon = function(self, marker)
 
         if marker.type and marker.type == "heretical_idol" then
 
-            marker.draw = false
+            marker.markers_aio_type = "heretical_idol"
+            -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
             marker.widget.alpha_multiplier = 0
+            marker.draw = false
 
             marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
             marker.widget.style.icon.color = {255, mod:get("icon_colour_R"), mod:get("icon_colour_G"), mod:get("icon_colour_B")}
             marker.widget.style.ring.color = mod.lookup_border_color(mod:get("idol_border_colour"))
             marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
-            marker.template.check_line_of_sight = mod:get("heretical_idol_require_line_of_sight")
-
             marker.template.screen_clamp = mod:get("heretical_idol_keep_on_screen")
             marker.block_screen_clamp = false
 
@@ -170,16 +177,6 @@ mod.update_marker_icon = function(self, marker)
                 marker.__foundya_marker_category = "penance"
             end
 
-            -- set scale
-            local scale_settings = {}
-            scale_settings["scale_from"] = mod:get("heretical_idol_min_size") or 0.4
-            scale_settings["scale_to"] = mod:get("heretical_idol_max_size") or 1
-            scale_settings["distance_max"] = 15
-            scale_settings["distance_min"] = 1
-            scale_settings["easing_function"] = math.easeCubic
-            marker.scale = self._get_scale(self, scale_settings, marker.distance) or 1
-            self._apply_scale(self, marker.widget, marker.scale)
-
             local max_spawn_distance_sq = max_distance * max_distance
             HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
 
@@ -187,26 +184,6 @@ mod.update_marker_icon = function(self, marker)
             marker.template.fade_settings.distance_max = max_distance
             marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 2
 
-            if mod:get("heretical_idol_require_line_of_sight") == true then
-                if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum or mod:get("heretical_idol_keep_on_screen") then
-                        marker.widget.alpha_multiplier = mod:get("heretical_idol_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                end
-            else
-                if marker.widget.content.is_inside_frustum or mod:get("heretical_idol_keep_on_screen") then
-                    marker.widget.alpha_multiplier = mod:get("heretical_idol_alpha")
-                    marker.draw = true
-
-                else
-                    marker.widget.alpha_multiplier = 0
-                    marker.draw = false
-                end
-            end
         end
     end
 
