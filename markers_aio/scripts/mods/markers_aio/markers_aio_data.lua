@@ -18,7 +18,13 @@ return {
                             {setting_id = "ammo_med_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
                             {setting_id = "ammo_med_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
                             {setting_id = "display_med_charges", type = "checkbox", default_value = true},
-                            {setting_id = "display_ammo_charges", type = "checkbox", default_value = true}
+                            {setting_id = "display_ammo_charges", type = "checkbox", default_value = true},
+
+                            {setting_id = "display_field_improv_colour", type = "checkbox", default_value = true},
+                            {setting_id = "display_field_improv_icon", type = "checkbox", default_value = false},
+
+                            {setting_id = "display_med_ring", type = "checkbox", default_value = true},
+
                         }
                     }, {
                         setting_id = "ammo_small_colour", type = "group", sub_widgets = {

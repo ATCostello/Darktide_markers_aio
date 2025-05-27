@@ -30,11 +30,12 @@ local get_max_distance = function()
 end
 
 mod.medical_crate_charges = {}
-
 local ProximityHeal = require("scripts/extension_systems/proximity/side_relation_gameplay_logic/proximity_heal")
 ProximityHeal._cb_world_markers_list_request = function(self, world_markers)
     self._world_markers_list = world_markers
 end
+
+local med_crate_decals = mod:persistent_table("med_crate_decals")
 
 mod:hook_safe(
     CLASS.ProximityHeal, "update", function(self, dt, t)
@@ -63,10 +64,111 @@ mod:hook_safe(
                 if not marker_exists then
                     Managers.event:trigger("add_world_marker_unit", MarkerTemplate.name, self._unit)
                 end
+
+                -- add proximity circle to medkits, thanks Raindish! (From NumericUI)
+                if mod:get("display_med_ring") == true then
+                    local decal_unit_name = "content/levels/training_grounds/fx/decal_aoe_indicator"
+                    local medical_crate_config = require("scripts/settings/deployables/medical_crate")
+
+                    local unit = self._unit
+                    local world = Unit.world(unit)
+                    local position = Unit.local_position(unit, 1)
+                    local tx, ty, tz = Vector3.to_elements(position)
+                    tx = tonumber(string.format("%.2f", tx))
+                    ty = tonumber(string.format("%.2f", ty))
+                    tz = tonumber(string.format("%.2f", tz))
+                    local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
+
+                    if not med_crate_decals[position_string] or med_crate_decals[position_string] == nil then
+                        -- Create decal unit
+                        local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
+
+                        -- Set size of unit
+                        local diameter = medical_crate_config.proximity_radius * 2 + 1.5
+                        Unit.set_local_scale(decal_unit, 1, Vector3(diameter, diameter, 1))
+
+                        -- Set color of unit
+                        local material_value = Quaternion.identity()
+
+                        local field_improv_active = mod.check_players_talents_for_Field_Improvisation(self)
+
+                        if field_improv_active and mod:get("display_field_improv_colour") == true then
+                            Quaternion.set_xyzw(material_value, 1, 0.1, 1, 0.5)
+                        else
+                            Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
+                        end
+                        Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
+
+                        -- Set low opacity
+                        Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.06)
+                        med_crate_decals[position_string] = {decal_unit, unit}
+                    end
+                end
+            end
+
+            for posstr, array in pairs(med_crate_decals) do
+                local unit = array[2]
+                local decal_unit = array[1]
+                local world = Unit.world(unit)
+                local position = Unit.local_position(unit, 1)
+                local tx, ty, tz = Vector3.to_elements(position)
+                tx = tonumber(string.format("%.2f", tx))
+                ty = tonumber(string.format("%.2f", ty))
+                tz = tonumber(string.format("%.2f", tz))
+                local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
+
+                if not Unit.alive(unit) then
+                    if decal_unit then
+                        World.destroy_unit(world, decal_unit)
+                        med_crate_decals[position_string] = nil
+                    end
+                end
             end
         end
     end
 )
+
+local function pre_unit_destroyed(unit)
+    local world = Unit.world(unit)
+    local position = Unit.local_position(unit, 1)
+
+    local tx, ty, tz = Vector3.to_elements(position)
+    tx = tonumber(string.format("%.2f", tx))
+    ty = tonumber(string.format("%.2f", ty))
+    tz = tonumber(string.format("%.2f", tz))
+    local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
+
+    if med_crate_decals[position_string] and med_crate_decals[position_string] ~= nil then
+        local decal_unit = med_crate_decals[position_string][1]
+        if decal_unit then
+            World.destroy_unit(world, decal_unit)
+            med_crate_decals[position_string] = nil
+        end
+    end
+end
+
+mod:hook_require(
+    "scripts/extension_systems/unit_templates", function(instance)
+        if instance.medical_crate_deployable.pre_unit_destroyed then
+            mod:hook_safe(instance.medical_crate_deployable, "pre_unit_destroyed", pre_unit_destroyed)
+        else
+            instance.medical_crate_deployable.pre_unit_destroyed = pre_unit_destroyed
+        end
+    end
+)
+
+mod.check_players_talents_for_Field_Improvisation = function(self)
+    alive_players = Managers.state.player_unit_spawn:alive_players()
+
+    for _, player in pairs(alive_players) do
+        for talent, boolean in pairs(player._profile.talents) do
+            if talent == "veteran_better_deployables" and boolean == 1 then
+                return true
+            end
+        end
+    end
+
+end
 
 mod.update_ammo_med_markers = function(self, marker)
     local max_distance = get_max_distance()
@@ -129,6 +231,7 @@ mod.update_ammo_med_markers = function(self, marker)
 
                 end
             end
+            local field_improv_active = mod.check_players_talents_for_Field_Improvisation(self)
 
             if mod:get("display_ammo_charges") == true then
                 if pickup_type == "ammo_cache_deployable" or marker.data and marker.data.type == "ammo_cache_deployable" then
@@ -195,26 +298,72 @@ mod.update_ammo_med_markers = function(self, marker)
                 marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_ammo"
                 marker.widget.style.icon.color = {255, mod:get("ammo_crate_colour_R"), mod:get("ammo_crate_colour_G"), mod:get("ammo_crate_colour_B")}
+
+                if field_improv_active then
+                    if mod:get("display_field_improv_colour") == true then
+                        marker.widget.style.ring.color = Color.citadel_wild_rider_red(nil, true)
+                    end
+                    if mod:get("display_field_improv_icon") == true then
+                        marker.widget.content.field_improv = "content/ui/materials/hud/interactions/icons/cosmetics_store"
+                    end
+                else
+                    marker.widget.content.field_improv = ""
+                end
             elseif pickup_type == "ammo_cache_deployable" or marker.data and marker.data.type == "ammo_cache_deployable" then
+
                 marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
+
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_ammo"
+
+                if field_improv_active then
+                    if mod:get("display_field_improv_colour") == true then
+                        marker.widget.style.ring.color = Color.citadel_wild_rider_red(nil, true)
+                    end
+                    if mod:get("display_field_improv_icon") == true then
+                        marker.widget.content.field_improv = "content/ui/materials/hud/interactions/icons/cosmetics_store"
+                    end
+                else
+                    marker.widget.content.field_improv = ""
+                end
             elseif pickup_type == "medical_crate_pocketable" or marker.data and marker.data.type == "medical_crate_pocketable" then
                 marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
                 marker.widget.style.icon.color = {255, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")}
+
+                if field_improv_active then
+                    if mod:get("display_field_improv_colour") == true then
+                        marker.widget.style.ring.color = Color.citadel_wild_rider_red(nil, true)
+                    end
+                    if mod:get("display_field_improv_icon") == true then
+                        marker.widget.content.field_improv = "content/ui/materials/hud/interactions/icons/cosmetics_store"
+                    end
+                else
+                    marker.widget.content.field_improv = ""
+                end
             elseif pickup_type == "medical_crate_deployable" or marker.type == MarkerTemplate.name or marker.data and marker.data.type ==
                 "medical_crate_deployable" then
                 marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
+
+                if field_improv_active then
+                    if mod:get("display_field_improv_colour") == true then
+                        marker.widget.style.ring.color = Color.citadel_wild_rider_red(nil, true)
+                    end
+                    if mod:get("display_field_improv_icon") == true then
+                        marker.widget.content.field_improv = "content/ui/materials/hud/interactions/icons/cosmetics_store"
+                    end
+                else
+                    marker.widget.content.field_improv = ""
+                end
             end
         end
     end
 end
 
--- add new marker text widget to definitions
 mod:hook(
     CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, name, definition)
 
+        -- add new marker text widget to definitions
         local marker_text_style = table.clone(UIFontSettings.header_2)
 
         marker_text_style.horizontal_alignment = "center"
@@ -237,6 +386,23 @@ mod:hook(
         definition.passes[#definition.passes + 1] = table.clone(marker_text_pass)
         definition.style.marker_text = table.clone(marker_text_style)
         definition.content.marker_text = ""
+
+        -- add new icon for Field Improv talent
+        local icon_size = {48, 48}
+        local field_improv_style = {
+            horizontal_alignment = "center", vertical_alignment = "center", size = icon_size, offset = {50, 0, 5}, color = {255, 255, 255, 255}
+        }
+
+        local field_improv_pass = {
+            pass_type = "texture", style_id = "field_improv", value = "", value_id = "field_improv", style = field_improv_style,
+            visibility_function = function(content, style)
+                return content.field_improv ~= ""
+            end
+        }
+
+        definition.passes[#definition.passes + 1] = table.clone(field_improv_pass)
+        definition.style.field_improv = table.clone(field_improv_style)
+        definition.content.field_improv = ""
 
         return func(self, name, definition)
     end

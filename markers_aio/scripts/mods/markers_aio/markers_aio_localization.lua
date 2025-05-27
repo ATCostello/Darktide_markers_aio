@@ -43,7 +43,16 @@ return {
 	display_ammo_charges = {
 		en = "Display Ammo Charges"
 	},
-	
+	display_field_improv_colour = {
+		en = "Adjust colour of markers if 'Field Improvisation' talent is active?"
+	},
+	display_field_improv_icon = {
+		en = "Display New 'Field Improvisation' talent Icon"
+	},
+	display_med_ring = {
+		en = "Display Proximity Radius Around Medkits?"
+	},
+
 	ammo_small_colour = {
 		en = "Ammo (Small) Colour"
 	},
