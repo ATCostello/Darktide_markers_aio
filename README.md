@@ -108,32 +108,3 @@ Stimms Pickup Icon by deluxghost: which has similar functionality for recolourin
 My mod accomplishes a similar end result, although each mod has their additional features and drawbacks from each other.
 
 This mod was developed so that my "Marker" series has complete coverage, and using only my own assets & creations (unless stated otherwise) not in spite of other mods/mod authors. Thanks :)
-
-﻿
-
-If you would like more QoL improvements, check out some of my other mods:
-
-"Improved" Series
-How Did I Get That﻿
-Character Cosmetics View Improved
-Weapon Cosmetics View Improved
-Commodore's Vestures Improved
-Penance View Improved
-Rolling Steel Timer Improved
-Mourningstar Dialogue Improved
-Martyr's Skull Assistant
-
-"Markers" Series
-All-in-One:
-Markers Improved All-in-One﻿
-
-Individual:
-Heretical Idol Markers﻿﻿﻿
-Tome & Relic Markers
-Material Markers
-Ammo and Medical Markers﻿
-Stimm Markers﻿
-Chest Markers﻿
-Tainted Communication Device Markers﻿
-
-All of my mods are designed to fit seamlessly together, and improve each other.
