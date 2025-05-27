@@ -10,6 +10,7 @@ local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 
 -- FoundYa Compatibility (Adds relevant marker categories and uses FoundYa distances instead.)
 local FoundYa = get_mod("FoundYa")
+
 mod.on_all_mods_loaded = function()
     FoundYa = get_mod("FoundYa") -- grab again incase of load order issues
 end
@@ -30,103 +31,107 @@ local get_max_distance = function()
 end
 
 mod.medical_crate_charges = {}
+
+local med_crate_decals = mod:persistent_table("med_crate_decals")
+
 local ProximityHeal = require("scripts/extension_systems/proximity/side_relation_gameplay_logic/proximity_heal")
+
 ProximityHeal._cb_world_markers_list_request = function(self, world_markers)
     self._world_markers_list = world_markers
 end
 
-local med_crate_decals = mod:persistent_table("med_crate_decals")
+mod:hook_require(
+    "scripts/extension_systems/unit_templates", function(instance)
+        -- works in live games
+        mod:hook_safe(
+            instance.medical_crate_deployable, "husk_init", function(unit, config, template_context, game_session, game_object_id, owner_id)
+                mod.add_medkit_marker_and_proximity(nil, unit)
+            end
+        )
+
+        -- works in private games
+        mod:hook_safe(
+            instance.medical_crate_deployable, "local_unit_spawned",
+            function(unit, template_context, game_object_data, side_id, deployable, placed_on_unit, owner_unit_or_nil)
+                mod.add_medkit_marker_and_proximity(nil, unit)
+            end
+        )
+    end
+)
 
 mod:hook_safe(
-    CLASS.ProximityHeal, "update", function(self, dt, t)
-        if self then
+    ProximityHeal, "update", function(self, dt, t)
+        if self and self._unit then
             local med_crate_pos = POSITION_LOOKUP[self._unit]
 
             if not table.contains(mod.medical_crate_charges, tostring(med_crate_pos)) then
-
                 local percentage = ((self._heal_reserve - self._amount_of_damage_healed) / self._heal_reserve) * 100
                 mod.medical_crate_charges[tostring(med_crate_pos)] = tostring(string.format("%.0f", percentage)) .. "%"
-
-                Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
-
-                local marker_exists = false
-                if self._world_markers_list and not table.is_empty(self._world_markers_list) then
-                    for _, marker in pairs(self._world_markers_list) do
-                        if marker.type == "interaction" and marker.data._active_interaction_type == "health" then
-
-                        end
-                        if marker.unit == self._unit then
-                            marker_exists = true
-                        end
-                    end
-                end
-
-                if not marker_exists then
-                    Managers.event:trigger("add_world_marker_unit", MarkerTemplate.name, self._unit)
-                end
-
-                -- add proximity circle to medkits, thanks Raindish! (From NumericUI)
-                if mod:get("display_med_ring") == true then
-                    local decal_unit_name = "content/levels/training_grounds/fx/decal_aoe_indicator"
-                    local medical_crate_config = require("scripts/settings/deployables/medical_crate")
-
-                    local unit = self._unit
-                    local world = Unit.world(unit)
-                    local position = Unit.local_position(unit, 1)
-                    local tx, ty, tz = Vector3.to_elements(position)
-                    tx = tonumber(string.format("%.2f", tx))
-                    ty = tonumber(string.format("%.2f", ty))
-                    tz = tonumber(string.format("%.2f", tz))
-                    local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
-
-                    if not med_crate_decals[position_string] or med_crate_decals[position_string] == nil then
-                        -- Create decal unit
-                        local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
-
-                        -- Set size of unit
-                        local diameter = medical_crate_config.proximity_radius * 2 + 1.5
-                        Unit.set_local_scale(decal_unit, 1, Vector3(diameter, diameter, 1))
-
-                        -- Set color of unit
-                        local material_value = Quaternion.identity()
-
-                        local field_improv_active = mod.check_players_talents_for_Field_Improvisation(self)
-
-                        if field_improv_active and mod:get("display_field_improv_colour") == true then
-                            Quaternion.set_xyzw(material_value, 1, 0.1, 1, 0.5)
-                        else
-                            Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
-                        end
-                        Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
-
-                        -- Set low opacity
-                        Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.06)
-                        med_crate_decals[position_string] = {decal_unit, unit}
-                    end
-                end
-            end
-
-            for posstr, array in pairs(med_crate_decals) do
-                local unit = array[2]
-                local decal_unit = array[1]
-                local world = Unit.world(unit)
-                local position = Unit.local_position(unit, 1)
-                local tx, ty, tz = Vector3.to_elements(position)
-                tx = tonumber(string.format("%.2f", tx))
-                ty = tonumber(string.format("%.2f", ty))
-                tz = tonumber(string.format("%.2f", tz))
-                local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
-
-                if not Unit.alive(unit) then
-                    if decal_unit then
-                        World.destroy_unit(world, decal_unit)
-                        med_crate_decals[position_string] = nil
-                    end
-                end
             end
         end
     end
 )
+
+mod.add_medkit_marker_and_proximity = function(self, unit)
+    local marker_exists = false
+    if self and self._world_markers_list and not table.is_empty(self._world_markers_list) then
+        for _, marker in pairs(self._world_markers_list) do
+            if marker.type == "interaction" and marker.data._active_interaction_type == "health" then
+
+            end
+            if marker.unit == self._unit then
+                marker_exists = true
+            end
+        end
+    end
+
+    if not marker_exists then
+        Managers.event:trigger("add_world_marker_unit", MarkerTemplate.name, unit)
+    end
+
+    -- add proximity circle to medkits, thanks Raindish! (From NumericUI)
+    if mod:get("display_med_ring") == true then
+        local decal_unit_name = "content/levels/training_grounds/fx/decal_aoe_indicator"
+        local medical_crate_config = require("scripts/settings/deployables/medical_crate")
+
+        local world = Unit.world(unit)
+        local position = Unit.local_position(unit, 1)
+        local tx, ty, tz = Vector3.to_elements(position)
+        tx = tonumber(string.format("%.2f", tx))
+        ty = tonumber(string.format("%.2f", ty))
+        tz = tonumber(string.format("%.2f", tz))
+        local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
+
+        if not med_crate_decals[position_string] or med_crate_decals[position_string] == nil then
+            -- Create decal unit
+            local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
+
+            -- Set size of unit
+            local diameter = medical_crate_config.proximity_radius * 2 + 1.5
+            Unit.set_local_scale(decal_unit, 1, Vector3(diameter, diameter, 1))
+
+            -- Set color of unit
+            local material_value = Quaternion.identity()
+
+            local field_improv_active = mod.check_players_talents_for_Field_Improvisation(self)
+
+            if field_improv_active and mod:get("display_field_improv_colour") == true then
+                Quaternion.set_xyzw(material_value, 1, 0.1, 1, 0.5)
+            else
+                Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
+            end
+            Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
+
+            -- Set low opacity
+            Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.06)
+            med_crate_decals[position_string] = {decal_unit, unit}
+        end
+
+        dbg_med_crate_decals = med_crate_decals
+        dbg_position_string = position_string
+
+    end
+end
 
 mod.check_players_talents_for_Field_Improvisation = function(self)
     alive_players = Managers.state.player_unit_spawn:alive_players()
@@ -149,13 +154,17 @@ mod.update_ammo_med_markers = function(self, marker)
         local unit = array[2]
         local decal_unit = array[1]
         local world
-        
+
         if not Unit.alive(unit) and Unit.alive(decal_unit) then
             world = Unit.world(decal_unit)
         end
 
         if decal_unit and world then
             World.destroy_unit(world, decal_unit)
+            med_crate_decals[posstr] = nil
+        end
+
+        if not Unit.alive(unit) and not Unit.alive(decal_unit) then
             med_crate_decals[posstr] = nil
         end
     end
@@ -226,6 +235,7 @@ mod.update_ammo_med_markers = function(self, marker)
                     local game_object_id = Managers.state.unit_spawner:game_object_id(unit)
                     local remaining_charges = GameSession.game_object_field(game_session, game_object_id, "charges")
 
+                    dbg_style = marker.widget.style.marker_text
                     marker.widget.style.marker_text.font_size = 24
 
                     marker.widget.content.marker_text = tostring(remaining_charges)
