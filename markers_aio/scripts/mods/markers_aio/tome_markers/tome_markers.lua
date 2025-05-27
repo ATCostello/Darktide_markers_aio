@@ -42,7 +42,7 @@ mod.update_tome_markers = function(self, marker)
                     marker.draw = false
                     marker.widget.alpha_multiplier = 0
 
-                    marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
+                    marker.widget.style.ring.color = mod.lookup_border_color(mod:get("tome_border_colour"))
 
                     marker.widget.style.icon.color = {255, 255, 255, 242, 0}
                     marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)

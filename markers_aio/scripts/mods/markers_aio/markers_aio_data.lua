@@ -1,5 +1,12 @@
 local mod = get_mod("markers_aio")
 
+local border_colours = {
+    {text = "Gold", value = "Gold" },
+    {text = "Silver", value = "Silver" },
+    {text = "Steel", value = "Steel" }
+
+}
+
 return {
     name = mod:localize("mod_name"), description = mod:localize("mod_description"), is_togglable = false, options = {
         widgets = {
@@ -32,31 +39,40 @@ return {
                         setting_id = "ammo_small_colour", type = "group", sub_widgets = {
                             {setting_id = "ammo_small_colour_R", type = "numeric", default_value = 252, range = {0, 255}},
                             {setting_id = "ammo_small_colour_G", type = "numeric", default_value = 252, range = {0, 255}},
-                            {setting_id = "ammo_small_colour_B", type = "numeric", default_value = 222, range = {0, 255}}
+                            {setting_id = "ammo_small_colour_B", type = "numeric", default_value = 222, range = {0, 255}},
+                            {setting_id = "ammo_small_border_colour", type = "dropdown", options = border_colours, default_value = "Silver"},
                         }
                     }, {
                         setting_id = "ammo_large_colour", type = "group", sub_widgets = {
                             {setting_id = "ammo_large_colour_R", type = "numeric", default_value = 252, range = {0, 255}},
                             {setting_id = "ammo_large_colour_G", type = "numeric", default_value = 252, range = {0, 255}},
-                            {setting_id = "ammo_large_colour_B", type = "numeric", default_value = 222, range = {0, 255}}
+                            {setting_id = "ammo_large_colour_B", type = "numeric", default_value = 222, range = {0, 255}},
+                            {setting_id = "ammo_large_border_colour", type = "dropdown", options = border_colours, default_value = "Silver"},
+
                         }
                     }, {
                         setting_id = "ammo_crate_colour", type = "group", sub_widgets = {
                             {setting_id = "ammo_crate_colour_R", type = "numeric", default_value = 252, range = {0, 255}},
                             {setting_id = "ammo_crate_colour_G", type = "numeric", default_value = 252, range = {0, 255}},
-                            {setting_id = "ammo_crate_colour_B", type = "numeric", default_value = 222, range = {0, 255}}
+                            {setting_id = "ammo_crate_colour_B", type = "numeric", default_value = 222, range = {0, 255}},
+                            {setting_id = "ammo_crate_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
                         }
                     }, {
                         setting_id = "med_crate_colour", type = "group", sub_widgets = {
                             {setting_id = "med_crate_colour_R", type = "numeric", default_value = 252, range = {0, 255}},
                             {setting_id = "med_crate_colour_G", type = "numeric", default_value = 252, range = {0, 255}},
-                            {setting_id = "med_crate_colour_B", type = "numeric", default_value = 222, range = {0, 255}}
+                            {setting_id = "med_crate_colour_B", type = "numeric", default_value = 222, range = {0, 255}},
+                            {setting_id = "med_crate_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
                         }
                     }, {
                         setting_id = "grenade_colour", type = "group", sub_widgets = {
                             {setting_id = "grenade_colour_R", type = "numeric", default_value = 252, range = {0, 255}},
                             {setting_id = "grenade_colour_G", type = "numeric", default_value = 252, range = {0, 255}},
-                            {setting_id = "grenade_colour_B", type = "numeric", default_value = 222, range = {0, 255}}
+                            {setting_id = "grenade_colour_B", type = "numeric", default_value = 222, range = {0, 255}},
+                            {setting_id = "grenade_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
                         }
                     }
                 },
@@ -78,7 +94,9 @@ return {
                         setting_id = "chest_icon_colour", type = "group", sub_widgets = {
                             {setting_id = "chest_icon_colour_R", type = "numeric", default_value = 252, range = {0, 255}},
                             {setting_id = "chest_icon_colour_G", type = "numeric", default_value = 252, range = {0, 255}},
-                            {setting_id = "chest_icon_colour_B", type = "numeric", default_value = 222, range = {0, 255}}
+                            {setting_id = "chest_icon_colour_B", type = "numeric", default_value = 222, range = {0, 255}},
+                            {setting_id = "chest_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
                         }
                     }
                 },
@@ -99,7 +117,9 @@ return {
                         setting_id = "icon_colour", type = "group", sub_widgets = {
                             {setting_id = "icon_colour_R", type = "numeric", default_value = 132, range = {0, 255}},
                             {setting_id = "icon_colour_G", type = "numeric", default_value = 156, range = {0, 255}},
-                            {setting_id = "icon_colour_B", type = "numeric", default_value = 99, range = {0, 255}}
+                            {setting_id = "icon_colour_B", type = "numeric", default_value = 99, range = {0, 255}},
+                            {setting_id = "idol_border_colour", type = "dropdown", options = border_colours, default_value = "Silver"},
+
                         }
                     }
                 },
@@ -114,7 +134,9 @@ return {
                             {setting_id = "material_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
                             {setting_id = "material_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
                             {setting_id = "material_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
-                            {setting_id = "material_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2}
+                            {setting_id = "material_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
+                            {setting_id = "material_small_border_colour", type = "dropdown", options = border_colours, default_value = "Silver"},
+                            {setting_id = "material_large_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
                         }
                     }, {
                         setting_id = "marker_toggles", type = "group", sub_widgets = {
@@ -127,13 +149,17 @@ return {
                         setting_id = "plasteel_icon_colour", type = "group", sub_widgets = {
                             {setting_id = "plasteel_icon_colour_R", type = "numeric", default_value = 243, range = {0, 255}},
                             {setting_id = "plasteel_icon_colour_G", type = "numeric", default_value = 115, range = {0, 255}},
-                            {setting_id = "plasteel_icon_colour_B", type = "numeric", default_value = 85, range = {0, 255}}
+                            {setting_id = "plasteel_icon_colour_B", type = "numeric", default_value = 85, range = {0, 255}},
+                            
+
+
+
                         }
                     }, {
                         setting_id = "diamantine_icon_colour", type = "group", sub_widgets = {
                             {setting_id = "diamantine_icon_colour_R", type = "numeric", default_value = 95, range = {0, 255}},
                             {setting_id = "diamantine_icon_colour_G", type = "numeric", default_value = 158, range = {0, 255}},
-                            {setting_id = "diamantine_icon_colour_B", type = "numeric", default_value = 160, range = {0, 255}}
+                            {setting_id = "diamantine_icon_colour_B", type = "numeric", default_value = 160, range = {0, 255}},
                         }
                     }
                 },
@@ -151,28 +177,35 @@ return {
                             {setting_id = "stimm_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2}
                         }
                     }, {
-                        setting_id = "boost_stim_icon_colour", type = "group", sub_widgets = {
-                            {setting_id = "boost_stim_icon_colour_R", type = "numeric", default_value = 255, range = {0, 255}},
-                            {setting_id = "boost_stim_icon_colour_G", type = "numeric", default_value = 255, range = {0, 255}},
-                            {setting_id = "boost_stim_icon_colour_B", type = "numeric", default_value = 30, range = {0, 255}}
+                        setting_id = "boost_stimm_icon_colour", type = "group", sub_widgets = {
+                            {setting_id = "boost_stimm_icon_colour_R", type = "numeric", default_value = 255, range = {0, 255}},
+                            {setting_id = "boost_stimm_icon_colour_G", type = "numeric", default_value = 255, range = {0, 255}},
+                            {setting_id = "boost_stimm_icon_colour_B", type = "numeric", default_value = 30, range = {0, 255}},
+                            {setting_id = "boost_stimm_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
                         }
                     }, {
                         setting_id = "corruption_stimm_icon_colour", type = "group", sub_widgets = {
                             {setting_id = "corruption_stimm_icon_colour_R", type = "numeric", default_value = 30, range = {0, 255}},
                             {setting_id = "corruption_stimm_icon_colour_G", type = "numeric", default_value = 255, range = {0, 255}},
-                            {setting_id = "corruption_stimm_icon_colour_B", type = "numeric", default_value = 30, range = {0, 255}}
+                            {setting_id = "corruption_stimm_icon_colour_B", type = "numeric", default_value = 30, range = {0, 255}},
+                            {setting_id = "corruption_stimm_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
                         }
                     }, {
                         setting_id = "power_stimm_icon_colour", type = "group", sub_widgets = {
                             {setting_id = "power_stimm_icon_colour_R", type = "numeric", default_value = 255, range = {0, 255}},
                             {setting_id = "power_stimm_icon_colour_G", type = "numeric", default_value = 30, range = {0, 255}},
-                            {setting_id = "power_stimm_icon_colour_B", type = "numeric", default_value = 30, range = {0, 255}}
+                            {setting_id = "power_stimm_icon_colour_B", type = "numeric", default_value = 30, range = {0, 255}},
+                            {setting_id = "power_stimm_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
                         }
                     }, {
                         setting_id = "speed_stimm_icon_colour", type = "group", sub_widgets = {
                             {setting_id = "speed_stimm_icon_colour_R", type = "numeric", default_value = 30, range = {0, 255}},
                             {setting_id = "speed_stimm_icon_colour_G", type = "numeric", default_value = 30, range = {0, 255}},
-                            {setting_id = "speed_stimm_icon_colour_B", type = "numeric", default_value = 255, range = {0, 255}}
+                            {setting_id = "speed_stimm_icon_colour_B", type = "numeric", default_value = 255, range = {0, 255}},
+                            {setting_id = "speed_stimm_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
                         }
                     }
                 },
@@ -187,7 +220,9 @@ return {
                             {setting_id = "tome_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
                             {setting_id = "tome_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
                             {setting_id = "tome_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
-                            {setting_id = "tome_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2}
+                            {setting_id = "tome_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
+                            {setting_id = "tome_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
                         }
                     }, {
                         setting_id = "grim_colour", type = "group", sub_widgets = {

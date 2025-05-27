@@ -158,7 +158,7 @@ mod.update_marker_icon = function(self, marker)
 
             marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
             marker.widget.style.icon.color = {255, mod:get("icon_colour_R"), mod:get("icon_colour_G"), mod:get("icon_colour_B")}
-            marker.widget.style.ring.color = Color.citadel_stormhost_silver(nil, true)
+            marker.widget.style.ring.color = mod.lookup_border_color(mod:get("idol_border_colour"))
             marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
             marker.template.check_line_of_sight = mod:get("heretical_idol_require_line_of_sight")
 

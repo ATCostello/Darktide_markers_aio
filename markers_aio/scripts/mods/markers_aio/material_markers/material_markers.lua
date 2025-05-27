@@ -43,9 +43,9 @@ mod.update_material_markers = function(self, marker)
             -- Adjust colour or outer rim depending on if small or large
             if pickup_type == "small_metal" or pickup_type == "small_platinum" or marker.data and marker.data.type == "small_metal" or marker.data and
                 marker.data.type == "small_platinum" then
-                marker.widget.style.ring.color = Color.citadel_stormhost_silver(nil, true)
+                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("material_small_border_colour"))
             else
-                marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
+                marker.widget.style.ring.color =  mod.lookup_border_color(mod:get("material_large_border_colour"))
             end
 
             marker.widget.style.icon.color = {255, 95, 158, 160}

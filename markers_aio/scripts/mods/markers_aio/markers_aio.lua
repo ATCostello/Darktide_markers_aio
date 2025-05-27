@@ -69,6 +69,15 @@ mod.get_marker_pickup_type = function(marker)
     return Unit.get_data(marker.unit, "pickup_type")
 end
 
+mod.lookup_border_color = function(colour_string)
+    local border_colours = {
+        ["Gold"] = {255, 232, 188, 109},
+        ["Silver"] = {255, 187, 198, 201},
+        ["Steel"] = {255, 161, 166, 169}
+    }
+    return border_colours[colour_string]
+end
+
 HudElementWorldMarkers._get_scale = function(self, scale_settings, distance)
 
     if distance and scale_settings then

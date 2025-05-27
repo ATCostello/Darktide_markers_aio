@@ -41,7 +41,6 @@ mod.update_stimm_markers = function(self, marker)
             marker.draw = false
             marker.widget.alpha_multiplier = 0
 
-            marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
 
             marker.widget.style.icon.color = {255, 95, 158, 160}
             marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
@@ -88,20 +87,27 @@ mod.update_stimm_markers = function(self, marker)
                 marker.widget.style.icon.color = {
                     255, mod:get("power_stimm_icon_colour_R"), mod:get("power_stimm_icon_colour_G"), mod:get("power_stimm_icon_colour_B")
                 }
-
+                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("power_stimm_border_colour"))
+                dbg_colour = mod.lookup_border_color(mod:get("power_stimm_border_colour"))
             elseif pickup_type == "syringe_speed_boost_pocketable" or marker.data and marker.data.type == "syringe_speed_boost_pocketable" then
                 marker.widget.style.icon.color = {
                     255, mod:get("speed_stimm_icon_colour_R"), mod:get("speed_stimm_icon_colour_G"), mod:get("speed_stimm_icon_colour_B")
                 }
+                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("speed_stimm_border_colour"))
+
             elseif pickup_type == "syringe_ability_boost_pocketable" or marker.data and marker.data.type == "syringe_ability_boost_pocketable" then
                 marker.widget.style.icon.color = {
-                    255, mod:get("boost_stim_icon_colour_R"), mod:get("boost_stim_icon_colour_G"), mod:get("boost_stim_icon_colour_B")
+                    255, mod:get("boost_stimm_icon_colour_R"), mod:get("boost_stimm_icon_colour_G"), mod:get("boost_stimm_icon_colour_B")
                 }
+                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("boost_stimm_border_colour"))
+
             elseif pickup_type == "syringe_corruption_pocketable" or marker.data and marker.data.type == "syringe_corruption_pocketable" then
                 marker.widget.style.icon.color = {
                     255, mod:get("corruption_stimm_icon_colour_R"), mod:get("corruption_stimm_icon_colour_G"),
                     mod:get("corruption_stimm_icon_colour_B")
                 }
+                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("corruption_stimm_border_colour"))
+
             end
 
             if mod:get("stimm_require_line_of_sight") == true then
@@ -146,7 +152,7 @@ mod:hook_safe(
             widget.style.icon.color = color
 
         elseif weapon_name == "content/items/pocketable/syringe_ability_boost_pocketable" then
-            local color = {255, mod:get("boost_stim_icon_colour_R"), mod:get("boost_stim_icon_colour_G"), mod:get("boost_stim_icon_colour_B")}
+            local color = {255, mod:get("boost_stimm_icon_colour_R"), mod:get("boost_stimm_icon_colour_G"), mod:get("boost_stimm_icon_colour_B")}
             widget.style.icon.color = color
 
         elseif weapon_name == "content/items/pocketable/syringe_corruption_pocketable" then
@@ -202,8 +208,8 @@ mod:hook_safe(
 
                                 elseif weapon_name == "content/items/pocketable/syringe_ability_boost_pocketable" then
                                     local color = {
-                                        255, mod:get("boost_stim_icon_colour_R"), mod:get("boost_stim_icon_colour_G"),
-                                        mod:get("boost_stim_icon_colour_B")
+                                        255, mod:get("boost_stimm_icon_colour_R"), mod:get("boost_stimm_icon_colour_G"),
+                                        mod:get("boost_stimm_icon_colour_B")
                                     }
                                     stimm_widget.style.texture.color = color
 
