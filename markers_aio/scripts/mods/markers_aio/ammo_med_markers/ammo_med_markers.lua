@@ -12,22 +12,27 @@ local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 local FoundYa = get_mod("FoundYa")
 
 mod.on_all_mods_loaded = function()
+    local is_mod_loading = true
     mod:hook_require(
         "scripts/extension_systems/unit_templates", function(instance)
-            -- works in live games
-            mod:hook_safe(
-                instance.medical_crate_deployable, "husk_init", function(unit, config, template_context, game_session, game_object_id, owner_id)
-                    mod.add_medkit_marker_and_proximity(nil, unit)
-                end
-            )
+            if is_mod_loading then
+                -- works in live games
+                mod:hook_safe(
+                    instance.medical_crate_deployable, "husk_init", function(unit, config, template_context, game_session, game_object_id, owner_id)
+                        mod.add_medkit_marker_and_proximity(nil, unit)
+                    end
+                )
 
-            -- works in private games
-            mod:hook_safe(
-                instance.medical_crate_deployable, "local_unit_spawned",
-                function(unit, template_context, game_object_data, side_id, deployable, placed_on_unit, owner_unit_or_nil)
-                    mod.add_medkit_marker_and_proximity(nil, unit)
-                end
-            )
+                -- works in private games
+                mod:hook_safe(
+                    instance.medical_crate_deployable, "local_unit_spawned",
+                    function(unit, template_context, game_object_data, side_id, deployable, placed_on_unit, owner_unit_or_nil)
+                        mod.add_medkit_marker_and_proximity(nil, unit)
+                    end
+                )
+
+                is_mod_loading = false
+            end
         end
     )
 
