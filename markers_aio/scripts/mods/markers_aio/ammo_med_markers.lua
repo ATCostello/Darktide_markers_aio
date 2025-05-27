@@ -206,7 +206,7 @@ mod.update_ammo_med_markers = function(self, marker)
             MarkerTemplate.name or marker.data and marker.data.type == "small_clip" or marker.data and marker.data.type == "large_clip" or marker.data and
             marker.data.type == "small_grenade" or marker.data and marker.data.type == "ammo_cache_pocketable" or marker.data and marker.data.type ==
             "medical_crate_pocketable" or marker.data and marker.data.type == "medical_crate_deployable" or marker.data and marker.data.type ==
-            "ammo_cache_deployable" or marker.data and marker.data._active_interaction_type == "health_station" then
+            "ammo_cache_deployable" or marker.data and marker.data._active_interaction_type == "health_station" or pickup_type == "battery_01_luggable" then
 
             marker.markers_aio_type = "ammo_med"
 
@@ -237,6 +237,12 @@ mod.update_ammo_med_markers = function(self, marker)
             marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 8
 
             local med_crate_pos = POSITION_LOOKUP[marker.unit]
+
+            if pickup_type == "battery_01_luggable" then
+                marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_alert"
+                marker.widget.style.marker_text.font_size = 32
+                marker.widget.style.icon.color = {255,0,255,200}
+            end
 
             if mod:get("display_med_charges") == true then
                 if mod.medical_crate_charges[tostring(med_crate_pos)] ~= nil then
@@ -480,4 +486,3 @@ mod:hook(
         return func(self, name, definition)
     end
 )
-

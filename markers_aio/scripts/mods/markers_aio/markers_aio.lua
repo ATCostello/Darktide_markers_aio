@@ -399,7 +399,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
                             mod.update_stimm_markers(self, marker)
                         end
                         if mod:get("chest_enable") then
-                            --mod.update_chest_markers(self, marker) -- disabled for now, as it was causing crashes - need some extra time to fix fully.
+                            mod.update_chest_markers(self, marker)
                         end
                         if mod:get("heretical_idol_enable") then
                             mod.update_marker_icon(self, marker)
@@ -417,7 +417,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
                 end
             end
         end
-
     else
         self._camera = self._parent:player_camera()
     end
@@ -465,6 +464,17 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
                     marker.widget.alpha_multiplier = 0
                 end
             end
+        else
+            if mod:get(marker.markers_aio_type .. "_alpha") then
+                -- true if not in los, false if in los
+                if marker.raycast_result == true then
+                    marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
+                elseif marker.raycast_result == false then
+                    marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
+                else
+                    marker.widget.alpha_multiplier = 0
+                end
+            end    
         end
 
         -- health station markers are placed INSIDE the medicae unit, causing the los to break constantly...
@@ -480,12 +490,12 @@ end
 
 local do_draw = function(marker)
     marker.draw = true
-    marker.widget.visible = true
+    --marker.widget.visible = true
 end
 
 local dont_draw = function(marker)
     marker.draw = false
-    marker.widget.visible = false
+    --marker.widget.visible = false
 end
 
 -- Adjust whether markers are shown behind objects or not, depending on which marker type and which settings are enabled.
@@ -515,10 +525,13 @@ mod.adjust_los_requirement = function(marker)
         end
     end
 
-    if marker.data and marker.data._active_interaction_type == "health_station" then
-        if marker.is_inside_frustum then
+    -- As health station is visible through objects, limit to only 30m distance.
+    if marker.data and marker.data._active_interaction_type and marker.data._active_interaction_type == "health_station" then
+        if marker.is_inside_frustum and marker.distance and marker.distance < 20 then
             do_draw(marker)
-        end
+        else
+            dont_draw(marker)
+        end      
     end
 end
 

@@ -8,6 +8,8 @@ local UIWidget = require("scripts/managers/ui/ui_widget")
 
 mod.heretical_idols = {}
 mod._world_markers_list = {}
+local markers_list_to_remove = {}
+local processed_idols = {}
 
 -- FoundYa Compatibility (Adds relevant marker categories and uses FoundYa distances instead.)
 local FoundYa = get_mod("FoundYa")
@@ -81,7 +83,6 @@ DestructibleExtension._add_damage = function(self, damage_amount, attack_directi
         destruction_info.health = math.max(0, health_after_damage)
 
         if health_after_damage <= 0 then
-
             if self._collectible_data then
                 if self._collectible_data.unit and self._collectible_data.section_id then
                     mod.remove_heretical_idol_marker(self, self._collectible_data.unit, self._collectible_data.section_id)
@@ -105,6 +106,17 @@ DestructibleExtension._add_damage = function(self, damage_amount, attack_directi
     end
 end
 
+DestructibleExtension.rpc_destructible_last_destruction = function(self)
+    Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
+
+    Unit.flow_event(self._unit, "lua_last_destruction")
+    if self._collectible_data then
+        if self._collectible_data.unit and self._collectible_data.section_id then
+            mod.remove_heretical_idol_marker(self, self._collectible_data.unit, self._collectible_data.section_id)
+        end
+    end
+end
+
 mod.get_marker_pickup_type_by_unit = function(marker_unit)
     if not marker_unit then
         return
@@ -122,35 +134,31 @@ mod.add_heretical_idol_marker = function(self, unit, section_id)
 
         Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
 
-        local marker_exists = false
-
-        if self._world_markers_list then
-            for _, marker in pairs(self._world_markers_list) do
-                if marker.unit == unit and marker.type and marker.type == "heretical_idol" then
-                    marker_exists = true
+        if section_id then
+            if Unit.alive(unit) then
+                if mod.current_heretical_idol_markers[section_id] == nil then
+                    Managers.event:trigger("add_world_marker_unit", marker_type, unit)
+                    mod.current_heretical_idol_markers[section_id] = unit
                 end
             end
         end
-
-        if marker_exists == false then
-            if Unit.alive(unit) then
-                Managers.event:trigger("add_world_marker_unit", marker_type, unit)
-            end
-        end
-
     end
 end
 
 mod.remove_heretical_idol_marker = function(self, unit, section_id)
-
-    for _, marker in pairs(self._world_markers_list) do
-        if marker.type and marker.type == "heretical_idol" then
-            if marker.template.section_id and marker.template.section_id == section_id then
-                Managers.event:trigger("remove_world_marker", marker.id)
+    if self and self._world_markers_list and unit then
+        for _, marker in pairs(self._world_markers_list) do
+            if marker.markers_aio_type and marker.markers_aio_type == "heretical_idol" then
+                if marker.unit and marker.unit == unit then
+                    marker.draw = false
+                    marker.widget.visible = false
+                    marker.widget.alpha_multiplier = 0
+                    table.insert(markers_list_to_remove, marker)
+                    Managers.event:trigger("remove_world_marker", marker.id)
+                end
             end
         end
     end
-
 end
 
 mod.update_marker_icon = function(self, marker)
@@ -184,7 +192,13 @@ mod.update_marker_icon = function(self, marker)
             marker.template.fade_settings.distance_max = max_distance
             marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 2
 
+            -- for i = 0, #markers_list_to_remove do
+            --    local remove_marker = markers_list_to_remove[i]
+            --    if remove_marker and remove_marker.id == marker.id then
+            --        marker.widget.style.icon.color = {255, 255, 0, 0}
+            --        table.remove(markers_list_to_remove, i)
+            --    end
+            -- end
         end
     end
-
 end

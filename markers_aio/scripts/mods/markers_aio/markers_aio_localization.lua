@@ -359,6 +359,22 @@ return {
         ["zh-tw"] = "使用替代圖示",
 		["zh-cn"] = "使用替代图标",
 	},
+	chest_icon = {
+		en = "Use Alternative Icon",
+		fr = "Utiliser une icône alternative",
+		ru = "Включить альтернативный значок",
+        ["zh-tw"] = "使用替代圖示",
+		["zh-cn"] = "使用替代图标",
+	},
+	Default = {
+		en = "Default"
+	},
+	Video = {
+		en = "Video"
+	},
+	Loot = {
+		en = "Loot"
+	},
 	chest_general_settings = {
 		en = "General Settings",
 		fr = "Paramètres généraux",

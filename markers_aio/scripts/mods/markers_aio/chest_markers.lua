@@ -46,27 +46,13 @@ mod.check_if_marker_exists_at_pos = function(pos, marker_list)
     return false
 end
 
-mod.check_if_remove_marker_if_chest_open = function(pos, marker_list)
-    for _, marker in pairs(marker_list) do
-        if marker.world_position then
-            if tostring(marker.world_position:unbox()) == tostring(pos) then
-                Managers.event:trigger("remove_world_marker", marker.id)
-            end
-        elseif marker.position then
-            if tostring(marker.position:unbox()) == tostring(pos) then
-                Managers.event:trigger("remove_world_marker", marker.id)
-            end
-        end
-    end
-end
-
 mod.remove_chest_markers = function(chest_unit, marker_list)
     for _, marker in pairs(marker_list) do
-        if Unit.alive(chest_unit) then
-            if marker.data and marker.data.chest_unit and marker.data.chest_unit == chest_unit then
-                Managers.event:trigger("remove_world_marker", marker.id)
-            end
-        end
+        -- if Unit.alive(chest_unit) then
+        --    if marker.data and marker.data.chest_unit and marker.data.chest_unit == chest_unit then
+        --    Managers.event:trigger("remove_world_marker", marker.id)
+        --    end
+        -- end
     end
     return false
 end
@@ -106,7 +92,8 @@ mod.update_chest_markers = function(self, marker)
             mod.active_chests[unit] = self._chest_extension
             local chest_items = {}
 
-            if self._chest_extension and self._chest_extension._is_server == true then
+            -- Retrieve all items within chests, only works in private lobbies... Disabled for now 
+            --[[if self._chest_extension then
                 chest_items = mod.get_all_items_in_chest(self, unit)
 
                 local local_player = Managers.player:local_player(1)
@@ -133,7 +120,6 @@ mod.update_chest_markers = function(self, marker)
 
                         local max_distance = get_max_distance()
 
-                        marker.markers_aio_type = "chest"
                         -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
                         marker.widget.alpha_multiplier = 0
                         marker.draw = false
@@ -222,7 +208,9 @@ mod.update_chest_markers = function(self, marker)
                 if #chest_items == 0 then
                     mod.remove_chest_markers(unit, self._markers)
                 end
-            end
+            end]]
+
+            marker.markers_aio_type = "chest"
 
             marker.widget.style.ring.color = mod.lookup_border_color(mod:get("chest_border_colour"))
 
@@ -255,11 +243,7 @@ mod.update_chest_markers = function(self, marker)
             end
 
             marker.widget.style.icon.color = {255, mod:get("chest_icon_colour_R"), mod:get("chest_icon_colour_G"), mod:get("chest_icon_colour_B")}
-            if mod:get("chest_alternative_icon") == true then
-                marker.widget.content.icon = "content/ui/materials/icons/system/settings/category_video"
-            else
-                marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/default"
-            end
+            marker.widget.content.icon = mod:get("chest_icon")
         end
 
     end

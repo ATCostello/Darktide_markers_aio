@@ -6,6 +6,12 @@ local border_colours = {
     {text = "Steel", value = "Steel" }
 }
 
+local chest_icons = {
+    {text = "Default", value = "content/ui/materials/hud/interactions/icons/default"},
+    {text = "Video", value = "content/ui/materials/icons/system/settings/category_video"},
+    {text = "Loot", value = "content/ui/materials/icons/generic/loot"}
+}
+
 return {
     name = mod:localize("mod_name"), description = mod:localize("mod_description"), is_togglable = false, options = {
         widgets = {
@@ -86,7 +92,8 @@ return {
                     {
                         setting_id = "chest_general_settings", type = "group", sub_widgets = {
                             {setting_id = "chest_enable", type = "checkbox", default_value = true},
-                            {setting_id = "chest_alternative_icon", type = "checkbox", default_value = false},
+                            --{setting_id = "chest_alternative_icon", type = "checkbox", default_value = false},
+                            {setting_id = "chest_icon", type = "dropdown", options = chest_icons, default_value = "content/ui/materials/hud/interactions/icons/default"},
 
                             {setting_id = "chest_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "chest_require_line_of_sight", type = "checkbox", default_value = true},
