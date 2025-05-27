@@ -51,11 +51,11 @@ local get_max_distance = function()
 
     -- foundya Compatibility
     if FoundYa ~= nil then
-        max_distance = FoundYa:get("max_distance_supply") or mod:get("ammo_med_max_distance") or 30
+        max_distance = FoundYa:get("max_distance_supply") or mod:get("ammo_med_max_distance")
     end
 
     if max_distance == nil then
-        max_distance = mod:get("ammo_med_max_distance") or 30
+        max_distance = mod:get("ammo_med_max_distance")
     end
 
     return max_distance
@@ -108,7 +108,7 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
             Managers.package:load(package_path, "ammo_med_markers")
             return
         end
-        
+
         local decal_unit_name = "content/levels/training_grounds/fx/decal_aoe_indicator"
         local medical_crate_config = require("scripts/settings/deployables/medical_crate")
 
@@ -201,7 +201,10 @@ mod.update_ammo_med_markers = function(self, marker)
             MarkerTemplate.name or marker.data and marker.data.type == "small_clip" or marker.data and marker.data.type == "large_clip" or marker.data and
             marker.data.type == "small_grenade" or marker.data and marker.data.type == "ammo_cache_pocketable" or marker.data and marker.data.type ==
             "medical_crate_pocketable" or marker.data and marker.data.type == "medical_crate_deployable" or marker.data and marker.data.type ==
-            "ammo_cache_deployable" then
+            "ammo_cache_deployable" or marker.data and marker.data._active_interaction_type == "health_station" then
+
+            marker.draw = false
+            marker.widget.alpha_multiplier = 0
 
             marker.widget.style.icon.color = {255, 255, 255, 242, 0}
             marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
@@ -209,8 +212,6 @@ mod.update_ammo_med_markers = function(self, marker)
 
             marker.template.screen_clamp = mod:get("ammo_med_keep_on_screen")
             marker.block_screen_clamp = false
-
-            -- marker.widget.content.is_clamped = false
 
             -- set scale
             local scale_settings = {}
@@ -232,12 +233,12 @@ mod.update_ammo_med_markers = function(self, marker)
 
             if self.fade_settings then
                 self.fade_settings.distance_max = max_distance
-                self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+                self.fade_settings.distance_min = max_distance - self.evolve_distance * 4
             end
 
             marker.template.max_distance = max_distance
             marker.template.fade_settings.distance_max = max_distance
-            marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 2
+            marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 8
 
             local med_crate_pos = POSITION_LOOKUP[marker.unit]
 
@@ -248,6 +249,32 @@ mod.update_ammo_med_markers = function(self, marker)
                         100, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")
                     }
                     marker.widget.style.marker_text.font_size = 14
+                end
+
+                if marker.data and marker.data._active_interaction_type == "health_station" then
+
+                    local health_station_extension = ScriptUnit.fetch_component_extension(unit, "health_station_system")
+
+                    local remaining_charges = health_station_extension._charge_amount
+                    marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
+
+                    marker.widget.content.marker_text = tostring(remaining_charges)
+
+                    if mod:get("change_colour_for_ammo_charges") == true then
+                        if remaining_charges == 4 then
+                            marker.widget.style.background.color = {255, 0, 150, 0}
+                        elseif remaining_charges == 3 then
+                            marker.widget.style.background.color = {255, 150, 150, 0}
+                        elseif remaining_charges == 2 then
+                            marker.widget.style.background.color = {255, 150, 100, 0}
+                        elseif remaining_charges == 1 then
+                            marker.widget.style.background.color = {255, 150, 0, 0}
+                        end
+                    end
+
+                    marker.widget.style.icon.color = {
+                        100, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")
+                    }
                 end
             end
 
@@ -283,27 +310,6 @@ mod.update_ammo_med_markers = function(self, marker)
             end
 
             local max_distance = get_max_distance()
-
-            if mod:get("ammo_med_require_line_of_sight") == true then
-                if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                end
-            else
-                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                    marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                    marker.draw = true
-
-                else
-                    marker.widget.alpha_multiplier = 0
-                    marker.draw = false
-                end
-            end
 
             self.max_distance = max_distance
 
@@ -424,6 +430,26 @@ mod.update_ammo_med_markers = function(self, marker)
 
                 marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1] / 3
 
+            end
+
+            if mod:get("ammo_med_require_line_of_sight") == true then
+                if marker.widget.content.line_of_sight_progress == 1 then
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
+                        marker.draw = true
+                    else
+                        marker.widget.alpha_multiplier = 0
+                        marker.draw = false
+                    end
+                end
+            else
+                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                    marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
+                    marker.draw = true
+                else
+                    marker.widget.alpha_multiplier = 0
+                    marker.draw = false
+                end
             end
         end
     end

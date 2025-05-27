@@ -38,6 +38,10 @@ mod.update_tome_markers = function(self, marker)
             if pickup then
                 local is_tome = pickup.is_side_mission_pickup
                 if is_tome then
+
+                    marker.draw = false
+                    marker.widget.alpha_multiplier = 0
+
                     marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
 
                     marker.widget.style.icon.color = {255, 255, 255, 242, 0}
@@ -77,6 +81,22 @@ mod.update_tome_markers = function(self, marker)
 
                     local max_distance = get_max_distance()
 
+                    self.max_distance = max_distance
+
+                    if self.fade_settings then
+                        self.fade_settings.distance_max = max_distance
+                        self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+                    end
+
+                    marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_default"
+
+                    -- set colour depending on if grim or scripture
+                    if pickup.unit_name == "content/pickups/pocketables/side_mission/grimoire/grimoire_pickup_01" then
+                        marker.widget.style.icon.color = {255, mod:get("grim_colour_R"), mod:get("grim_colour_G"), mod:get("grim_colour_B")}
+                    else
+                        marker.widget.style.icon.color = {255, mod:get("script_colour_R"), mod:get("script_colour_G"), mod:get("script_colour_B")}
+                    end
+
                     if mod:get("tome_require_line_of_sight") == true then
                         if marker.widget.content.line_of_sight_progress == 1 then
                             if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
@@ -96,22 +116,6 @@ mod.update_tome_markers = function(self, marker)
                             marker.widget.alpha_multiplier = 0
                             marker.draw = false
                         end
-                    end
-
-                    self.max_distance = max_distance
-
-                    if self.fade_settings then
-                        self.fade_settings.distance_max = max_distance
-                        self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
-                    end
-
-                    marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_default"
-
-                    -- set colour depending on if grim or scripture
-                    if pickup.unit_name == "content/pickups/pocketables/side_mission/grimoire/grimoire_pickup_01" then
-                        marker.widget.style.icon.color = {255, mod:get("grim_colour_R"), mod:get("grim_colour_G"), mod:get("grim_colour_B")}
-                    else
-                        marker.widget.style.icon.color = {255, mod:get("script_colour_R"), mod:get("script_colour_G"), mod:get("script_colour_B")}
                     end
                 end
             end

@@ -152,6 +152,10 @@ mod.update_marker_icon = function(self, marker)
         local max_distance = get_max_distance()
 
         if marker.type and marker.type == "heretical_idol" then
+
+            marker.draw = false
+            marker.widget.alpha_multiplier = 0
+
             marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
             marker.widget.style.icon.color = {255, mod:get("icon_colour_R"), mod:get("icon_colour_G"), mod:get("icon_colour_B")}
             marker.widget.style.ring.color = Color.citadel_stormhost_silver(nil, true)
@@ -160,8 +164,6 @@ mod.update_marker_icon = function(self, marker)
 
             marker.template.screen_clamp = mod:get("heretical_idol_keep_on_screen")
             marker.block_screen_clamp = false
-
-            --marker.widget.content.is_clamped = false
 
             -- foundya Compatibility
             if FoundYa ~= nil then
@@ -189,15 +191,20 @@ mod.update_marker_icon = function(self, marker)
                 if marker.widget.content.line_of_sight_progress == 1 then
                     if marker.widget.content.is_inside_frustum or mod:get("heretical_idol_keep_on_screen") then
                         marker.widget.alpha_multiplier = mod:get("heretical_idol_alpha")
+                        marker.draw = true
                     else
                         marker.widget.alpha_multiplier = 0
+                        marker.draw = false
                     end
                 end
             else
                 if marker.widget.content.is_inside_frustum or mod:get("heretical_idol_keep_on_screen") then
                     marker.widget.alpha_multiplier = mod:get("heretical_idol_alpha")
+                    marker.draw = true
+
                 else
                     marker.widget.alpha_multiplier = 0
+                    marker.draw = false
                 end
             end
         end

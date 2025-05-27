@@ -131,6 +131,9 @@ mod.update_chest_markers = function(self, marker)
 
                         local max_distance = get_max_distance()
 
+                        current_marker.widget.alpha_multiplier = 0
+                        current_marker.draw = false
+
                         -- set scale
                         local scale_settings = {}
                         scale_settings["scale_from"] = mod:get("chest_min_size") or 0.4
@@ -171,27 +174,6 @@ mod.update_chest_markers = function(self, marker)
                         if self.fade_settings then
                             self.fade_settings.distance_max = max_distance
                             self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
-                        end
-
-                        if mod:get("chest_require_line_of_sight") == true then
-                            if current_marker.widget.content.line_of_sight_progress == 1 then
-                                if current_marker.widget.content.is_inside_frustum  or marker.template.screen_clamp then
-                                    current_marker.widget.alpha_multiplier = mod:get("chest_alpha")
-                                    current_marker.draw = true
-                                else
-                                    current_marker.widget.alpha_multiplier = 0
-                                    current_marker.draw = false
-                                end
-                            end
-                        else
-                            if current_marker.widget.content.is_inside_frustum or marker.template.screen_clamp  then
-                                current_marker.widget.alpha_multiplier = mod:get("chest_alpha")
-                                current_marker.draw = true
-
-                            else
-                                current_marker.widget.alpha_multiplier = 0
-                                current_marker.draw = false
-                            end
                         end
 
                         -- MARKER EXISTS, NEED TO CHANGE TO THE TYPE OF ITEM INSIDE (showing default icon styles)... (also update my other marker mods to work with this (update the icons properly))
@@ -247,6 +229,27 @@ mod.update_chest_markers = function(self, marker)
                             current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_syringe_speed"
                             current_marker.data.type = "syringe_speed_boost_pocketable"
                         end
+
+                        if mod:get("chest_require_line_of_sight") == true then
+                            if current_marker.widget.content.line_of_sight_progress == 1 then
+                                if current_marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                                    current_marker.widget.alpha_multiplier = mod:get("chest_alpha")
+                                    current_marker.draw = true
+                                else
+                                    current_marker.widget.alpha_multiplier = 0
+                                    current_marker.draw = false
+                                end
+                            end
+                        else
+                            if current_marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                                current_marker.widget.alpha_multiplier = mod:get("chest_alpha")
+                                current_marker.draw = true
+
+                            else
+                                current_marker.widget.alpha_multiplier = 0
+                                current_marker.draw = false
+                            end
+                        end
                     end
 
                 end
@@ -267,7 +270,7 @@ mod.update_chest_markers = function(self, marker)
             marker.template.screen_clamp = mod:get("chest_keep_on_screen")
             marker.block_screen_clamp = false
 
-            --marker.widget.content.is_clamped = false
+            -- marker.widget.content.is_clamped = false
 
             -- set scale
             local scale_settings = {}
@@ -310,7 +313,7 @@ mod.update_chest_markers = function(self, marker)
 
             if mod:get("chest_require_line_of_sight") == true then
                 if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum  or marker.template.screen_clamp then
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
                         marker.widget.alpha_multiplier = mod:get("chest_alpha")
                         marker.draw = true
                     else
@@ -319,7 +322,7 @@ mod.update_chest_markers = function(self, marker)
                     end
                 end
             else
-                if marker.widget.content.is_inside_frustum  or marker.template.screen_clamp then
+                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
                     marker.widget.alpha_multiplier = mod:get("chest_alpha")
                     marker.draw = true
 

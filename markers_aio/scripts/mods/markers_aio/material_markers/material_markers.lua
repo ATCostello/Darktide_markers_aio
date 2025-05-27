@@ -36,6 +36,10 @@ mod.update_material_markers = function(self, marker)
             "small_platinum" or pickup_type and pickup_type == "large_platinum" or marker.data and marker.data.type == "small_metal" or marker.data and
             marker.data.type == "large_metal" or marker.data and marker.data.type == "small_platinum" or marker.data and marker.data.type ==
             "large_platinum" then
+
+            marker.draw = false
+            marker.widget.alpha_multiplier = 0
+
             -- Adjust colour or outer rim depending on if small or large
             if pickup_type == "small_metal" or pickup_type == "small_platinum" or marker.data and marker.data.type == "small_metal" or marker.data and
                 marker.data.type == "small_platinum" then
@@ -82,27 +86,6 @@ mod.update_material_markers = function(self, marker)
             if self.fade_settings then
                 self.fade_settings.distance_max = max_distance
                 self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
-            end
-
-            if mod:get("material_require_line_of_sight") == true then
-                if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("material_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                end
-            else
-                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                    marker.widget.alpha_multiplier = mod:get("material_alpha")
-                    marker.draw = true
-
-                else
-                    marker.widget.alpha_multiplier = 0
-                    marker.draw = false
-                end
             end
 
             -- plasteel
@@ -163,6 +146,27 @@ mod.update_material_markers = function(self, marker)
                         marker.widget.visible = true
                     end
 
+                end
+            end
+
+            if mod:get("material_require_line_of_sight") == true then
+                if marker.widget.content.line_of_sight_progress == 1 then
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                        marker.widget.alpha_multiplier = mod:get("material_alpha")
+                        marker.draw = true
+                    else
+                        marker.widget.alpha_multiplier = 0
+                        marker.draw = false
+                    end
+                end
+            else
+                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                    marker.widget.alpha_multiplier = mod:get("material_alpha")
+                    marker.draw = true
+
+                else
+                    marker.widget.alpha_multiplier = 0
+                    marker.draw = false
                 end
             end
         end

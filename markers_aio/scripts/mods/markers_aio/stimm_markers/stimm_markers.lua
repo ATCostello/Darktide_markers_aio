@@ -38,6 +38,9 @@ mod.update_stimm_markers = function(self, marker)
             "syringe_speed_boost_pocketable" or marker.data and marker.data.type == "syringe_ability_boost_pocketable" or marker.data and
             marker.data.type == "syringe_corruption_pocketable" then
 
+            marker.draw = false
+            marker.widget.alpha_multiplier = 0
+
             marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
 
             marker.widget.style.icon.color = {255, 95, 158, 160}
@@ -47,7 +50,7 @@ mod.update_stimm_markers = function(self, marker)
             marker.template.screen_clamp = mod:get("stimm_keep_on_screen")
             marker.block_screen_clamp = false
 
-            --marker.widget.content.is_clamped = false
+            -- marker.widget.content.is_clamped = false
 
             -- set scale
             local scale_settings = {}
@@ -81,27 +84,6 @@ mod.update_stimm_markers = function(self, marker)
                 self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
             end
 
-            if mod:get("stimm_require_line_of_sight") == true then
-                if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum  or marker.template.screen_clamp then
-                        marker.widget.alpha_multiplier = mod:get("stimm_alpha")
-                        marker.draw = true
-                    else
-                        marker.widget.alpha_multiplier = 0
-                        marker.draw = false
-                    end
-                end
-            else
-                if marker.widget.content.is_inside_frustum  or marker.template.screen_clamp then
-                    marker.widget.alpha_multiplier = mod:get("stimm_alpha")
-                    marker.draw = true
-
-                else
-                    marker.widget.alpha_multiplier = 0
-                    marker.draw = false
-                end
-            end
-
             if pickup_type == "syringe_power_boost_pocketable" or marker.data and marker.data.type == "syringe_power_boost_pocketable" then
                 marker.widget.style.icon.color = {
                     255, mod:get("power_stimm_icon_colour_R"), mod:get("power_stimm_icon_colour_G"), mod:get("power_stimm_icon_colour_B")
@@ -120,6 +102,27 @@ mod.update_stimm_markers = function(self, marker)
                     255, mod:get("corruption_stimm_icon_colour_R"), mod:get("corruption_stimm_icon_colour_G"),
                     mod:get("corruption_stimm_icon_colour_B")
                 }
+            end
+
+            if mod:get("stimm_require_line_of_sight") == true then
+                if marker.widget.content.line_of_sight_progress == 1 then
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                        marker.widget.alpha_multiplier = mod:get("stimm_alpha")
+                        marker.draw = true
+                    else
+                        marker.widget.alpha_multiplier = 0
+                        marker.draw = false
+                    end
+                end
+            else
+                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                    marker.widget.alpha_multiplier = mod:get("stimm_alpha")
+                    marker.draw = true
+
+                else
+                    marker.widget.alpha_multiplier = 0
+                    marker.draw = false
+                end
             end
         end
     end
