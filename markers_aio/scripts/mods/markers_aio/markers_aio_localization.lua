@@ -121,7 +121,7 @@ return {
 		["zh-cn"] = "是否显示医疗箱作用范围",
 	},
 	change_colour_for_ammo_charges = {
-		en = "Change ammo crate colour depending on charges left?",
+		en = "Change ammo & medicae crate colour depending on charges left?",
 		fr = "Changer la couleur des caisses de munitions en fonction des charges ? ",
 		ru = "Изменять цвет значка ящика с боеприпасами в зависимости от оставшихся зарядов?",
 		["zh-tw"] = "根據剩餘充能改變彈藥箱顏色？",
@@ -931,7 +931,6 @@ return {
 	},
 	tome_require_line_of_sight = {
 		en = "Require line of sight",
-		ru = "Требуется прямая видимость",
 		fr = "Nécessite une ligne de vue",
 		ru = "Должно быть в зоне видимости",
         ["zh-tw"] = "需要視線範圍",
@@ -1030,6 +1029,101 @@ return {
 		ru = "Цвет границы",
         ["zh-tw"] = "邊框顏色",
 		["zh-cn"] = "边框颜色",
+	},
+
+	-- Tainted Communication Device Markers
+	tainted_markers_settings = {
+		en = "TAINTED COMMUNICATION DEVICE MARKERS",
+		["zh-cn"] = "腐化通讯装置图标",
+	},
+	tainted_enable = {
+		en = "Enable Markers",
+		fr = "Activer les marqueurs",
+		ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+		["zh-cn"] = "启用图标",
+	},
+	tainted_general_settings = {
+        en = "General Settings",
+		fr = "Paramètres généraux",
+		ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+		["zh-cn"] = "通用设定",
+    },
+    tainted_keep_on_screen = {
+        en = "Keep on screen",
+		ru = "Держать на экране",
+		fr = "Rester à l'écran",
+		ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+		["zh-cn"] = "在画面中持续显示",
+    },
+    tainted_require_line_of_sight = {
+        en = "Require line of sight",
+		fr = "Nécessite une ligne de vue",
+		ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+		["zh-cn"] = "需要视野",
+    },
+    tainted_max_distance = {
+		en = "Max distance",
+		fr = "Distance maximale",
+		ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+		["zh-cn"] = "最大距离",
+	},
+	tainted_max_size = {
+		en = "Maximum size of marker",
+		fr = "Taille maximale du marqueur",
+		ru = "Максимальный размер метки",
+        ["zh-tw"] = "標記的最大尺寸",
+		["zh-cn"] = "图标最大尺寸",
+	},
+	tainted_min_size = {
+		en = "Minimum size of marker",
+		fr = "Taille minimale du marqueur",
+		ru = "Минимальный размер метки",
+        ["zh-tw"] = "標記的最小尺寸",
+		["zh-cn"] = "图标最小尺寸",
+	},
+	tainted_alpha = {
+		en = "Alpha Multiplier",
+		fr = "Multiplicateur d'alpha",
+		ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+		["zh-cn"] = "透明度",
+	},
+	tainted_border_colour = {
+		en = "Border Colour",
+		fr = "Couleur de la bordure",
+		ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+		["zh-cn"] = "边框颜色",
+	},
+	tainted_colour = {
+		en = "Tainted Communications Device Colour",
+		["zh-cn"] = "腐化通讯装置",
+	},
+	tainted_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+        ["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	tainted_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+        ["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	tainted_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+        ["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
 	},
 	
 	Gold = {

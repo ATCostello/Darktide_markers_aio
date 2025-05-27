@@ -6,6 +6,8 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers/heret
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/material_markers/material_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/stimm_markers/stimm_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/tome_markers/tome_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/TaintedDevices_markers/TaintedDevices_markers")
+
 
 local HereticalIdolTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers/heretical_idol_marker_template")
 local MedMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers/ammo_med_markers_template")
@@ -55,6 +57,9 @@ mod:hook_safe(
                     end
                     if mod:get("heretical_idol_enable") then
                         mod.update_marker_icon(self, marker)
+                    end
+                    if mod:get("tainted_enable") then
+                        mod.update_TaintedDevices_markers(self, marker)
                     end
                 end
             end

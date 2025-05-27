@@ -115,8 +115,8 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
         end
 
         local decal_unit_name = "content/levels/training_grounds/fx/decal_aoe_indicator"
-        local medical_crate_config = require("scripts/settings/deployables/templates/medical_crate")        
-        
+        local medical_crate_config = require("scripts/settings/deployables/templates/medical_crate")
+
         local world = Unit.world(unit)
         local position = Unit.local_position(unit, 1)
         if world and position then
@@ -255,92 +255,81 @@ mod.update_ammo_med_markers = function(self, marker)
                     }
                     marker.widget.style.marker_text.font_size = 14
                 end
+            end
 
-                if marker.data and marker.data._active_interaction_type == "health_station" then
-                    local health_station_extension = ScriptUnit.fetch_component_extension(unit, "health_station_system")
+            if marker.data and marker.data._active_interaction_type == "health_station" then
+                local health_station_extension = ScriptUnit.fetch_component_extension(unit, "health_station_system")
 
-                    local remaining_charges = health_station_extension._charge_amount
-                    marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
+                local remaining_charges = health_station_extension._charge_amount
+                marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
 
+                if mod:get("display_med_charges") == true then
                     marker.widget.content.marker_text = tostring(remaining_charges)
-
-                    if mod:get("change_colour_for_ammo_charges") == true then
-                        if remaining_charges == 4 then
-                            marker.widget.style.background.color = {255, 0, 150, 0}
-                        elseif remaining_charges == 3 then
-                            marker.widget.style.background.color = {255, 150, 150, 0}
-                        elseif remaining_charges == 2 then
-                            marker.widget.style.background.color = {255, 150, 100, 0}
-                        elseif remaining_charges == 1 then
-                            marker.widget.style.background.color = {255, 150, 0, 0}
-                        end
-                    end
-
-                    marker.widget.style.icon.color = {
-                        100, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")
-                    }
-
-
-                    if mod:get("ammo_med_require_line_of_sight") == true then
-                        if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                            marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                            marker.draw = true
-                        else
-                            marker.widget.alpha_multiplier = 0
-                            marker.draw = false
-                        end
-                    else
-                        if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                            marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                            marker.draw = true
-                        else
-                            marker.widget.alpha_multiplier = 0
-                            marker.draw = false
-                        end
-                    end
-
                 end
+
+                if mod:get("change_colour_for_ammo_charges") == true then
+                    if remaining_charges == 4 then
+                        marker.widget.style.background.color = {255, 0, 150, 0}
+                    elseif remaining_charges == 3 then
+                        marker.widget.style.background.color = {255, 150, 150, 0}
+                    elseif remaining_charges == 2 then
+                        marker.widget.style.background.color = {255, 150, 100, 0}
+                    elseif remaining_charges == 1 then
+                        marker.widget.style.background.color = {255, 150, 0, 0}
+                    end
+                end
+
+                marker.widget.style.icon.color = {100, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")}
+
+                if mod:get("ammo_med_require_line_of_sight") == true then
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
+                        marker.draw = true
+                    else
+                        marker.widget.alpha_multiplier = 0
+                        marker.draw = false
+                    end
+                else
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
+                        marker.draw = true
+                    else
+                        marker.widget.alpha_multiplier = 0
+                        marker.draw = false
+                    end
+                end
+
             end
 
             local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
-            if mod:get("display_ammo_charges") == true then
-                if pickup_type == "ammo_cache_deployable" or marker.data and marker.data.type == "ammo_cache_deployable" then
-                    local game_session = Managers.state.game_session:game_session()
-                    local game_object_id = Managers.state.unit_spawner:game_object_id(unit)
-                    local remaining_charges = GameSession.game_object_field(game_session, game_object_id, "charges")
+            if pickup_type == "ammo_cache_deployable" or marker.data and marker.data.type == "ammo_cache_deployable" then
+                local game_session = Managers.state.game_session:game_session()
+                local game_object_id = Managers.state.unit_spawner:game_object_id(unit)
+                local remaining_charges = GameSession.game_object_field(game_session, game_object_id, "charges")
 
-                    marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
+                marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
 
+                if mod:get("display_ammo_charges") == true then
                     marker.widget.content.marker_text = tostring(remaining_charges)
+                end
 
-                    if mod:get("change_colour_for_ammo_charges") == true then
-                        if remaining_charges == 4 then
-                            marker.widget.style.background.color = {255, 0, 150, 0}
-                        elseif remaining_charges == 3 then
-                            marker.widget.style.background.color = {255, 150, 150, 0}
-                        elseif remaining_charges == 2 then
-                            marker.widget.style.background.color = {255, 150, 100, 0}
-                        elseif remaining_charges == 1 then
-                            marker.widget.style.background.color = {255, 150, 0, 0}
-                        end
+                if mod:get("change_colour_for_ammo_charges") == true then
+                    if remaining_charges == 4 then
+                        marker.widget.style.background.color = {255, 0, 150, 0}
+                    elseif remaining_charges == 3 then
+                        marker.widget.style.background.color = {255, 150, 150, 0}
+                    elseif remaining_charges == 2 then
+                        marker.widget.style.background.color = {255, 150, 100, 0}
+                    elseif remaining_charges == 1 then
+                        marker.widget.style.background.color = {255, 150, 0, 0}
                     end
+                end
 
-                    marker.widget.style.icon.color = {
-                        100, mod:get("ammo_crate_colour_R"), mod:get("ammo_crate_colour_G"), mod:get("ammo_crate_colour_B")
-                    }
-                    dbg_1 = mod:get("ammo_med_require_line_of_sight")
-                    if mod:get("ammo_med_require_line_of_sight") == true then
-                        if marker.widget.content.line_of_sight_progress == 1 then
-                            if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
-                                marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
-                                marker.draw = true
-                            else
-                                marker.widget.alpha_multiplier = 0
-                                marker.draw = false
-                            end
-                        end
-                    else
+                marker.widget.style.icon.color = {100, mod:get("ammo_crate_colour_R"), mod:get("ammo_crate_colour_G"), mod:get("ammo_crate_colour_B")}
+
+                if mod:get("ammo_med_require_line_of_sight") == true then
+                    if marker.widget.content.line_of_sight_progress == 1 then
                         if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
                             marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
                             marker.draw = true
@@ -348,6 +337,14 @@ mod.update_ammo_med_markers = function(self, marker)
                             marker.widget.alpha_multiplier = 0
                             marker.draw = false
                         end
+                    end
+                else
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
+                        marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
+                        marker.draw = true
+                    else
+                        marker.widget.alpha_multiplier = 0
+                        marker.draw = false
                     end
                 end
             end
