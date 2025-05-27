@@ -1,40 +1,18 @@
 local mod = get_mod("markers_aio")
 
-
 local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local template = {}
 
 local max_size_value = 128
 
-local size = {
-	128,
-	128,
-}
-local ping_size = {
-	128,
-	128,
-}
-local arrow_size = {
-	128,
-	128,
-}
-local icon_size = {
-	64,
-	64,
-}
-local background_size = {
-	128,
-	128,
-}
-local line_size = {
-	250,
-	5,
-}
-local bar_size = {
-	210,
-	10,
-}
+local size = {128, 128}
+local ping_size = {128, 128}
+local arrow_size = {128, 128}
+local icon_size = {64, 64}
+local background_size = {128, 128}
+local line_size = {250, 5}
+local bar_size = {210, 10}
 local scale_fraction = 0.75
 
 template.size = size
@@ -66,7 +44,10 @@ template.ping_max_size = {ping_size[1], ping_size[2]}
 template.position_offset = {0, 0, 1}
 template.screen_margins = {down = 0.23148148148148148, left = 0.234375, right = 0.234375, up = 0.23148148148148148}
 
-template.scale_settings = {scale_from = 0.4, scale_to = 1, distance_max = template.max_distance, distance_min = template.evolve_distance, easing_function = math.easeCubic}
+template.scale_settings = {
+    scale_from = mod:get("ammo_med_min_size") or 0.4, scale_to = mod:get("ammo_med_max_size") or 1, distance_max = 30,
+    distance_min = template.evolve_distance, easing_function = math.easeCubic
+}
 
 template.fade_settings = {
     default_fade = 1, fade_from = 0, fade_to = 1, distance_max = template.max_distance,
@@ -100,8 +81,7 @@ template.create_widget_defintion = function(template, scenegraph_id)
                     return content.background ~= nil
                 end
             }, {
-                pass_type = "texture", style_id = "ring", value = "content/ui/materials/hud/interactions/frames/mission_top",
-                value_id = "ring",
+                pass_type = "texture", style_id = "ring", value = "content/ui/materials/hud/interactions/frames/mission_top", value_id = "ring",
                 style = {
                     horizontal_alignment = "center", vertical_alignment = "center", size = size, offset = {0, 0, 5}, color = {255, 255, 255, 255}
                 }, visibility_function = function(content, style)
@@ -122,12 +102,12 @@ template.create_widget_defintion = function(template, scenegraph_id)
                 }, visibility_function = function(content, style)
                     return content.icon ~= nil
                 end
-            },  {
+            }, {
                 pass_type = "text", style_id = "marker_text", value = "", value_id = "marker_text", style = title_text_style,
                 visibility_function = function(content, style)
                     return content.marker_text ~= nil
                 end
-            },{
+            }, {
                 pass_type = "rotated_texture", style_id = "arrow", value = "content/ui/materials/hud/interactions/frames/direction",
                 value_id = "arrow", style = {
                     horizontal_alignment = "center", vertical_alignment = "center", size = arrow_size, offset = {0, 0, 2},

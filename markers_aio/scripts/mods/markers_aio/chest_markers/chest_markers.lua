@@ -178,7 +178,7 @@ mod.update_chest_markers = function(self, marker)
 
                         if mod:get("chest_require_line_of_sight") == true then
                             if current_marker.widget.content.line_of_sight_progress == 1 then
-                                if current_marker.widget.content.is_inside_frustum then
+                                if current_marker.widget.content.is_inside_frustum  or marker.template.screen_clamp then
                                     current_marker.widget.alpha_multiplier = mod:get("chest_alpha")
                                     current_marker.draw = true
                                 else
@@ -187,7 +187,7 @@ mod.update_chest_markers = function(self, marker)
                                 end
                             end
                         else
-                            if current_marker.widget.content.is_inside_frustum then
+                            if current_marker.widget.content.is_inside_frustum or marker.template.screen_clamp  then
                                 current_marker.widget.alpha_multiplier = mod:get("chest_alpha")
                                 current_marker.draw = true
 
@@ -270,7 +270,7 @@ mod.update_chest_markers = function(self, marker)
             marker.template.screen_clamp = mod:get("chest_keep_on_screen")
             marker.block_screen_clamp = false
 
-            marker.widget.content.is_clamped = false
+            --marker.widget.content.is_clamped = false
 
             -- set scale
             local scale_settings = {}
@@ -313,7 +313,7 @@ mod.update_chest_markers = function(self, marker)
 
             if mod:get("chest_require_line_of_sight") == true then
                 if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum then
+                    if marker.widget.content.is_inside_frustum  or marker.template.screen_clamp then
                         marker.widget.alpha_multiplier = mod:get("chest_alpha")
                         marker.draw = true
                     else
@@ -322,7 +322,7 @@ mod.update_chest_markers = function(self, marker)
                     end
                 end
             else
-                if marker.widget.content.is_inside_frustum then
+                if marker.widget.content.is_inside_frustum  or marker.template.screen_clamp then
                     marker.widget.alpha_multiplier = mod:get("chest_alpha")
                     marker.draw = true
 

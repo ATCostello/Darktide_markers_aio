@@ -164,7 +164,7 @@ mod.update_marker_icon = function(self, marker)
             marker.template.screen_clamp = mod:get("heretical_idol_keep_on_screen")
             marker.block_screen_clamp = false
 
-            marker.widget.content.is_clamped = false
+            --marker.widget.content.is_clamped = false
 
             -- foundya Compatibility
             if FoundYa ~= nil then
@@ -190,14 +190,14 @@ mod.update_marker_icon = function(self, marker)
 
             if mod:get("heretical_idol_require_line_of_sight") == true then
                 if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum then
+                    if marker.widget.content.is_inside_frustum or mod:get("heretical_idol_keep_on_screen") then
                         marker.widget.alpha_multiplier = mod:get("heretical_idol_alpha")
                     else
                         marker.widget.alpha_multiplier = 0
                     end
                 end
             else
-                if marker.widget.content.is_inside_frustum then
+                if marker.widget.content.is_inside_frustum or mod:get("heretical_idol_keep_on_screen") then
                     marker.widget.alpha_multiplier = mod:get("heretical_idol_alpha")
                 else
                     marker.widget.alpha_multiplier = 0

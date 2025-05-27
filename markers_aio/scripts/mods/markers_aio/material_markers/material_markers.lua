@@ -1,6 +1,5 @@
 local mod = get_mod("markers_aio")
 
-
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local Pickups = require("scripts/settings/pickup/pickups")
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
@@ -55,7 +54,7 @@ mod.update_material_markers = function(self, marker)
             marker.template.screen_clamp = mod:get("material_keep_on_screen")
             marker.block_screen_clamp = false
 
-            marker.widget.content.is_clamped = false
+            -- marker.widget.content.is_clamped = false
 
             -- set scale
             local scale_settings = {}
@@ -90,7 +89,7 @@ mod.update_material_markers = function(self, marker)
 
             if mod:get("material_require_line_of_sight") == true then
                 if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum then
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
                         marker.widget.alpha_multiplier = mod:get("material_alpha")
                         marker.draw = true
                     else
@@ -99,7 +98,7 @@ mod.update_material_markers = function(self, marker)
                     end
                 end
             else
-                if marker.widget.content.is_inside_frustum then
+                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
                     marker.widget.alpha_multiplier = mod:get("material_alpha")
                     marker.draw = true
 

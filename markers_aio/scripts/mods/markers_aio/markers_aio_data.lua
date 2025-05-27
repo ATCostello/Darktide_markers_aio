@@ -13,8 +13,8 @@ return {
 
                             {setting_id = "ammo_med_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "ammo_med_require_line_of_sight", type = "checkbox", default_value = true},
-                            {setting_id = "ammo_med_max_distance", type = "numeric", default_value = 15, range = {15, 100}},
-                            {setting_id = "ammo_med_min_size", type = "numeric", default_value = 0.2, range = {0.2, 1}, decimals_number = 2},
+                            {setting_id = "ammo_med_max_distance", type = "numeric", default_value = 30, range = {15, 100}},
+                            {setting_id = "ammo_med_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
                             {setting_id = "ammo_med_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},
                             {setting_id = "ammo_med_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
                             {setting_id = "display_med_charges", type = "checkbox", default_value = true},
@@ -23,7 +23,7 @@ return {
                             {setting_id = "change_colour_for_ammo_charges", type = "checkbox", default_value = true},
 
                             {setting_id = "display_field_improv_colour", type = "checkbox", default_value = true},
-                            {setting_id = "display_field_improv_icon", type = "checkbox", default_value = false},
+                            {setting_id = "display_field_improv_icon", type = "checkbox", default_value = true},
 
                             {setting_id = "display_med_ring", type = "checkbox", default_value = true},
 
@@ -89,7 +89,7 @@ return {
                             {setting_id = "heretical_idol_enable", type = "checkbox", default_value = true},
 
                             {setting_id = "heretical_idol_keep_on_screen", type = "checkbox", default_value = true},
-                            {setting_id = "heretical_idol_require_line_of_sight", type = "checkbox", default_value = true},
+                            {setting_id = "heretical_idol_require_line_of_sight", type = "checkbox", default_value = false},
                             {setting_id = "heretical_idol_max_distance", type = "numeric", default_value = 30, range = {20, 100}},
                             {setting_id = "heretical_idol_min_size", type = "numeric", default_value = 0.4, range = {0.2, 1}, decimals_number = 2},
                             {setting_id = "heretical_idol_max_size", type = "numeric", default_value = 1, range = {1, 2}, decimals_number = 2},

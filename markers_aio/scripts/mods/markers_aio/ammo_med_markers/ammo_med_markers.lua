@@ -189,16 +189,19 @@ mod.update_ammo_med_markers = function(self, marker)
             marker.template.screen_clamp = mod:get("ammo_med_keep_on_screen")
             marker.block_screen_clamp = false
 
-            marker.widget.content.is_clamped = false
+            --marker.widget.content.is_clamped = false
 
             -- set scale
             local scale_settings = {}
-            scale_settings["scale_from"] = 0.2
+            scale_settings["scale_from"] = mod:get("ammo_med_min_size") or 0.4
             scale_settings["scale_to"] = mod:get("ammo_med_max_size") or 1
-            scale_settings["distance_max"] = 15
+            scale_settings["distance_max"] = 30
             scale_settings["distance_min"] = 1
             scale_settings["easing_function"] = math.easeCubic
-            marker.scale = self._get_scale(self, scale_settings, marker.distance) or 1
+            marker.template.scale_settings = scale_settings
+
+            MarkerTemplate.scale_settings = scale_settings
+            self._marker_templates[MarkerTemplate.name] = MarkerTemplate
             self._apply_scale(self, marker.widget, marker.scale)
 
             local max_spawn_distance_sq = max_distance * max_distance
@@ -224,9 +227,9 @@ mod.update_ammo_med_markers = function(self, marker)
                         100, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")
                     }
                     marker.widget.style.marker_text.font_size = 14
-
                 end
             end
+
             local field_improv_active = mod.check_players_talents_for_Field_Improvisation(self)
 
             if mod:get("display_ammo_charges") == true then
@@ -235,8 +238,7 @@ mod.update_ammo_med_markers = function(self, marker)
                     local game_object_id = Managers.state.unit_spawner:game_object_id(unit)
                     local remaining_charges = GameSession.game_object_field(game_session, game_object_id, "charges")
 
-                    dbg_style = marker.widget.style.marker_text
-                    marker.widget.style.marker_text.font_size = 24
+                    marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
 
                     marker.widget.content.marker_text = tostring(remaining_charges)
 
@@ -263,7 +265,7 @@ mod.update_ammo_med_markers = function(self, marker)
 
             if mod:get("ammo_med_require_line_of_sight") == true then
                 if marker.widget.content.line_of_sight_progress == 1 then
-                    if marker.widget.content.is_inside_frustum then
+                    if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
                         marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
                         marker.draw = true
                     else
@@ -272,7 +274,7 @@ mod.update_ammo_med_markers = function(self, marker)
                     end
                 end
             else
-                if marker.widget.content.is_inside_frustum then
+                if marker.widget.content.is_inside_frustum or marker.template.screen_clamp then
                     marker.widget.alpha_multiplier = mod:get("ammo_med_alpha")
                     marker.draw = true
 
@@ -320,6 +322,11 @@ mod.update_ammo_med_markers = function(self, marker)
                 else
                     marker.widget.content.field_improv = ""
                 end
+
+                marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
+                marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+
+                marker.widget.style.field_improv.offset[1] = 35 * marker.scale
             elseif pickup_type == "ammo_cache_deployable" or marker.data and marker.data.type == "ammo_cache_deployable" then
 
                 marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
@@ -337,6 +344,10 @@ mod.update_ammo_med_markers = function(self, marker)
                     marker.widget.content.field_improv = ""
                 end
 
+                marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
+                marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+
+                marker.widget.style.field_improv.offset[1] = 35 * marker.scale
             elseif pickup_type == "medical_crate_pocketable" or marker.data and marker.data.type == "medical_crate_pocketable" then
                 marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
@@ -352,6 +363,11 @@ mod.update_ammo_med_markers = function(self, marker)
                 else
                     marker.widget.content.field_improv = ""
                 end
+
+                marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
+                marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+
+                marker.widget.style.field_improv.offset[1] = 35 * marker.scale
             elseif pickup_type == "medical_crate_deployable" or marker.type == MarkerTemplate.name or marker.data and marker.data.type ==
                 "medical_crate_deployable" then
                 marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
@@ -367,6 +383,26 @@ mod.update_ammo_med_markers = function(self, marker)
                 else
                     marker.widget.content.field_improv = ""
                 end
+
+                marker.scale = self._get_scale(self, scale_settings, marker.distance) or 1
+                self._apply_scale(self, marker.widget, marker.scale)
+                
+                marker.widget.style.background.size[1] = marker.widget.style.background.size[1] * marker.scale
+                marker.widget.style.background.size[2] = marker.widget.style.background.size[2] * marker.scale
+
+                marker.widget.style.icon.size[1] = marker.widget.style.icon.size[1] * marker.scale
+                marker.widget.style.icon.size[2] = marker.widget.style.icon.size[2] * marker.scale
+
+                marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
+                marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+
+                marker.widget.style.field_improv.offset[1] = 35 * marker.scale
+
+                marker.widget.style.ring.size[1] = marker.widget.style.ring.size[1] * marker.scale
+                marker.widget.style.ring.size[2] = marker.widget.style.ring.size[2] * marker.scale
+
+                marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1] / 3
+
             end
         end
     end
@@ -403,7 +439,7 @@ mod:hook(
         -- add new icon for Field Improv talent
         local icon_size = {48, 48}
         local field_improv_style = {
-            horizontal_alignment = "center", vertical_alignment = "center", size = icon_size, offset = {50, 0, 5}, color = {255, 255, 255, 255}
+            horizontal_alignment = "left", vertical_alignment = "center", size = icon_size, offset = {50, 0, 0}, color = {255, 255, 255, 255}
         }
 
         local field_improv_pass = {
