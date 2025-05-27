@@ -239,7 +239,21 @@ mod.update_ammo_med_markers = function(self, marker)
                     local game_object_id = Managers.state.unit_spawner:game_object_id(unit)
                     local remaining_charges = GameSession.game_object_field(game_session, game_object_id, "charges")
 
+                    marker.widget.style.marker_text.font_size = 24
+
                     marker.widget.content.marker_text = tostring(remaining_charges)
+
+                    if mod:get("change_colour_for_ammo_charges") == true then
+                        if remaining_charges == 4 then
+                            marker.widget.style.background.color = {255, 0, 150, 0}
+                        elseif remaining_charges == 3 then
+                            marker.widget.style.background.color = {255, 150, 150, 0}
+                        elseif remaining_charges == 2 then
+                            marker.widget.style.background.color = {255, 150, 100, 0}
+                        elseif remaining_charges == 1 then
+                            marker.widget.style.background.color = {255, 150, 0, 0}
+                        end
+                    end
 
                     marker.widget.style.icon.color = {
                         100, mod:get("ammo_crate_colour_R"), mod:get("ammo_crate_colour_G"), mod:get("ammo_crate_colour_B")
@@ -325,6 +339,7 @@ mod.update_ammo_med_markers = function(self, marker)
                 else
                     marker.widget.content.field_improv = ""
                 end
+
             elseif pickup_type == "medical_crate_pocketable" or marker.data and marker.data.type == "medical_crate_pocketable" then
                 marker.widget.style.ring.color = Color.citadel_auric_armour_gold(nil, true)
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
@@ -375,6 +390,7 @@ mod:hook(
         marker_text_style.text_color = Color.ui_hud_green_super_light(255, true)
         marker_text_style.text_horizontal_alignment = "center"
         marker_text_style.text_vertical_alignment = "center"
+        marker_text_style.drop_shadow = true
 
         local marker_text_pass = {
             pass_type = "text", style_id = "marker_text", value = "", value_id = "marker_text", style = marker_text_style,

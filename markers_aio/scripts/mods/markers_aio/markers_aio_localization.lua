@@ -52,6 +52,9 @@ return {
 	display_med_ring = {
 		en = "Display Proximity Radius Around Medkits?"
 	},
+	change_colour_for_ammo_charges = {
+		en = "Change ammo crate colour depending on charges left?"
+	},
 
 	ammo_small_colour = {
 		en = "Ammo (Small) Colour"
