@@ -1,6 +1,5 @@
 local mod = get_mod("markers_aio")
 
-
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local Pickups = require("scripts/settings/pickup/pickups")
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
@@ -128,3 +127,99 @@ mod.update_stimm_markers = function(self, marker)
         end
     end
 end
+
+-- update player weapon stimm icon colour
+mod:hook_safe(
+    CLASS.HudElementPlayerWeapon, "update", function(self, dt, t, ui_renderer)
+
+        local inventory_component = self._inventory_component
+
+        local weapon_name = self._weapon_name
+        local widget = self._widgets_by_name.icon
+
+        if weapon_name == "content/items/pocketable/syringe_power_boost_pocketable" then
+            local color = {255, mod:get("power_stimm_icon_colour_R"), mod:get("power_stimm_icon_colour_G"), mod:get("power_stimm_icon_colour_B")}
+            widget.style.icon.color = color
+
+        elseif weapon_name == "content/items/pocketable/syringe_speed_boost_pocketable" then
+            local color = {255, mod:get("speed_stimm_icon_colour_R"), mod:get("speed_stimm_icon_colour_G"), mod:get("speed_stimm_icon_colour_B")}
+            widget.style.icon.color = color
+
+        elseif weapon_name == "content/items/pocketable/syringe_ability_boost_pocketable" then
+            local color = {255, mod:get("boost_stim_icon_colour_R"), mod:get("boost_stim_icon_colour_G"), mod:get("boost_stim_icon_colour_B")}
+            widget.style.icon.color = color
+
+        elseif weapon_name == "content/items/pocketable/syringe_corruption_pocketable" then
+            local color = {
+                255, mod:get("corruption_stimm_icon_colour_R"), mod:get("corruption_stimm_icon_colour_G"), mod:get("corruption_stimm_icon_colour_B")
+            }
+            widget.style.icon.color = color
+
+        end
+    end
+)
+
+-- update team panel stimm icon colour
+local PlayerUnitVisualLoadout = require("scripts/extension_systems/visual_loadout/utilities/player_unit_visual_loadout")
+
+mod:hook_safe(
+    CLASS.HudElementTeamPanelHandler, "update", function(self, dt, t, ui_renderer, render_settings, input_service)
+        local weapon_name = ""
+        local players = Managers.player:players()
+        local player_panels_array = self._player_panels_array
+
+        for _, player in pairs(players) do
+            local player_unit = player.player_unit
+
+            if ALIVE[player_unit] then
+                -- grab slot_pocketable_small item
+                local visual_loadout_extension = ScriptUnit.extension(player_unit, "visual_loadout_system")
+                local item = visual_loadout_extension:item_from_slot("slot_pocketable_small")
+
+                if item then
+                    weapon_name = item.name
+
+                    -- grab stim widget for player
+                    for _, panel_array in pairs(player_panels_array) do
+                        if panel_array.player._account_id == player._account_id then
+
+                            local stimm_widget = panel_array.panel._widgets_by_name.pocketable_small
+
+                            if stimm_widget and weapon_name ~= "" then
+                                if weapon_name == "content/items/pocketable/syringe_power_boost_pocketable" then
+                                    local color = {
+                                        255, mod:get("power_stimm_icon_colour_R"), mod:get("power_stimm_icon_colour_G"),
+                                        mod:get("power_stimm_icon_colour_B")
+                                    }
+                                    stimm_widget.style.texture.color = color
+
+                                elseif weapon_name == "content/items/pocketable/syringe_speed_boost_pocketable" then
+                                    local color = {
+                                        255, mod:get("speed_stimm_icon_colour_R"), mod:get("speed_stimm_icon_colour_G"),
+                                        mod:get("speed_stimm_icon_colour_B")
+                                    }
+                                    stimm_widget.style.texture.color = color
+
+                                elseif weapon_name == "content/items/pocketable/syringe_ability_boost_pocketable" then
+                                    local color = {
+                                        255, mod:get("boost_stim_icon_colour_R"), mod:get("boost_stim_icon_colour_G"),
+                                        mod:get("boost_stim_icon_colour_B")
+                                    }
+                                    stimm_widget.style.texture.color = color
+
+                                elseif weapon_name == "content/items/pocketable/syringe_corruption_pocketable" then
+                                    local color = {
+                                        255, mod:get("corruption_stimm_icon_colour_R"), mod:get("corruption_stimm_icon_colour_G"),
+                                        mod:get("corruption_stimm_icon_colour_B")
+                                    }
+                                    stimm_widget.style.texture.color = color
+
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+)

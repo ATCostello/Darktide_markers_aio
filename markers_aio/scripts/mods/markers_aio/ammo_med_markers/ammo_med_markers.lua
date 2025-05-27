@@ -128,35 +128,6 @@ mod:hook_safe(
     end
 )
 
-local function pre_unit_destroyed(unit)
-    local world = Unit.world(unit)
-    local position = Unit.local_position(unit, 1)
-
-    local tx, ty, tz = Vector3.to_elements(position)
-    tx = tonumber(string.format("%.2f", tx))
-    ty = tonumber(string.format("%.2f", ty))
-    tz = tonumber(string.format("%.2f", tz))
-    local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
-
-    if med_crate_decals[position_string] and med_crate_decals[position_string] ~= nil then
-        local decal_unit = med_crate_decals[position_string][1]
-        if decal_unit then
-            World.destroy_unit(world, decal_unit)
-            med_crate_decals[position_string] = nil
-        end
-    end
-end
-
-mod:hook_require(
-    "scripts/extension_systems/unit_templates", function(instance)
-        if instance.medical_crate_deployable.pre_unit_destroyed then
-            mod:hook_safe(instance.medical_crate_deployable, "pre_unit_destroyed", pre_unit_destroyed)
-        else
-            instance.medical_crate_deployable.pre_unit_destroyed = pre_unit_destroyed
-        end
-    end
-)
-
 mod.check_players_talents_for_Field_Improvisation = function(self)
     alive_players = Managers.state.player_unit_spawn:alive_players()
 
@@ -172,6 +143,22 @@ end
 
 mod.update_ammo_med_markers = function(self, marker)
     local max_distance = get_max_distance()
+
+    -- remove med proximity circle 
+    for posstr, array in pairs(med_crate_decals) do
+        local unit = array[2]
+        local decal_unit = array[1]
+        local world
+        
+        if not Unit.alive(unit) and Unit.alive(decal_unit) then
+            world = Unit.world(decal_unit)
+        end
+
+        if decal_unit and world then
+            World.destroy_unit(world, decal_unit)
+            med_crate_decals[posstr] = nil
+        end
+    end
 
     if marker and self then
         local unit = marker.unit
