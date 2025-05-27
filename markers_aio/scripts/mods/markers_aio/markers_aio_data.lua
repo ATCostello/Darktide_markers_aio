@@ -263,6 +263,28 @@ return {
                         }
                     }
                 },
+            }, {
+                setting_id = "tainted_skull_markers_settings", type = "group", sub_widgets = {
+                    {
+                        setting_id = "tainted_skull_general_settings", type = "group", sub_widgets = {
+                            {setting_id = "tainted_skull_enable", type = "checkbox", default_value = true},
+
+                            {setting_id = "tainted_skull_keep_on_screen", type = "checkbox", default_value = false},
+                            {setting_id = "tainted_skull_require_line_of_sight", type = "checkbox", default_value = true},
+                            {setting_id = "tainted_skull_max_distance", type = "numeric", default_value = 50, range = {20, 100}},
+                            {setting_id = "tainted_skull_scale", type = "numeric", default_value = 100, range = {50, 150}},
+                            {setting_id = "tainted_skull_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
+                            {setting_id = "tainted_skull_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
+                        }
+                    }, {
+                        setting_id = "tainted_skull_colour", type = "group", sub_widgets = {
+                            {setting_id = "tainted_skull_colour_R", type = "numeric", default_value = 150, range = {0, 255}},
+                            {setting_id = "tainted_skull_colour_G", type = "numeric", default_value = 252, range = {0, 255}},
+                            {setting_id = "tainted_skull_colour_B", type = "numeric", default_value = 0, range = {0, 255}}
+                        }
+                    }
+                },
             }
         }
 
