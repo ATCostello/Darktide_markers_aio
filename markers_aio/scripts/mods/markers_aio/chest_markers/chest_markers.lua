@@ -10,9 +10,6 @@ local ChestExtension = require("scripts/extension_systems/chest/chest_extension"
 
 -- FoundYa Compatibility (Adds relevant marker categories and uses FoundYa distances instead.)
 local FoundYa = get_mod("FoundYa")
-mod.on_all_mods_loaded = function()
-    FoundYa = get_mod("FoundYa") -- grab again incase of load order issues
-end
 
 local get_max_distance = function()
     local max_distance = mod:get("chest_max_distance")

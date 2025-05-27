@@ -12,7 +12,38 @@ local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 local FoundYa = get_mod("FoundYa")
 
 mod.on_all_mods_loaded = function()
+    mod:hook_require(
+        "scripts/extension_systems/unit_templates", function(instance)
+            -- works in live games
+            mod:hook_safe(
+                instance.medical_crate_deployable, "husk_init", function(unit, config, template_context, game_session, game_object_id, owner_id)
+                    mod.add_medkit_marker_and_proximity(nil, unit)
+                end
+            )
+
+            -- works in private games
+            mod:hook_safe(
+                instance.medical_crate_deployable, "local_unit_spawned",
+                function(unit, template_context, game_object_data, side_id, deployable, placed_on_unit, owner_unit_or_nil)
+                    mod.add_medkit_marker_and_proximity(nil, unit)
+                end
+            )
+        end
+    )
+
     FoundYa = get_mod("FoundYa") -- grab again incase of load order issues
+
+    local load_package = function(path, id)
+        if not Managers.package:has_loaded(path) then
+            Managers.package:load(path, id)
+            return
+        end
+    end
+
+    load_package("content/levels/training_grounds/missions/mission_tg_basic_combat_01", "medkit_radius")
+    load_package("packages/ui/views/options_view/options_view", "large_ammo1")
+    load_package("packages/ui/views/inventory_background_view/inventory_background_view", "large_ammo2")
+
 end
 
 local get_max_distance = function()
@@ -39,25 +70,6 @@ local ProximityHeal = require("scripts/extension_systems/proximity/side_relation
 ProximityHeal._cb_world_markers_list_request = function(self, world_markers)
     self._world_markers_list = world_markers
 end
-
-mod:hook_require(
-    "scripts/extension_systems/unit_templates", function(instance)
-        -- works in live games
-        mod:hook_safe(
-            instance.medical_crate_deployable, "husk_init", function(unit, config, template_context, game_session, game_object_id, owner_id)
-                mod.add_medkit_marker_and_proximity(nil, unit)
-            end
-        )
-
-        -- works in private games
-        mod:hook_safe(
-            instance.medical_crate_deployable, "local_unit_spawned",
-            function(unit, template_context, game_object_data, side_id, deployable, placed_on_unit, owner_unit_or_nil)
-                mod.add_medkit_marker_and_proximity(nil, unit)
-            end
-        )
-    end
-)
 
 mod:hook_safe(
     ProximityHeal, "update", function(self, dt, t)
@@ -90,56 +102,65 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
     end
 
     -- add proximity circle to medkits, thanks Raindish! (From NumericUI)
-    if mod:get("display_med_ring") == true then
+    if mod:get("display_med_ring") == true and unit then
+        local package_path = "content/levels/training_grounds/missions/mission_tg_basic_combat_01"
+        if not Managers.package:has_loaded(package_path) then
+            Managers.package:load(package_path, "ammo_med_markers")
+            return
+        end
+        
         local decal_unit_name = "content/levels/training_grounds/fx/decal_aoe_indicator"
         local medical_crate_config = require("scripts/settings/deployables/medical_crate")
 
         local world = Unit.world(unit)
         local position = Unit.local_position(unit, 1)
-        local tx, ty, tz = Vector3.to_elements(position)
-        tx = tonumber(string.format("%.2f", tx))
-        ty = tonumber(string.format("%.2f", ty))
-        tz = tonumber(string.format("%.2f", tz))
-        local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
+        if world and position then
+            local tx, ty, tz = Vector3.to_elements(position)
+            tx = tonumber(string.format("%.2f", tx))
+            ty = tonumber(string.format("%.2f", ty))
+            tz = tonumber(string.format("%.2f", tz))
+            local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
 
-        if not med_crate_decals[position_string] or med_crate_decals[position_string] == nil then
-            -- Create decal unit
-            local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
+            if not med_crate_decals[position_string] or med_crate_decals[position_string] == nil then
+                -- Create decal unit
+                local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
+                if decal_unit then
+                    -- Set size of unit
+                    local diameter = medical_crate_config.proximity_radius * 2 + 1.5
+                    Unit.set_local_scale(decal_unit, 1, Vector3(diameter, diameter, 1))
 
-            -- Set size of unit
-            local diameter = medical_crate_config.proximity_radius * 2 + 1.5
-            Unit.set_local_scale(decal_unit, 1, Vector3(diameter, diameter, 1))
+                    -- Set color of unit
+                    local material_value = Quaternion.identity()
 
-            -- Set color of unit
-            local material_value = Quaternion.identity()
+                    local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
-            local field_improv_active = mod.check_players_talents_for_Field_Improvisation(self)
+                    if field_improv_active and mod:get("display_field_improv_colour") == true then
+                        Quaternion.set_xyzw(material_value, 1, 0.1, 1, 0.5)
+                    else
+                        Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
+                    end
+                    Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
 
-            if field_improv_active and mod:get("display_field_improv_colour") == true then
-                Quaternion.set_xyzw(material_value, 1, 0.1, 1, 0.5)
-            else
-                Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
+                    -- Set low opacity
+                    Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.06)
+                    med_crate_decals[position_string] = {decal_unit, unit}
+                end
             end
-            Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
-
-            -- Set low opacity
-            Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.06)
-            med_crate_decals[position_string] = {decal_unit, unit}
         end
-
-        dbg_med_crate_decals = med_crate_decals
-        dbg_position_string = position_string
-
     end
 end
 
-mod.check_players_talents_for_Field_Improvisation = function(self)
+mod.check_players_talents_for_Field_Improvisation = function()
     alive_players = Managers.state.player_unit_spawn:alive_players()
 
-    for _, player in pairs(alive_players) do
-        for talent, boolean in pairs(player._profile.talents) do
-            if talent == "veteran_better_deployables" and boolean == 1 then
-                return true
+    if alive_players then
+        for _, player in pairs(alive_players) do
+            if player and player._profile and player._profile.talents then
+                for talent, boolean in pairs(player._profile.talents) do
+                    if talent == "veteran_better_deployables" and boolean == 1 then
+                        return true
+                    end
+                end
             end
         end
     end
@@ -189,7 +210,7 @@ mod.update_ammo_med_markers = function(self, marker)
             marker.template.screen_clamp = mod:get("ammo_med_keep_on_screen")
             marker.block_screen_clamp = false
 
-            --marker.widget.content.is_clamped = false
+            -- marker.widget.content.is_clamped = false
 
             -- set scale
             local scale_settings = {}
@@ -230,7 +251,7 @@ mod.update_ammo_med_markers = function(self, marker)
                 end
             end
 
-            local field_improv_active = mod.check_players_talents_for_Field_Improvisation(self)
+            local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
             if mod:get("display_ammo_charges") == true then
                 if pickup_type == "ammo_cache_deployable" or marker.data and marker.data.type == "ammo_cache_deployable" then
@@ -386,7 +407,7 @@ mod.update_ammo_med_markers = function(self, marker)
 
                 marker.scale = self._get_scale(self, scale_settings, marker.distance) or 1
                 self._apply_scale(self, marker.widget, marker.scale)
-                
+
                 marker.widget.style.background.size[1] = marker.widget.style.background.size[1] * marker.scale
                 marker.widget.style.background.size[2] = marker.widget.style.background.size[2] * marker.scale
 

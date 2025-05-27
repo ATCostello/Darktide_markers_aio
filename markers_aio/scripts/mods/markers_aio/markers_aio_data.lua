@@ -9,7 +9,7 @@ return {
                         setting_id = "ammo_med_general_settings", type = "group", sub_widgets = {
                             {setting_id = "ammo_med_enable", type = "checkbox", default_value = true},
 
-                            {setting_id = "ammo_med_markers_alternate_large_ammo_icon", type = "checkbox", default_value = false},
+                            {setting_id = "ammo_med_markers_alternate_large_ammo_icon", type = "checkbox", default_value = true},
 
                             {setting_id = "ammo_med_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "ammo_med_require_line_of_sight", type = "checkbox", default_value = true},

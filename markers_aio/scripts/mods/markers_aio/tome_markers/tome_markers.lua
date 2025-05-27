@@ -8,9 +8,6 @@ local UIWidget = require("scripts/managers/ui/ui_widget")
 
 -- FoundYa Compatibility (Adds relevant marker categories and uses FoundYa distances instead.)
 local FoundYa = get_mod("FoundYa")
-mod.on_all_mods_loaded = function()
-    FoundYa = get_mod("FoundYa") -- grab again incase of load order issues
-end
 
 local get_max_distance = function()
     local max_distance = mod:get("tome_max_distance")
