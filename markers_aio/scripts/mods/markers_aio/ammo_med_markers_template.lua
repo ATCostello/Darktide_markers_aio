@@ -6,11 +6,11 @@ local template = {}
 
 local max_size_value = 128
 
-local size = {128, 128}
-local ping_size = {128, 128}
-local arrow_size = {128, 128}
-local icon_size = {64, 64}
-local background_size = {128, 128}
+local size = {max_size_value, max_size_value}
+local ping_size = {max_size_value, max_size_value}
+local arrow_size = {max_size_value, max_size_value}
+local icon_size = {max_size_value / 4, max_size_value / 4}
+local background_size = {max_size_value, max_size_value}
 local line_size = {250, 5}
 local bar_size = {210, 10}
 local scale_fraction = 0.75
@@ -18,7 +18,6 @@ local scale_fraction = 0.75
 template.size = size
 template.name = "med_marker"
 template.unit_node = "ui_marker"
-template.min_distance = 0
 template.size = size
 template.unit_node = "ui_interaction_marker"
 template.icon_size = icon_size
@@ -28,8 +27,10 @@ template.check_line_of_sight = mod:get("ammo_med_require_line_of_sight") or fals
 template.screen_clamp = mod:get("ammo_med_keep_on_screen") or false
 
 template.evolve_distance = 1
-template.max_distance = mod:get("ammo_med_max_distance") or 50
-template.data = {}
+template.max_distance = 30
+template.data = {type = "medical_crate_deployable"}
+
+template.scale = 1
 
 template.line_of_sight_speed = 15
 
@@ -45,8 +46,7 @@ template.position_offset = {0, 0, 1}
 template.screen_margins = {down = 0.23148148148148148, left = 0.234375, right = 0.234375, up = 0.23148148148148148}
 
 template.scale_settings = {
-    scale_from = mod:get("ammo_med_min_size") or 0.4, scale_to = mod:get("ammo_med_max_size") or 1, distance_max = 30,
-    distance_min = template.evolve_distance, easing_function = math.easeCubic
+    scale_from = 0.4, scale_to = 1, distance_max = template.max_distance, distance_min = template.evolve_distance, easing_function = math.easeCubic
 }
 
 template.fade_settings = {

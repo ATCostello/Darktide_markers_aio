@@ -56,7 +56,7 @@ local get_max_distance = function()
 
     -- foundya Compatibility
     if FoundYa ~= nil then
-        max_distance = FoundYa:get("max_distance_supply") or mod:get("ammo_med_max_distance")
+        -- max_distance = FoundYa:get("max_distance_supply") or mod:get("ammo_med_max_distance")
     end
 
     if max_distance == nil then
@@ -172,6 +172,17 @@ mod.check_players_talents_for_Field_Improvisation = function()
 
 end
 
+pickup_types = {}
+local function add_to_list_if_not_present(list, value)
+    for _, v in ipairs(list) do
+        if v == value then
+            return false -- Already present, do not add
+        end
+    end
+    table.insert(list, value)
+    return true -- Added successfully
+end
+
 mod.update_ammo_med_markers = function(self, marker)
     local max_distance = get_max_distance()
 
@@ -200,13 +211,18 @@ mod.update_ammo_med_markers = function(self, marker)
 
         local pickup_type = mod.get_marker_pickup_type(marker)
 
+        if pickup_type then
+        add_to_list_if_not_present(pickup_types, pickup_type)
+        end
+
         if pickup_type and pickup_type == "small_clip" or pickup_type and pickup_type == "large_clip" or pickup_type and pickup_type ==
             "small_grenade" or pickup_type and pickup_type == "ammo_cache_pocketable" or pickup_type and pickup_type == "medical_crate_pocketable" or
             pickup_type and pickup_type == "medical_crate_deployable" or pickup_type and pickup_type == "ammo_cache_deployable" or marker.type ==
             MarkerTemplate.name or marker.data and marker.data.type == "small_clip" or marker.data and marker.data.type == "large_clip" or marker.data and
             marker.data.type == "small_grenade" or marker.data and marker.data.type == "ammo_cache_pocketable" or marker.data and marker.data.type ==
             "medical_crate_pocketable" or marker.data and marker.data.type == "medical_crate_deployable" or marker.data and marker.data.type ==
-            "ammo_cache_deployable" or marker.data and marker.data._active_interaction_type == "health_station" or pickup_type == "battery_01_luggable" then
+            "ammo_cache_deployable" or marker.data and marker.data._active_interaction_type == "health_station"            
+            then
 
             marker.markers_aio_type = "ammo_med"
 
@@ -215,7 +231,7 @@ mod.update_ammo_med_markers = function(self, marker)
             marker.draw = false
 
             marker.widget.style.icon.color = {255, 255, 255, 242, 0}
-            marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
+            marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
 
             marker.template.screen_clamp = mod:get("ammo_med_keep_on_screen")
             marker.block_screen_clamp = false
@@ -237,22 +253,6 @@ mod.update_ammo_med_markers = function(self, marker)
             marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 8
 
             local med_crate_pos = POSITION_LOOKUP[marker.unit]
-
-            if pickup_type == "battery_01_luggable" then
-                marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_alert"
-                marker.widget.style.marker_text.font_size = 32
-                marker.widget.style.icon.color = {255,0,255,200}
-            end
-
-            if mod:get("display_med_charges") == true then
-                if mod.medical_crate_charges[tostring(med_crate_pos)] ~= nil then
-                    marker.widget.content.marker_text = mod.medical_crate_charges[tostring(med_crate_pos)]
-                    marker.widget.style.icon.color = {
-                        100, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")
-                    }
-                    marker.widget.style.marker_text.font_size = 14
-                end
-            end
 
             if marker.data and marker.data._active_interaction_type == "health_station" then
                 local health_station_extension = ScriptUnit.fetch_component_extension(unit, "health_station_system")
@@ -324,11 +324,11 @@ mod.update_ammo_med_markers = function(self, marker)
             end
 
             if pickup_type == "small_clip" or marker.data and marker.data.type == "small_clip" then
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("ammo_small_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("ammo_small_border_colour"))
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/ammunition"
                 marker.widget.style.icon.color = {255, mod:get("ammo_small_colour_R"), mod:get("ammo_small_colour_G"), mod:get("ammo_small_colour_B")}
             elseif pickup_type == "large_clip" or marker.data and marker.data.type == "large_clip" then
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("ammo_large_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("ammo_large_border_colour"))
                 if mod:get("ammo_med_markers_alternate_large_ammo_icon") == true then
                     marker.widget.content.icon = "content/ui/materials/icons/presets/preset_16"
                 else
@@ -336,11 +336,11 @@ mod.update_ammo_med_markers = function(self, marker)
                 end
                 marker.widget.style.icon.color = {255, mod:get("ammo_large_colour_R"), mod:get("ammo_large_colour_G"), mod:get("ammo_large_colour_B")}
             elseif pickup_type == "small_grenade" or marker.data and marker.data.type == "small_grenade" then
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("grenade_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("grenade_border_colour"))
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/grenade"
                 marker.widget.style.icon.color = {255, mod:get("grenade_colour_R"), mod:get("grenade_colour_G"), mod:get("grenade_colour_B")}
             elseif pickup_type == "ammo_cache_pocketable" or marker.data and marker.data.type == "ammo_cache_pocketable" then
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("ammo_crate_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("ammo_crate_border_colour"))
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_ammo"
                 marker.widget.style.icon.color = {255, mod:get("ammo_crate_colour_R"), mod:get("ammo_crate_colour_G"), mod:get("ammo_crate_colour_B")}
 
@@ -361,7 +361,7 @@ mod.update_ammo_med_markers = function(self, marker)
                 marker.widget.style.field_improv.offset[1] = 35 * marker.scale
             elseif pickup_type == "ammo_cache_deployable" or marker.data and marker.data.type == "ammo_cache_deployable" then
 
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("ammo_crate_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("ammo_crate_border_colour"))
 
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_ammo"
 
@@ -381,7 +381,7 @@ mod.update_ammo_med_markers = function(self, marker)
 
                 marker.widget.style.field_improv.offset[1] = 35 * marker.scale
             elseif pickup_type == "medical_crate_pocketable" or marker.data and marker.data.type == "medical_crate_pocketable" then
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("med_crate_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("med_crate_border_colour"))
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
                 marker.widget.style.icon.color = {255, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")}
 
@@ -402,7 +402,7 @@ mod.update_ammo_med_markers = function(self, marker)
                 marker.widget.style.field_improv.offset[1] = 35 * marker.scale
             elseif pickup_type == "medical_crate_deployable" or marker.type == MarkerTemplate.name or marker.data and marker.data.type ==
                 "medical_crate_deployable" then
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("med_crate_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("med_crate_border_colour"))
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
 
                 if field_improv_active then
@@ -419,8 +419,8 @@ mod.update_ammo_med_markers = function(self, marker)
                 marker.widget.style.background.size[1] = marker.widget.style.background.size[1] * marker.scale
                 marker.widget.style.background.size[2] = marker.widget.style.background.size[2] * marker.scale
 
-                marker.widget.style.icon.size[1] = marker.widget.style.icon.size[1] * marker.scale
-                marker.widget.style.icon.size[2] = marker.widget.style.icon.size[2] * marker.scale
+                marker.widget.style.icon.size[1] = 48
+                marker.widget.style.icon.size[2] = 48
 
                 marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
                 marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
@@ -430,7 +430,33 @@ mod.update_ammo_med_markers = function(self, marker)
                 marker.widget.style.ring.size[1] = marker.widget.style.ring.size[1] * marker.scale
                 marker.widget.style.ring.size[2] = marker.widget.style.ring.size[2] * marker.scale
 
-                marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1] / 3
+                -- marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1] / 3
+
+            end
+
+        end
+
+        if mod:get("display_med_charges") == true then
+            local charges = mod.get_proximityheal_medcrate_charges(unit)
+
+            if charges then
+                if charges == math.huge then
+                    -- infinite
+                else
+                    -- Show charges (healing left)
+                    local percentage = (charges / 500) * 100
+
+                    marker.widget.content.marker_text = tostring(string.format("%.0f", percentage)) .. "%"
+
+                    if not marker.data then
+                        marker.data = {}
+                    end
+                    marker.data.type = "medical_crate_deployable"
+                    marker.widget.style.icon.color = {
+                        100, mod:get("med_crate_colour_R"), mod:get("med_crate_colour_G"), mod:get("med_crate_colour_B")
+                    }
+                    marker.widget.style.marker_text.font_size = 14
+                end
 
             end
 
@@ -486,3 +512,46 @@ mod:hook(
         return func(self, name, definition)
     end
 )
+
+mod.get_proximityheal_medcrate_charges = function(unit)
+    -- Try extension first
+    local proximity_extension = ScriptUnit.has_extension(unit, "proximity_system")
+    if proximity_extension and proximity_extension._relation_data then
+        for _, data in pairs(proximity_extension._relation_data) do
+            if data.logic then
+                for _, logic in pairs(data.logic) do
+                    if logic and logic._heal_reserve ~= nil and logic._amount_of_damage_healed ~= nil then
+                        if logic._heal_reserve then
+                            local remaining = logic._heal_reserve - logic._amount_of_damage_healed
+                            return math.max(0, remaining)
+                        else
+                            return math.huge
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- Fallback: Try to get from networked fields
+    local game_session = Managers.state.game_session and Managers.state.game_session:game_session()
+    local game_object_id = Managers.state.unit_spawner and Managers.state.unit_spawner:game_object_id(unit)
+    if game_session and game_object_id then
+        if GameSession.has_game_object_field(game_session, game_object_id, "heal_reserve") and
+            GameSession.has_game_object_field(game_session, game_object_id, "amount_of_damage_healed") then
+
+                local heal_reserve = GameSession.game_object_field(game_session, game_object_id, "heal_reserve")
+            local amount_healed = GameSession.game_object_field(game_session, game_object_id, "amount_of_damage_healed")
+            if heal_reserve and amount_healed then
+                return math.max(0, heal_reserve - amount_healed)
+            end
+            -- Or, if there's a "charges" field:
+            local charges = GameSession.game_object_field(game_session, game_object_id, "charges")
+            if charges then
+                return charges
+            end
+        end
+    end
+
+    return nil
+end

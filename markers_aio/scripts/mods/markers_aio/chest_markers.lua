@@ -16,7 +16,7 @@ local get_max_distance = function()
 
     -- foundya Compatibility
     if FoundYa ~= nil then
-        max_distance = FoundYa:get("max_distance_supply") or mod:get("chest_max_distance") or 30
+        -- max_distance = FoundYa:get("max_distance_supply") or mod:get("chest_max_distance") or 30
     end
 
     if max_distance == nil then
@@ -212,10 +212,10 @@ mod.update_chest_markers = function(self, marker)
 
             marker.markers_aio_type = "chest"
 
-            marker.widget.style.ring.color = mod.lookup_border_color(mod:get("chest_border_colour"))
+            marker.widget.style.ring.color = mod.lookup_colour(mod:get("chest_border_colour"))
 
             marker.widget.style.icon.color = {255, 95, 158, 160}
-            marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
+            marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
 
             marker.template.screen_clamp = mod:get("chest_keep_on_screen")
             marker.block_screen_clamp = false

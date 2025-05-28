@@ -19,7 +19,7 @@ local get_max_distance = function()
 
     -- foundya Compatibility
     if FoundYa ~= nil then
-        max_distance = FoundYa:get("max_distance_penance") or mod:get("heretical_idol_max_distance") or 30
+       -- max_distance = FoundYa:get("max_distance_penance") or mod:get("heretical_idol_max_distance") or 30
     end
 
     if max_distance == nil then
@@ -190,15 +190,10 @@ mod.update_marker_icon = function(self, marker)
 
             marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
             marker.widget.style.icon.color = {255, mod:get("icon_colour_R"), mod:get("icon_colour_G"), mod:get("icon_colour_B")}
-            marker.widget.style.ring.color = mod.lookup_border_color(mod:get("idol_border_colour"))
-            marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
+            marker.widget.style.ring.color = mod.lookup_colour(mod:get("idol_border_colour"))
+            marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
             marker.template.screen_clamp = mod:get("heretical_idol_keep_on_screen")
             marker.block_screen_clamp = false
-
-            -- foundya Compatibility
-            if FoundYa ~= nil then
-                marker.__foundya_marker_category = "penance"
-            end
 
             local max_spawn_distance_sq = max_distance * max_distance
             HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq

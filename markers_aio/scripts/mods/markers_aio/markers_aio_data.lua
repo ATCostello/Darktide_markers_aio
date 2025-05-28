@@ -1,15 +1,39 @@
 local mod = get_mod("markers_aio")
 
+local lookup_border_color = function(colour_string)
+    local border_colours = {["Gold"] = {255, 232, 188, 109}, ["Silver"] = {255, 187, 198, 201}, ["Steel"] = {255, 161, 166, 169}}
+    return border_colours[colour_string]
+end
+
+local apply_color_to_text = function(text, r, g, b)
+    return "{#color(" .. r .. "," .. g .. "," .. b .. ")}" .. text .. "{#reset()}"
+end
+
+local Gold = lookup_border_color("Gold")
+local Silver = lookup_border_color("Silver")
+local Steel = lookup_border_color("Steel")
+
 local border_colours = {
-    {text = "Gold", value = "Gold" },
-    {text = "Silver", value = "Silver" },
-    {text = "Steel", value = "Steel" }
+    {text = apply_color_to_text(mod:localize("Gold"), Gold[2], Gold[3], Gold[4]) , value = "Gold" },
+    {text = apply_color_to_text(mod:localize("Silver"), Silver[2], Silver[3], Silver[4]), value = "Silver" },
+    {text = apply_color_to_text(mod:localize("Steel"), Steel[2], Steel[3], Steel[4]), value = "Steel" }
 }
 
 local chest_icons = {
     {text = "Default", value = "content/ui/materials/hud/interactions/icons/default"},
     {text = "Video", value = "content/ui/materials/icons/system/settings/category_video"},
     {text = "Loot", value = "content/ui/materials/icons/generic/loot"}
+}
+
+local luggable_icons = {
+    {text = "Exclamation", value = "content/ui/materials/hud/interactions/icons/environment_alert"},
+    {text = "Hands", value = "content/ui/materials/hud/communication_wheel/icons/thanks"},
+    {text = "Fist", value =  "content/ui/materials/icons/presets/preset_18"}
+}
+
+local background_colours = {
+    {text = "Black", value = "Black"},
+        {text = "Terminal", value = "Terminal"},
 }
 
 return {
@@ -19,6 +43,8 @@ return {
                 setting_id = "aio_settings", type = "group", sub_widgets = {
                     {setting_id = "los_fade_enable", type = "checkbox", default_value = true},
                     {setting_id = "los_opacity", type = "numeric", default_value = 50, range = {0, 100}},
+                    {setting_id = "marker_background_colour", type = "dropdown", options = background_colours, default_value = "Black"},
+
                 }
             },
             {
@@ -93,7 +119,7 @@ return {
                         setting_id = "chest_general_settings", type = "group", sub_widgets = {
                             {setting_id = "chest_enable", type = "checkbox", default_value = true},
                             --{setting_id = "chest_alternative_icon", type = "checkbox", default_value = false},
-                            {setting_id = "chest_icon", type = "dropdown", options = chest_icons, default_value = "content/ui/materials/hud/interactions/icons/default"},
+                            {setting_id = "chest_icon", type = "dropdown", options = chest_icons, default_value = "content/ui/materials/icons/system/settings/category_video"},
 
                             {setting_id = "chest_keep_on_screen", type = "checkbox", default_value = false},
                             {setting_id = "chest_require_line_of_sight", type = "checkbox", default_value = true},
@@ -282,6 +308,31 @@ return {
                             {setting_id = "tainted_skull_colour_R", type = "numeric", default_value = 150, range = {0, 255}},
                             {setting_id = "tainted_skull_colour_G", type = "numeric", default_value = 200, range = {0, 255}},
                             {setting_id = "tainted_skull_colour_B", type = "numeric", default_value = 0, range = {0, 255}}
+                        }
+                    }
+                },
+            }, {
+                setting_id = "luggable_markers_settings", type = "group", sub_widgets = {
+                    {
+                        setting_id = "luggable_general_settings", type = "group", sub_widgets = {
+                            {setting_id = "luggable_enable", type = "checkbox", default_value = true},
+
+                            {setting_id = "luggable_keep_on_screen", type = "checkbox", default_value = false},
+                            {setting_id = "luggable_require_line_of_sight", type = "checkbox", default_value = false},
+                            {setting_id = "luggable_icon", type = "dropdown", options = luggable_icons, default_value = "content/ui/materials/hud/interactions/icons/environment_alert"},
+
+                            {setting_id = "luggable_max_distance", type = "numeric", default_value = 50, range = {20, 100}},
+                            {setting_id = "luggable_scale", type = "numeric", default_value = 100, range = {50, 150}},
+                            {setting_id = "luggable_alpha", type = "numeric", default_value = 1, range = {0.1, 1}, decimals_number = 2},
+                            {setting_id = "luggable_border_colour", type = "dropdown", options = border_colours, default_value = "Gold"},
+
+
+                        }
+                    }, {
+                        setting_id = "luggable_colour", type = "group", sub_widgets = {
+                            {setting_id = "luggable_colour_R", type = "numeric", default_value = 0, range = {0, 255}},
+                            {setting_id = "luggable_colour_G", type = "numeric", default_value = 240, range = {0, 255}},
+                            {setting_id = "luggable_colour_B", type = "numeric", default_value = 255, range = {0, 255}}
                         }
                     }
                 },

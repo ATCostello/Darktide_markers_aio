@@ -27,7 +27,7 @@ mod.update_tainted_skull_markers = function(self, marker)
 
                     marker.markers_aio_type = "tainted_skull"
 
-                    marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
+                    marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
                     marker.template.check_line_of_sight = mod:get("tainted_skull_require_line_of_sight")
 
                     marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
@@ -36,7 +36,7 @@ mod.update_tainted_skull_markers = function(self, marker)
 
                     marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
 
-                    marker.widget.style.ring.color = mod.lookup_border_color(mod:get("tainted_skull_border_colour"))
+                    marker.widget.style.ring.color = mod.lookup_colour(mod:get("tainted_skull_border_colour"))
                     marker.widget.style.icon.color = {
                         255, mod:get("tainted_skull_colour_R"), mod:get("tainted_skull_colour_G"), mod:get("tainted_skull_colour_B")
                     }
@@ -52,7 +52,7 @@ mod.update_tainted_skull_markers = function(self, marker)
 
             marker.markers_aio_type = "tainted_skull"
 
-            marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
+            marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
             marker.template.check_line_of_sight = false
 
             marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
@@ -61,7 +61,7 @@ mod.update_tainted_skull_markers = function(self, marker)
 
             marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
 
-            marker.widget.style.ring.color = mod.lookup_border_color(mod:get("tainted_skull_border_colour"))
+            marker.widget.style.ring.color = mod.lookup_colour(mod:get("tainted_skull_border_colour"))
             marker.widget.style.icon.color = {
                 255, mod:get("tainted_skull_colour_R"), mod:get("tainted_skull_colour_G"), mod:get("tainted_skull_colour_B")
             }

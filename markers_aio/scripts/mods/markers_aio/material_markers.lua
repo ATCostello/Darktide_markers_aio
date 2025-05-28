@@ -14,7 +14,7 @@ local get_max_distance = function()
 
     -- foundya Compatibility
     if FoundYa ~= nil then
-        max_distance = FoundYa:get("max_distance_material") or mod:get("material_max_distance") or 30
+        -- max_distance = FoundYa:get("max_distance_material") or mod:get("material_max_distance") or 30
     end
 
     if max_distance == nil then
@@ -45,13 +45,13 @@ mod.update_material_markers = function(self, marker)
             -- Adjust colour or outer rim depending on if small or large
             if pickup_type == "small_metal" or pickup_type == "small_platinum" or marker.data and marker.data.type == "small_metal" or marker.data and
                 marker.data.type == "small_platinum" then
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("material_small_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("material_small_border_colour"))
             else
-                marker.widget.style.ring.color = mod.lookup_border_color(mod:get("material_large_border_colour"))
+                marker.widget.style.ring.color = mod.lookup_colour(mod:get("material_large_border_colour"))
             end
 
             marker.widget.style.icon.color = {255, 95, 158, 160}
-            marker.widget.style.background.color = Color.citadel_abaddon_black(nil, true)
+            marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
             marker.template.screen_clamp = mod:get("material_keep_on_screen")
             marker.block_screen_clamp = false
 

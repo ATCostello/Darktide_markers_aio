@@ -8,6 +8,9 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/stimm_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/tome_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/tainted_device_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/tainted_skull_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/luggable_markers")
+
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
 
 local HereticalIdolTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers_template")
 local MedMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers_template")
@@ -50,9 +53,22 @@ mod.get_marker_pickup_type = function(marker)
     return Unit.get_data(marker.unit, "pickup_type")
 end
 
-mod.lookup_border_color = function(colour_string)
-    local border_colours = {["Gold"] = {255, 232, 188, 109}, ["Silver"] = {255, 187, 198, 201}, ["Steel"] = {255, 161, 166, 169}}
-    return border_colours[colour_string]
+mod.lookup_colour = function(colour_string)
+
+    if colour_string then
+        local colours = {
+            ["Gold"] = {255, 232, 188, 109}, 
+            ["Silver"] = {255, 187, 198, 201}, 
+            ["Steel"] = {255, 161, 166, 169}, 
+            ["Black"] = {255, 35, 31, 32},
+            ["Terminal"] = Color.terminal_background(200, true),
+            ["Brass"] = {255, 226, 199, 126}
+        }
+        return colours[colour_string]
+    else
+        return {255, 161, 166, 169}
+    end
+
 end
 
 HudElementWorldMarkers._get_scale = function(self, scale_settings, distance)
@@ -404,6 +420,8 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
             self:_raycast_markers(temp_marker_raycast_queue)
         end
 
+        dbg_markers = markers_by_type
+
         for marker_type, markers in pairs(markers_by_type) do
             for i = 1, #markers do
                 local marker = markers[i]
@@ -437,7 +455,9 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
                         end
                         if mod:get("tainted_skull_enable") then
                             mod.update_tainted_skull_markers(self, marker)
-
+                        end
+                        if mod:get("luggable_enable") then
+                            mod.update_luggable_markers(self, marker)
                         end
 
                         mod.fade_icon_not_in_los(marker, ui_renderer)
@@ -545,12 +565,19 @@ end
 
 local do_draw = function(marker)
     marker.draw = true
-    -- marker.widget.visible = true
 end
 
 local dont_draw = function(marker)
-    marker.draw = false
-    -- marker.widget.visible = false
+
+    if marker then
+
+        -- if the marker is tagged, always show.
+        if marker.widget and marker.widget.content and marker.widget.content and marker.widget.content.tagged == true then
+            do_draw(marker)
+        else
+            marker.draw = false
+        end
+    end
 end
 
 -- Adjust whether markers are shown behind objects or not, depending on which marker type and which settings are enabled.
@@ -594,28 +621,91 @@ end
 mod.adjust_scale = function(self, marker, ui_renderer)
     marker.scale_original = marker.scale
 
-    if marker.markers_aio_type then
-        local widget = marker.widget
-        local content = widget.content
-        local distance = content.distance
-        local template = marker.template
-        local scale_settings = template.scale_settings
-        local fade_settings = template.fade_settings
+    if not marker.markers_aio_type then
+        return
+    end
 
-        if scale_settings then
-            local scale = 100
-            if mod:get(marker.markers_aio_type .. "_scale") then
-                scale = mod:get(marker.markers_aio_type .. "_scale") / 100
+    local widget = marker.widget
+    local content = widget.content
+    local distance = content.distance
+    local template = marker.template
+    local scale_settings = template.scale_settings
+
+    if not scale_settings then
+        return
+    end
+
+    local scale = 1
+    local scale_key = marker.markers_aio_type .. "_scale"
+    local user_scale = mod:get(scale_key)
+    if user_scale then
+        scale = user_scale / 100
+    end
+
+    marker.scale = self:_get_scale(scale_settings, distance)
+    local new_scale = marker.ignore_scale and 1 or marker.scale * scale
+    marker.scale = new_scale
+
+    self:_apply_scale(widget, new_scale)
+
+    if marker.data and marker.data.type == "medical_crate_deployable" then
+        local style = widget.style
+        local lerp_multiplier = 1
+
+        for _, pass_style in pairs(style) do
+            local current_size = pass_style.area_size or pass_style.texture_size or pass_style.size
+            if current_size then
+                local default_size = 96
+
+                if _ == "background" or _ == "ping" or _ == "ring" then
+                    default_size = 96
+                else
+                    default_size = 48
+                end
+
+                current_size[1] = math.lerp(current_size[1], default_size * new_scale, lerp_multiplier)
+                current_size[2] = math.lerp(current_size[2], default_size * new_scale, lerp_multiplier)
             end
 
-            marker.scale = self:_get_scale(scale_settings, distance)
+            if pass_style.font_size then
+                local font_size = math.lerp(pass_style.font_size, 16 * new_scale, lerp_multiplier)
+                marker.widget.style.marker_text.font_size = font_size
+            end
+        end
+    end
+end
 
-            local new_scale = marker.ignore_scale and 1 or marker.scale * scale
+HudElementWorldMarkers._apply_scale = function(self, widget, scale)
+    local style = widget.style
+    local lerp_multiplier = 0.2
 
-            marker.scale = new_scale
+    for _, pass_style in pairs(style) do
 
-            self:_apply_scale(widget, new_scale)
+        local default_size = pass_style.default_size
 
+        if default_size then
+            local current_size = pass_style.area_size or pass_style.texture_size or pass_style.size
+
+            current_size[1] = math.lerp(current_size[1], default_size[1] * scale, lerp_multiplier)
+            current_size[2] = math.lerp(current_size[2], default_size[2] * scale, lerp_multiplier)
+        end
+
+        local default_offset = pass_style.default_offset
+
+        if default_offset then
+            local offset = pass_style.offset
+
+            offset[1] = math.lerp(offset[1], default_offset[1] * scale, lerp_multiplier)
+            offset[2] = math.lerp(offset[2], default_offset[2] * scale, lerp_multiplier)
+        end
+
+        local default_pivot = pass_style.default_pivot
+
+        if default_pivot then
+            local pivot = pass_style.pivot
+
+            pivot[1] = math.lerp(pivot[1], default_pivot[1] * scale, lerp_multiplier)
+            pivot[2] = math.lerp(pivot[2], default_pivot[2] * scale, lerp_multiplier)
         end
     end
 end
@@ -655,5 +745,3 @@ HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit
         return false
     end
 end
-
---honk
