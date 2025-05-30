@@ -24,6 +24,7 @@ local get_max_distance = function()
     return max_distance
 end
 
+
 mod.update_material_markers = function(self, marker)
     local max_distance = get_max_distance()
 
@@ -32,10 +33,7 @@ mod.update_material_markers = function(self, marker)
 
         local pickup_type = mod.get_marker_pickup_type(marker)
 
-        if pickup_type and pickup_type == "small_metal" or pickup_type and pickup_type == "large_metal" or pickup_type and pickup_type ==
-            "small_platinum" or pickup_type and pickup_type == "large_platinum" or marker.data and marker.data.type == "small_metal" or marker.data and
-            marker.data.type == "large_metal" or marker.data and marker.data.type == "small_platinum" or marker.data and marker.data.type ==
-            "large_platinum" then
+        if pickup_type and pickup_type == "small_metal" or pickup_type and pickup_type == "large_metal" or pickup_type and pickup_type == "small_platinum" or pickup_type and pickup_type == "large_platinum" or marker.data and marker.data.type == "small_metal" or marker.data and marker.data.type == "large_metal" or marker.data and marker.data.type == "small_platinum" or marker.data and marker.data.type == "large_platinum" then
 
             marker.markers_aio_type = "material"
             -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
@@ -43,14 +41,18 @@ mod.update_material_markers = function(self, marker)
             marker.draw = false
 
             -- Adjust colour or outer rim depending on if small or large
-            if pickup_type == "small_metal" or pickup_type == "small_platinum" or marker.data and marker.data.type == "small_metal" or marker.data and
-                marker.data.type == "small_platinum" then
+            if pickup_type == "small_metal" or pickup_type == "small_platinum" or marker.data and marker.data.type == "small_metal" or marker.data and marker.data.type == "small_platinum" then
                 marker.widget.style.ring.color = mod.lookup_colour(mod:get("material_small_border_colour"))
             else
                 marker.widget.style.ring.color = mod.lookup_colour(mod:get("material_large_border_colour"))
             end
 
-            marker.widget.style.icon.color = {255, 95, 158, 160}
+            marker.widget.style.icon.color = {
+                255,
+                95,
+                158,
+                160
+            }
             marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
             marker.template.screen_clamp = mod:get("material_keep_on_screen")
             marker.block_screen_clamp = false
@@ -79,7 +81,10 @@ mod.update_material_markers = function(self, marker)
             if pickup_type == "large_metal" or marker.data and marker.data.type == "large_metal" then
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
                 marker.widget.style.icon.color = {
-                    255, mod:get("plasteel_icon_colour_R"), mod:get("plasteel_icon_colour_G"), mod:get("plasteel_icon_colour_B")
+                    255,
+                    mod:get("plasteel_icon_colour_R"),
+                    mod:get("plasteel_icon_colour_G"),
+                    mod:get("plasteel_icon_colour_B")
                 }
                 if mod:get("toggle_large_plasteel") == false then
                     marker.widget.visible = false
@@ -91,7 +96,10 @@ mod.update_material_markers = function(self, marker)
             elseif pickup_type == "small_metal" or marker.data and marker.data.type == "small_metal" then
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
                 marker.widget.style.icon.color = {
-                    255, mod:get("plasteel_icon_colour_R"), mod:get("plasteel_icon_colour_G"), mod:get("plasteel_icon_colour_B")
+                    255,
+                    mod:get("plasteel_icon_colour_R"),
+                    mod:get("plasteel_icon_colour_G"),
+                    mod:get("plasteel_icon_colour_B")
                 }
                 if mod:get("toggle_small_plasteel") == false then
                     marker.widget.visible = false
@@ -104,7 +112,10 @@ mod.update_material_markers = function(self, marker)
             elseif pickup_type == "small_platinum" or marker.data and marker.data.type == "small_platinum" then
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
                 marker.widget.style.icon.color = {
-                    255, mod:get("diamantine_icon_colour_R"), mod:get("diamantine_icon_colour_G"), mod:get("diamantine_icon_colour_B")
+                    255,
+                    mod:get("diamantine_icon_colour_R"),
+                    mod:get("diamantine_icon_colour_G"),
+                    mod:get("diamantine_icon_colour_B")
                 }
                 if mod:get("toggle_small_diamantine") == false then
                     marker.widget.visible = false
@@ -116,7 +127,10 @@ mod.update_material_markers = function(self, marker)
             elseif pickup_type == "large_platinum" or marker.data and marker.data.type == "large_platinum" then
                 marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
                 marker.widget.style.icon.color = {
-                    255, mod:get("diamantine_icon_colour_R"), mod:get("diamantine_icon_colour_G"), mod:get("diamantine_icon_colour_B")
+                    255,
+                    mod:get("diamantine_icon_colour_R"),
+                    mod:get("diamantine_icon_colour_G"),
+                    mod:get("diamantine_icon_colour_B")
                 }
                 if mod:get("toggle_large_diamantine") == false then
                     marker.widget.visible = false
@@ -130,3 +144,5 @@ mod.update_material_markers = function(self, marker)
         end
     end
 end
+
+

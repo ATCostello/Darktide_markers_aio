@@ -9,12 +9,14 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/tome_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/tainted_device_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/tainted_skull_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/luggable_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers")
 
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
 
 local HereticalIdolTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers_template")
 local MedMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers_template")
 local ChestMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/chest_markers_template")
+local MartyrsSkullMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers_template")
 
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local UIWidget = require("scripts/managers/ui/ui_widget")
@@ -28,10 +30,14 @@ mod:hook_safe(
         self._marker_templates["nurgle_totem"] = HereticalIdolTemplate
         self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
         self._marker_templates[ChestMarkerTemplate.name] = ChestMarkerTemplate
+        self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
+
         mod.active_chests = {}
         mod.current_heretical_idol_markers = {}
 
     end
+
+
 )
 
 totem_units = {}
@@ -44,6 +50,8 @@ mod:hook_safe(
             table.insert(totem_units, totem_unit)
         end
     end
+
+
 )
 
 mod.get_marker_pickup_type = function(marker)
@@ -53,23 +61,55 @@ mod.get_marker_pickup_type = function(marker)
     return Unit.get_data(marker.unit, "pickup_type")
 end
 
+
 mod.lookup_colour = function(colour_string)
 
     if colour_string then
         local colours = {
-            ["Gold"] = {255, 232, 188, 109}, 
-            ["Silver"] = {255, 187, 198, 201}, 
-            ["Steel"] = {255, 161, 166, 169}, 
-            ["Black"] = {255, 35, 31, 32},
+            ["Gold"] = {
+                255,
+                232,
+                188,
+                109
+            },
+            ["Silver"] = {
+                255,
+                187,
+                198,
+                201
+            },
+            ["Steel"] = {
+                255,
+                161,
+                166,
+                169
+            },
+            ["Black"] = {
+                255,
+                35,
+                31,
+                32
+            },
             ["Terminal"] = Color.terminal_background(200, true),
-            ["Brass"] = {255, 226, 199, 126}
+            ["Brass"] = {
+                255,
+                226,
+                199,
+                126
+            }
         }
         return colours[colour_string]
     else
-        return {255, 161, 166, 169}
+        return {
+            255,
+            161,
+            166,
+            169
+        }
     end
 
 end
+
 
 HudElementWorldMarkers._get_scale = function(self, scale_settings, distance)
 
@@ -91,6 +131,7 @@ HudElementWorldMarkers._get_scale = function(self, scale_settings, distance)
         return 1
     end
 end
+
 
 HudElementWorldMarkers._get_fade = function(self, fade_settings, distance)
     if fade_settings and distance then
@@ -118,6 +159,7 @@ HudElementWorldMarkers._get_fade = function(self, fade_settings, distance)
         return 1
     end
 end
+
 
 local HudElementWorldMarkersSettings = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
 
@@ -191,6 +233,7 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
         end
     end
 end
+
 
 local DEBUG_MARKER = "objective"
 local temp_array_markers_to_remove = {}
@@ -329,16 +372,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
                         if screen_clamp then
                             local clamped_x, clamped_y
 
-                            clamped_x, clamped_y, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down = self:_clamp_to_screen(
-                                                                                                                          x, y, screen_margins,
-                                                                                                                          is_behind, is_under,
-                                                                                                                          marker_position,
-                                                                                                                          camera_position_center,
-                                                                                                                          camera_position_left,
-                                                                                                                          camera_position_right,
-                                                                                                                          camera_position_up,
-                                                                                                                          camera_position_down
-                                                                                                                      )
+                            clamped_x, clamped_y, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down = self:_clamp_to_screen(x, y, screen_margins, is_behind, is_under, marker_position, camera_position_center, camera_position_left, camera_position_right, camera_position_up, camera_position_down)
                             is_clamped = is_clamped_left or is_clamped_right or is_clamped_up or is_clamped_down
                             x = clamped_x
                             y = clamped_y
@@ -459,6 +493,9 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
                         if mod:get("luggable_enable") then
                             mod.update_luggable_markers(self, marker)
                         end
+                        if mod:get("martyrs_skull_enable") then
+                            mod.update_martyrs_skull_markers(self, marker)
+                        end
 
                         mod.fade_icon_not_in_los(marker, ui_renderer)
                         mod.adjust_scale(self, marker, ui_renderer)
@@ -508,6 +545,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
         table.clear(temp_array_markers_to_remove)
     end
 end
+
 
 -- Fade out markers that are behind objects, depending on the set "los_opacity"
 mod.fade_icon_not_in_los = function(marker, ui_renderer)
@@ -563,22 +601,25 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
     end
 end
 
+
 local do_draw = function(marker)
     marker.draw = true
 end
+
 
 local dont_draw = function(marker)
 
     if marker then
 
         -- if the marker is tagged, always show.
-        if marker.widget and marker.widget.content and marker.widget.content and marker.widget.content.tagged == true then
+        if marker.is_inside_frustum and marker.widget and marker.widget.content and marker.widget.content and marker.widget.content.tagged == true then
             do_draw(marker)
         else
             marker.draw = false
         end
     end
 end
+
 
 -- Adjust whether markers are shown behind objects or not, depending on which marker type and which settings are enabled.
 mod.adjust_los_requirement = function(marker)
@@ -616,6 +657,7 @@ mod.adjust_los_requirement = function(marker)
         end
     end
 end
+
 
 -- Adjust the scale of markers, according to their percentage scale setting.
 mod.adjust_scale = function(self, marker, ui_renderer)
@@ -675,6 +717,7 @@ mod.adjust_scale = function(self, marker, ui_renderer)
     end
 end
 
+
 HudElementWorldMarkers._apply_scale = function(self, widget, scale)
     local style = widget.style
     local lerp_multiplier = 0.2
@@ -710,6 +753,7 @@ HudElementWorldMarkers._apply_scale = function(self, widget, scale)
     end
 end
 
+
 -- force hide the markers if the distance is greater than their max. (Helps ensure markers wont be "stuck" on the screen on rare occurances)
 mod.adjust_distance_visibility = function(marker)
     if marker.markers_aio_type then
@@ -719,6 +763,7 @@ mod.adjust_distance_visibility = function(marker)
         end
     end
 end
+
 
 -- override to let you tag any vanilla item marker that you can see.
 HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit, marker, distance)
@@ -745,3 +790,5 @@ HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit
         return false
     end
 end
+
+

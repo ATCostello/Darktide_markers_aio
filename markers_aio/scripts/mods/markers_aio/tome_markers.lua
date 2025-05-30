@@ -14,7 +14,7 @@ local get_max_distance = function()
 
     -- foundya Compatibility
     if FoundYa ~= nil then
-        --max_distance = FoundYa:get("max_distance_book") or mod:get("tome_max_distance") or 30
+        -- max_distance = FoundYa:get("max_distance_book") or mod:get("tome_max_distance") or 30
     end
 
     if max_distance == nil then
@@ -23,6 +23,7 @@ local get_max_distance = function()
 
     return max_distance
 end
+
 
 mod.update_tome_markers = function(self, marker)
     local max_distance = get_max_distance()
@@ -46,7 +47,13 @@ mod.update_tome_markers = function(self, marker)
 
                     marker.widget.style.ring.color = mod.lookup_colour(mod:get("tome_border_colour"))
 
-                    marker.widget.style.icon.color = {255, 255, 255, 242, 0}
+                    marker.widget.style.icon.color = {
+                        255,
+                        255,
+                        255,
+                        242,
+                        0
+                    }
                     marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
 
                     marker.template.screen_clamp = mod:get("tome_keep_on_screen")
@@ -83,9 +90,19 @@ mod.update_tome_markers = function(self, marker)
 
                     -- set colour depending on if grim or scripture
                     if pickup.unit_name == "content/pickups/pocketables/side_mission/grimoire/grimoire_pickup_01" then
-                        marker.widget.style.icon.color = {255, mod:get("grim_colour_R"), mod:get("grim_colour_G"), mod:get("grim_colour_B")}
+                        marker.widget.style.icon.color = {
+                            255,
+                            mod:get("grim_colour_R"),
+                            mod:get("grim_colour_G"),
+                            mod:get("grim_colour_B")
+                        }
                     else
-                        marker.widget.style.icon.color = {255, mod:get("script_colour_R"), mod:get("script_colour_G"), mod:get("script_colour_B")}
+                        marker.widget.style.icon.color = {
+                            255,
+                            mod:get("script_colour_R"),
+                            mod:get("script_colour_G"),
+                            mod:get("script_colour_B")
+                        }
                     end
 
                 end
@@ -93,3 +110,4 @@ mod.update_tome_markers = function(self, marker)
         end
     end
 end
+

@@ -26,9 +26,11 @@ local get_max_distance = function()
     return max_distance
 end
 
+
 HudElementWorldMarkers._get_templates = function(self)
     return self._marker_templates
 end
+
 mod.active_chests = {}
 
 mod.check_if_marker_exists_at_pos = function(pos, marker_list)
@@ -46,6 +48,7 @@ mod.check_if_marker_exists_at_pos = function(pos, marker_list)
     return false
 end
 
+
 mod.remove_chest_markers = function(chest_unit, marker_list)
     for _, marker in pairs(marker_list) do
         -- if Unit.alive(chest_unit) then
@@ -56,6 +59,7 @@ mod.remove_chest_markers = function(chest_unit, marker_list)
     end
     return false
 end
+
 
 mod.get_all_items_in_chest = function(self, chest_unit)
     local unit = chest_unit
@@ -72,6 +76,7 @@ mod.get_all_items_in_chest = function(self, chest_unit)
 
     return chest_items
 end
+
 
 mod.update_chest_markers = function(self, marker)
     local max_distance = get_max_distance()
@@ -214,7 +219,12 @@ mod.update_chest_markers = function(self, marker)
 
             marker.widget.style.ring.color = mod.lookup_colour(mod:get("chest_border_colour"))
 
-            marker.widget.style.icon.color = {255, 95, 158, 160}
+            marker.widget.style.icon.color = {
+                255,
+                95,
+                158,
+                160
+            }
             marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
 
             marker.template.screen_clamp = mod:get("chest_keep_on_screen")
@@ -242,9 +252,15 @@ mod.update_chest_markers = function(self, marker)
                 self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
             end
 
-            marker.widget.style.icon.color = {255, mod:get("chest_icon_colour_R"), mod:get("chest_icon_colour_G"), mod:get("chest_icon_colour_B")}
+            marker.widget.style.icon.color = {
+                255,
+                mod:get("chest_icon_colour_R"),
+                mod:get("chest_icon_colour_G"),
+                mod:get("chest_icon_colour_B")
+            }
             marker.widget.content.icon = mod:get("chest_icon")
         end
 
     end
 end
+

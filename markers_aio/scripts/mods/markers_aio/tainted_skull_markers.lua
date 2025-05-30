@@ -38,7 +38,10 @@ mod.update_tainted_skull_markers = function(self, marker)
 
                     marker.widget.style.ring.color = mod.lookup_colour(mod:get("tainted_skull_border_colour"))
                     marker.widget.style.icon.color = {
-                        255, mod:get("tainted_skull_colour_R"), mod:get("tainted_skull_colour_G"), mod:get("tainted_skull_colour_B")
+                        255,
+                        mod:get("tainted_skull_colour_R"),
+                        mod:get("tainted_skull_colour_G"),
+                        mod:get("tainted_skull_colour_B")
                     }
 
                 end
@@ -63,8 +66,12 @@ mod.update_tainted_skull_markers = function(self, marker)
 
             marker.widget.style.ring.color = mod.lookup_colour(mod:get("tainted_skull_border_colour"))
             marker.widget.style.icon.color = {
-                255, mod:get("tainted_skull_colour_R"), mod:get("tainted_skull_colour_G"), mod:get("tainted_skull_colour_B")
+                255,
+                mod:get("tainted_skull_colour_R"),
+                mod:get("tainted_skull_colour_G"),
+                mod:get("tainted_skull_colour_B")
             }
         end
     end
 end
+
