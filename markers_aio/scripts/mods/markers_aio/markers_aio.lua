@@ -634,6 +634,8 @@ mod.adjust_los_requirement = function(marker)
                 else
                     dont_draw(marker)
                 end
+            elseif marker.raycast_result == false and mod:get(marker.markers_aio_type .. "_keep_on_screen") then
+                do_draw(marker)
             else
                 dont_draw(marker)
             end
@@ -792,3 +794,63 @@ HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit
 end
 
 
+mod.ammo_med_toggle_los = function()
+    mod.toggle_los("ammo_med")
+end
+
+
+mod.chest_toggle_los = function()
+    mod.toggle_los("chest")
+end
+
+
+mod.heretical_idol_toggle_los = function()
+    mod.toggle_los("heretical_idol")
+end
+
+
+mod.material_toggle_los = function()
+    mod.toggle_los("material")
+end
+
+
+mod.stimm_toggle_los = function()
+    mod.toggle_los("stimm")
+end
+
+
+mod.tome_toggle_los = function()
+    mod.toggle_los("tome")
+end
+
+
+mod.tainted_toggle_los = function()
+    mod.toggle_los("tainted")
+end
+
+
+mod.tainted_skull_toggle_los = function()
+    mod.toggle_los("tainted_skull")
+end
+
+
+mod.luggable_toggle_los = function()
+    mod.toggle_los("luggable")
+end
+
+
+mod.martyrs_skull_toggle_los = function()
+    mod.toggle_los("martyrs_skull")
+end
+
+
+mod.toggle_los = function(marker_type)
+
+    if marker_type then
+        if mod:get(marker_type .. "_require_line_of_sight") == false then
+            mod:set(marker_type .. "_require_line_of_sight", true)
+        else
+            mod:set(marker_type .. "_require_line_of_sight", false)
+        end
+    end
+end

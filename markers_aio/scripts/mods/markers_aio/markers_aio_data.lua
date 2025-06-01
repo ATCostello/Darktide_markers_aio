@@ -120,7 +120,6 @@ return {
                         options = background_colours,
                         default_value = "Black"
                     }
-
                 }
             },
             {
@@ -152,6 +151,17 @@ return {
                                 setting_id = "ammo_med_require_line_of_sight",
                                 type = "checkbox",
                                 default_value = true
+                            },
+                            {
+                                setting_id = "ammo_med_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    "n"
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "ammo_med_toggle_los"
                             },
                             {
                                 setting_id = "ammo_med_max_distance",
@@ -451,6 +461,17 @@ return {
                                 default_value = true
                             },
                             {
+                                setting_id = "chest_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    "n"
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "chest_toggle_los"
+                            },
+                            {
                                 setting_id = "chest_max_distance",
                                 type = "numeric",
                                 default_value = 50,
@@ -547,6 +568,17 @@ return {
                                 default_value = false
                             },
                             {
+                                setting_id = "heretical_idol_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    ""
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "heretical_idol_toggle_los"
+                            },
+                            {
                                 setting_id = "heretical_idol_max_distance",
                                 type = "numeric",
                                 default_value = 50,
@@ -641,6 +673,17 @@ return {
                                 setting_id = "material_require_line_of_sight",
                                 type = "checkbox",
                                 default_value = true
+                            },
+                            {
+                                setting_id = "material_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    "n"
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "material_toggle_los"
                             },
                             {
                                 setting_id = "material_max_distance",
@@ -801,6 +844,17 @@ return {
                                 setting_id = "stimm_require_line_of_sight",
                                 type = "checkbox",
                                 default_value = true
+                            },
+                            {
+                                setting_id = "stimm_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    "n"
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "stimm_toggle_los"
                             },
                             {
                                 setting_id = "stimm_max_distance",
@@ -1018,6 +1072,17 @@ return {
                                 default_value = true
                             },
                             {
+                                setting_id = "tome_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    "n"
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "tome_toggle_los"
+                            },
+                            {
                                 setting_id = "tome_max_distance",
                                 type = "numeric",
                                 default_value = 50,
@@ -1147,6 +1212,17 @@ return {
                                 default_value = true
                             },
                             {
+                                setting_id = "tainted_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    ""
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "tainted_toggle_los"
+                            },
+                            {
                                 setting_id = "tainted_max_distance",
                                 type = "numeric",
                                 default_value = 50,
@@ -1243,6 +1319,17 @@ return {
                                 default_value = true
                             },
                             {
+                                setting_id = "tainted_skull_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    ""
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "tainted_skull_toggle_los"
+                            },
+                            {
                                 setting_id = "tainted_skull_max_distance",
                                 type = "numeric",
                                 default_value = 50,
@@ -1337,6 +1424,17 @@ return {
                                 setting_id = "luggable_require_line_of_sight",
                                 type = "checkbox",
                                 default_value = false
+                            },
+                            {
+                                setting_id = "luggable_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    ""
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "luggable_toggle_los"
                             },
                             {
                                 setting_id = "luggable_icon",
@@ -1440,6 +1538,17 @@ return {
                                 setting_id = "martyrs_skull_require_line_of_sight",
                                 type = "checkbox",
                                 default_value = false
+                            },
+                            {
+                                setting_id = "martyrs_skull_toggle_los",
+                                type = "keybind",
+                                default_value = {
+                                    ""
+                                },
+                                keybind_global = true,
+                                keybind_trigger = "pressed",
+                                keybind_type = "function_call",
+                                function_name = "martyrs_skull_toggle_los"
                             },
                             {
                                 setting_id = "martyrs_skull_max_distance",

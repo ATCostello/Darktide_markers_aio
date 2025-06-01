@@ -1512,6 +1512,38 @@ local loc = {
     },
     Terminal = {
         en = "Terminal"
+    },
+
+    -- new toggle LOS settings
+    martyrs_skull_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    ammo_med_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    chest_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    heretical_idol_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    material_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    stimm_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    tome_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    tainted_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    tainted_skull_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
+    },
+    luggable_toggle_los = {
+        en = "Toggle 'Require Line of Sight'"
     }
 }
 
