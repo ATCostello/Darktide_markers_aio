@@ -156,7 +156,7 @@ return {
                                 setting_id = "ammo_med_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    "n"
+                                    
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -464,7 +464,6 @@ return {
                                 setting_id = "chest_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    "n"
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -571,7 +570,6 @@ return {
                                 setting_id = "heretical_idol_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    ""
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -678,7 +676,6 @@ return {
                                 setting_id = "material_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    "n"
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -849,7 +846,6 @@ return {
                                 setting_id = "stimm_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    "n"
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -1075,7 +1071,6 @@ return {
                                 setting_id = "tome_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    "n"
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -1215,7 +1210,6 @@ return {
                                 setting_id = "tainted_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    ""
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -1322,7 +1316,6 @@ return {
                                 setting_id = "tainted_skull_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    ""
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -1429,7 +1422,6 @@ return {
                                 setting_id = "luggable_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    ""
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
@@ -1543,7 +1535,6 @@ return {
                                 setting_id = "martyrs_skull_toggle_los",
                                 type = "keybind",
                                 default_value = {
-                                    ""
                                 },
                                 keybind_global = true,
                                 keybind_trigger = "pressed",
