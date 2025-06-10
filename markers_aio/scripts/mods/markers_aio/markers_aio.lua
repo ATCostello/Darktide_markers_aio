@@ -17,6 +17,7 @@ local HereticalIdolTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_ai
 local MedMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers_template")
 local ChestMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/chest_markers_template")
 local MartyrsSkullMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers_template")
+local MartyrsSkullMarkerGuideTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers_guide_template")
 
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local UIWidget = require("scripts/managers/ui/ui_widget")
@@ -31,12 +32,18 @@ mod:hook_safe(
         self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
         self._marker_templates[ChestMarkerTemplate.name] = ChestMarkerTemplate
         self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
+        self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
 
         mod.active_chests = {}
         mod.current_heretical_idol_markers = {}
-
+        mod.reset_martyrs_skull_guides()
     end
+)
 
+mod:hook_safe(
+    CLASS.MissionObjectiveSystem, "hot_join_sync", function(self, sender, channel)
+        mod.reset_martyrs_skull_guides()
+    end
 
 )
 
@@ -854,3 +861,4 @@ mod.toggle_los = function(marker_type)
         end
     end
 end
+

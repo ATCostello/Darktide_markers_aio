@@ -1402,6 +1402,9 @@ local loc = {
         ["zh-tw"] = "啟用標記",
         ["zh-cn"] = "启用图标"
     },
+    martyrs_skull_guide_enable = {
+        en = "Enable Skull Collection Guide?"
+    },
     martyrs_skull_general_settings = {
         en = "General Settings",
         fr = "Paramètres généraux",
