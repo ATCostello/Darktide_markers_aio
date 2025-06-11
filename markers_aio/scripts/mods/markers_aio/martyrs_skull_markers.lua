@@ -61,8 +61,8 @@ end
 local maryrs_skull_walkthrough_markers = {
     ["cm_habs"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Player 1 = A, Player 2 = B",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -73,9 +73,9 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Input code: 213\nPress middle button"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_habs_A1")
             },
-            {
+            {                                                                                                                                                   
                 ["position"] = {
                     143.583,
                     -157.536,
@@ -84,7 +84,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press left button"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_habs_A2")
             },
             {
                 ["position"] = {
@@ -95,7 +95,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press right button"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_habs_A3")
             },
             {
                 ["position"] = {
@@ -106,7 +106,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A4",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Hold lever for second player to complete B1"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_habs_A4")
             },
             {
                 ["position"] = {
@@ -117,7 +117,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Second player, press button whilst first player holds A4"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_habs_B1")
             },
             {
                 ["position"] = {
@@ -128,15 +128,15 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
 
         }
     },
     ["km_station"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -147,7 +147,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Turn first valve"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_station_1")
             },
             {
                 ["position"] = {
@@ -158,7 +158,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Turn second valve"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_station_2")
             },
             {
                 ["position"] = {
@@ -169,7 +169,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Turn third valve"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_station_3")
             },
             {
                 ["position"] = {
@@ -180,7 +180,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "4",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Turn fourth valve"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_station_4")
             },
             {
                 ["position"] = {
@@ -191,7 +191,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "5",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Turn final valve"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_station_5")
             },
             {
                 ["position"] = {
@@ -202,14 +202,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["lm_rails"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo (Parkour)",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo_parkour"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -220,7 +220,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Follow number sequence"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_rails_1")
             },
             {
                 ["position"] = {
@@ -352,14 +352,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["dm_rise"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Player 1 = A, Player 2 = B",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -370,7 +370,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Grab the power cell"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_A1")
             },
             {
                 ["position"] = {
@@ -381,7 +381,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Insert the power cell"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_A2")
             },
             {
                 ["position"] = {
@@ -392,7 +392,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Player two, enter elevator"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_B1")
             },
             {
                 ["position"] = {
@@ -403,7 +403,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Player one, hold the power switch once player 2 is in the elevator"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_A3")
             },
             {
                 ["position"] = {
@@ -414,7 +414,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Grab the next power cell"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_B2")
             },
             {
                 ["position"] = {
@@ -425,7 +425,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Throw power cell down to player one"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_B3")
             },
             {
                 ["position"] = {
@@ -436,7 +436,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A4",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Player one, insert second power cell"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_A4")
             },
             {
                 ["position"] = {
@@ -447,7 +447,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A5",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Hold the next lever for player two"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_A5")
             },
             {
                 ["position"] = {
@@ -458,7 +458,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B4",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Player two, press the elevator button"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_rise_B4")
             },
             {
                 ["position"] = {
@@ -469,14 +469,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["hm_cartel"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo (Parkour)",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo_parkour"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -487,7 +487,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Follow number sequence"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_hm_cartel_1")
             },
             {
                 ["position"] = {
@@ -608,14 +608,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["km_enforcer"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Player 1 = A, Player 2 = B",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -626,7 +626,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A",
                 ["objective_placed"] = false,
-                ["objective_text"] = "First player, press button to start sequence"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_A")
             },
             {
                 ["position"] = {
@@ -637,7 +637,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Second player, head through this door"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_B")
             },
             {
                 ["position"] = {
@@ -648,7 +648,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press once to open first door"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_A1")
             },
             {
                 ["position"] = {
@@ -659,7 +659,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press once to open second door"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_A2")
             },
             {
                 ["position"] = {
@@ -670,7 +670,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press once to open third door"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_A3")
             },
             {
                 ["position"] = {
@@ -681,7 +681,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press first button to light up corresponding button in control room for player one for the fourth door"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_B1")
             },
             {
                 ["position"] = {
@@ -692,7 +692,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press second button to light up corresponding button in control room for player one for the final door"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_B2")
             },
             {
                 ["position"] = {
@@ -703,7 +703,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A4",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press button that lights up when player two completes B1 or B2"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_A4")
             },
             {
                 ["position"] = {
@@ -714,7 +714,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Open door for other players"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_enforcer_B3")
             },
             {
                 ["position"] = {
@@ -725,14 +725,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["dm_stockpile"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -743,7 +743,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Climb up"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_stockpile_A")
             },
             {
                 ["position"] = {
@@ -754,7 +754,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head to the control panel and try move the platform along the rails infront of you. The default pattern in the following order: \nDOWN, RIGHT, RIGHT, DOWN, LEFT"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_stockpile_B")
             },
             {
                 ["position"] = {
@@ -799,14 +799,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["fm_cargo"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -817,7 +817,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Turn on all showers with the red inquisition symbol quickly."
+                ["objective_text"] = mod:localize("martyrs_skull_objective_fm_cargo_1")
             },
             {
                 ["position"] = {
@@ -862,14 +862,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["dm_forge"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo (Parkour)",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo_parkour"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -880,7 +880,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Follow number sequence"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_forge_1")
             },
             {
                 ["position"] = {
@@ -968,7 +968,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "9",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Destroy all nurgle growths holding the door shut."
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_forge_9")
             },
             {
                 ["position"] = {
@@ -979,7 +979,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "10",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Open door"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_forge_10")
             },
             {
                 ["position"] = {
@@ -990,14 +990,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["lm_cooling"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1008,7 +1008,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Climb up boxes to reach the top"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_cooling_1")
             },
             {
                 ["position"] = {
@@ -1019,7 +1019,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Pick up the key in the body's hand"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_cooling_2")
             },
             {
                 ["position"] = {
@@ -1030,7 +1030,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head back over the bridge and use the key on the locked locker."
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_cooling_3")
             },
             {
                 ["position"] = {
@@ -1041,14 +1041,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["lm_scavenge"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Player 1 = A, Player 2 = B",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1059,7 +1059,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head into room across the bridge"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_scavenge_1")
             },
             {
                 ["position"] = {
@@ -1070,7 +1070,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Player one, climb into the right elevator"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_scavenge_B1")
             },
             {
                 ["position"] = {
@@ -1081,7 +1081,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Player two, climb into the left elevator to send player one upwards"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_scavenge_A1")
             },
             {
                 ["position"] = {
@@ -1092,7 +1092,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Player one, grab the battery cell on the crate, and bring it back down in the elevator"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_scavenge_B2")
             },
             {
                 ["position"] = {
@@ -1103,7 +1103,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "B3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Place the battery cell into the socket on the wall"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_lm_scavenge_B3")
             },
             {
                 ["position"] = {
@@ -1114,14 +1114,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["hm_strain"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1132,7 +1132,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head to control room, and open the door"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_hm_strain_1")
             },
             {
                 ["position"] = {
@@ -1143,7 +1143,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Look above the door for the symbols, remember these"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_hm_strain_2")
             },
             {
                 ["position"] = {
@@ -1154,7 +1154,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "3A",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press the button until you see the right hand symbol from step 2 on the door through the window"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_hm_strain_3A")
             },
             {
                 ["position"] = {
@@ -1165,7 +1165,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "3B",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Press the button until you see the left hand symbol from step 2 on the door through the window"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_hm_strain_3B")
             },
             {
                 ["position"] = {
@@ -1176,7 +1176,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "4",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Once the symbols match, press the final button"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_hm_strain_4")
             },
             {
                 ["position"] = {
@@ -1187,14 +1187,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["dm_propaganda"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1205,7 +1205,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Interact with the dumpster and pick up the 'skull weight' from the ground"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_propaganda_1")
             },
             {
                 ["position"] = {
@@ -1216,7 +1216,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head to the Martyr's Skull door and place the skull weight on the chain"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_dm_propaganda_2")
             },
             {
                 ["position"] = {
@@ -1227,14 +1227,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["fm_resurgence"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1245,7 +1245,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head to control panel, you need to line up the pipes on the wall opposite, using the valves infront of you.\nThe default number of times you will need to turn the valves from left to right are as follows:\nx3,x1,x2,x3"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_fm_resurgence_1")
             },
             {
                 ["position"] = {
@@ -1300,14 +1300,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["hm_complex"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1318,7 +1318,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Remember the two symbols in the bottom right corner on the back of the panel"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_hm_complex_1")
             },
             {
                 ["position"] = {
@@ -1329,7 +1329,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head to the chaos rune circle, and light the candles around the edge that match the two symbols from step 1"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_hm_complex_2")
             },
             {
                 ["position"] = {
@@ -1340,14 +1340,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["cm_archives"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Player 1 = A, Player 2 = B",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1358,7 +1358,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "This puzzle involves player one pulling the levers on the ground, whilst player two completes a parkour puzzle."
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_archives_1")
             },
             {
                 ["position"] = {
@@ -1369,7 +1369,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "AB",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Player one, begin by pulling this lever to bring the chandelier to the ground, player two jump on, and player one pull the lever again to raise player two back up, then follow the 'B' sequence of markers."
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_archives_2")
             },
             {
                 ["position"] = {
@@ -1391,7 +1391,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Raise"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_archives_A1")
             },
             {
                 ["position"] = {
@@ -1435,7 +1435,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Lower then raise"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_archives_A2")
             },
             {
                 ["position"] = {
@@ -1490,7 +1490,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Lower then raise"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_archives_A3")
             },
             {
                 ["position"] = {
@@ -1534,7 +1534,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "A4",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Climb up boxes and jump over to chandelier to grab martyr's skull, once player two has completed the puzzle"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_archives_A4")
             },
             {
                 ["position"] = {
@@ -1545,14 +1545,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["fm_armoury"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo (Parkour)",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo_parkour"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1563,7 +1563,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Enter the building"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_fm_armoury_1")
             },
             {
                 ["position"] = {
@@ -1574,7 +1574,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Turn the valve"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_fm_armoury_2")
             },
             {
                 ["position"] = {
@@ -1585,7 +1585,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Climb up to begin parkour, continue up the stairs"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_fm_armoury_3")
             },
             {
                 ["position"] = {
@@ -1607,7 +1607,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "5",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Grab the power cell"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_fm_armoury_5")
             },
             {
                 ["position"] = {
@@ -1618,7 +1618,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "6",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Place the power cell into the socket, and pull the lever"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_fm_armoury_6")
             },
             {
                 ["position"] = {
@@ -1629,7 +1629,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "7",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head back inside and press the button to open the gate to the skull"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_fm_armoury_7")
             },
             {
                 ["position"] = {
@@ -1640,14 +1640,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["cm_raid"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1659,7 +1659,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head into alleyway"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_raid_1")
             },
             {
                 ["position"] = {
@@ -1670,7 +1670,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "2",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Grab the key on the dead body"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_raid_2")
             },
             {
                 ["position"] = {
@@ -1681,7 +1681,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "3",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Head into the bar, and use the key to open the locked gate"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_raid_3")
             },
             {
                 ["position"] = {
@@ -1692,7 +1692,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "4",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Go up the stairs, climb over the boxes and plant the breaching charge"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_raid_4")
             },
             {
                 ["position"] = {
@@ -1703,7 +1703,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "5",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Pickup the key, then head back out to the bar"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_raid_5")
             },
             {
                 ["position"] = {
@@ -1714,7 +1714,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "6",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Use the key to open the gate behind the bar"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_cm_raid_6")
             },
             {
                 ["position"] = {
@@ -1725,14 +1725,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["km_heresy"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo (Parkour)",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo_parkour"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1743,7 +1743,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Follow number sequence"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_km_heresy_1")
             },
             {
                 ["position"] = {
@@ -1798,14 +1798,14 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     },
     ["template"] = {
         ["title_placed"] = false,
-        ["title"] = "MARTYR'S SKULL GUIDE",
-        ["players_required"] = "Solo",
+        ["title"] = mod:localize("martyrs_skull_guide_title"),
+        ["players_required"] = mod:localize("martyrs_skull_guide_players_required_solo"),
         ["markers"] = {
             {
                 ["position"] = {
@@ -1816,7 +1816,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "1",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Input code: 213\nPress middle button"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_template_1")
             },
             {
                 ["position"] = {
@@ -1827,7 +1827,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["placed"] = false,
                 ["marker_text"] = "",
                 ["objective_placed"] = false,
-                ["objective_text"] = "Collect Martyr's Skull!"
+                ["objective_text"] = mod:localize("martyrs_skull_objective_collect_skull")
             }
         }
     }
@@ -2290,6 +2290,8 @@ mod.reset_martyrs_skull_guides = function()
 end
 
 
+-- USED FOR TESTING
+--[[
 local HudElementSmartTagging = require("scripts/ui/hud/elements/smart_tagging/hud_element_smart_tagging")
 local Vo = require("scripts/utilities/vo")
 
@@ -2383,5 +2385,4 @@ HudElementSmartTagging._add_smart_tag_presentation = function(self, tag_instance
         data.spawned = true
     end
 end
-
-
+]]

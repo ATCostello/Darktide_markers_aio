@@ -1482,7 +1482,6 @@ local loc = {
         ["zh-cn"] = "蓝"
     },
 
-
     Exclamation = {
         en = "Exclamation"
     },
@@ -1550,6 +1549,248 @@ local loc = {
     },
     luggable_toggle_los = {
         en = "Toggle 'Require Line of Sight'"
+    },
+
+    -- MARTYRS SKULL GUIDE LOCALIZATIONS... THERE'S LOTS x) 
+    martyrs_skull_objective_hm_cartel_1 = {
+        en = "Follow number sequence"
+    },
+    martyrs_skull_objective_km_enforcer_A = {
+        en = "First player, press button to start sequence"
+    },
+    martyrs_skull_objective_km_enforcer_B = {
+        en = "Second player, head through this door"
+    },
+    martyrs_skull_objective_km_enforcer_A1 = {
+        en = "Press once to open first door"
+    },
+    martyrs_skull_objective_km_enforcer_A2 = {
+        en = "Press once to open second door"
+    },
+    martyrs_skull_objective_km_enforcer_A3 = {
+        en = "Press once to open third door"
+    },
+    martyrs_skull_objective_km_enforcer_B1 = {
+        en = "Press first button to light up corresponding button in control room for player one for the fourth door"
+    },
+    martyrs_skull_objective_km_enforcer_B2 = {
+        en = "Press second button to light up corresponding button in control room for player one for the final door"
+    },
+    martyrs_skull_objective_km_enforcer_A4 = {
+        en = "Press button that lights up when player two completes B1 or B2"
+    },
+    martyrs_skull_objective_km_enforcer_B3 = {
+        en = "Open door for other players"
+    },
+    martyrs_skull_objective_dm_stockpile_A = {
+        en = "Climb up"
+    },
+    martyrs_skull_objective_dm_stockpile_B = {
+        en = "Head to the control panel and try move the platform along the rails infront of you. The default pattern in the following order: \nDOWN, RIGHT, RIGHT, DOWN, LEFT"
+    },
+    martyrs_skull_objective_fm_cargo_1 = {
+        en = "Turn on all showers with the red inquisition symbol quickly."
+    },
+    martyrs_skull_objective_dm_forge_1 = {
+        en = "Follow number sequence"
+    },
+    martyrs_skull_objective_dm_forge_9 = {
+        en = "Destroy all nurgle growths holding the door shut."
+    },
+    martyrs_skull_objective_dm_forge_10 = {
+        en = "Open door"
+    },
+    martyrs_skull_objective_lm_cooling_1 = {
+        en = "Climb up boxes to reach the top"
+    },
+    martyrs_skull_objective_lm_cooling_2 = {
+        en = "Pick up the key in the body's hand"
+    },
+    martyrs_skull_objective_lm_cooling_3 = {
+        en = "Head back over the bridge and use the key on the locked locker."
+    },
+    martyrs_skull_objective_lm_scavenge_1 = {
+        en = "Head into room across the bridge"
+    },
+    martyrs_skull_objective_lm_scavenge_B1 = {
+        en = "Player one, climb into the right elevator"
+    },
+    martyrs_skull_objective_lm_scavenge_A1 = {
+        en = "Player two, climb into the left elevator to send player one upwards"
+    },
+    martyrs_skull_objective_lm_scavenge_B2 = {
+        en = "Player one, grab the battery cell on the crate, and bring it back down in the elevator"
+    },
+    martyrs_skull_objective_lm_scavenge_B3 = {
+        en = "Place the battery cell into the socket on the wall"
+    },
+    martyrs_skull_objective_fm_armoury_1 = {
+        en = "Enter the building"
+    },
+    martyrs_skull_objective_fm_armoury_2 = {
+        en = "Turn the valve"
+    },
+    martyrs_skull_objective_fm_armoury_3 = {
+        en = "Climb up to begin parkour, continue up the stairs"
+    },
+    martyrs_skull_objective_fm_armoury_5 = {
+        en = "Grab the power cell"
+    },
+    martyrs_skull_objective_fm_armoury_6 = {
+        en = "Place the power cell into the socket, and pull the lever"
+    },
+    martyrs_skull_objective_fm_armoury_7 = {
+        en = "Head back inside and press the button to open the gate to the skull"
+    },
+    martyrs_skull_objective_cm_raid_1 = {
+        en = "Head into alleyway"
+    },
+    martyrs_skull_objective_cm_raid_2 = {
+        en = "Grab the key on the dead body"
+    },
+    martyrs_skull_objective_cm_raid_3 = {
+        en = "Head into the bar, and use the key to open the locked gate"
+    },
+    martyrs_skull_objective_cm_raid_4 = {
+        en = "Go up the stairs, climb over the boxes and plant the breaching charge"
+    },
+    martyrs_skull_objective_cm_raid_5 = {
+        en = "Pickup the key, then head back out to the bar"
+    },
+    martyrs_skull_objective_cm_raid_6 = {
+        en = "Use the key to open the gate behind the bar"
+    },
+    martyrs_skull_objective_km_heresy_1 = {
+        en = "Follow number sequence"
+    },
+    martyrs_skull_objective_template_1 = {
+        en = "Input code: 213\nPress middle button"
+    },
+    martyrs_skull_objective_dm_propaganda_1 = {
+        en = "Interact with the dumpster and pick up the 'skull weight' from the ground"
+    },
+    martyrs_skull_objective_dm_propaganda_2 = {
+        en = "Head to the Martyr's Skull door and place the skull weight on the chain"
+    },
+    martyrs_skull_objective_fm_resurgence_1 = {
+        en = "Head to control panel, you need to line up the pipes on the wall opposite, using the valves infront of you.\nThe default number of times you will need to turn the valves from left to right are as follows:\nx3,x1,x2,x3"
+    },
+    martyrs_skull_objective_hm_complex_1 = {
+        en = "Remember the two symbols in the bottom right corner on the back of the panel"
+    },
+    martyrs_skull_objective_hm_complex_2 = {
+        en = "Head to the chaos rune circle, and light the candles around the edge that match the two symbols from step 1"
+    },
+    martyrs_skull_objective_cm_archives_1 = {
+        en = "This puzzle involves player one pulling the levers on the ground, whilst player two completes a parkour puzzle."
+    },
+    martyrs_skull_objective_cm_archives_2 = {
+        en = "Player one, begin by pulling this lever to bring the chandelier to the ground, player two jump on, and player one pull the lever again to raise player two back up, then follow the 'B' sequence of markers."
+    },
+    martyrs_skull_objective_cm_archives_A1 = {
+        en = "Raise"
+    },
+    martyrs_skull_objective_cm_archives_A2 = {
+        en = "Lower then raise"
+    },
+    martyrs_skull_objective_cm_archives_A3 = {
+        en = "Lower then raise"
+    },
+    martyrs_skull_objective_cm_archives_A4 = {
+        en = "Climb up boxes and jump over to chandelier to grab martyr's skull, once player two has completed the puzzle"
+    },
+    martyrs_skull_objective_collect_skull = {
+        en = "Collect Martyr's Skull!"
+    },
+    martyrs_skull_guide_title = {
+        en = "MARTYR'S SKULL GUIDE"
+    },
+    martyrs_skull_guide_players_required = {
+        en = "Player 1 = A, Player 2 = B"
+    },
+    martyrs_skull_guide_players_required_solo = {
+        en = "Solo"
+    },
+    martyrs_skull_guide_players_required_solo_parkour = {
+        en = "Solo (Parkour)"
+    },
+    martyrs_skull_objective_cm_habs_A1 = {
+        en = "Input code: 213\nPress middle button"
+    },
+    martyrs_skull_objective_cm_habs_A2 = {
+        en = "Press left button"
+    },
+    martyrs_skull_objective_cm_habs_A3 = {
+        en = "Press right button"
+    },
+    martyrs_skull_objective_cm_habs_A4 = {
+        en = "Hold lever for second player to complete B1"
+    },
+    martyrs_skull_objective_cm_habs_B1 = {
+        en = "Second player, press button whilst first player holds A4"
+    },
+
+    martyrs_skull_objective_km_station_1 = {
+        en = "Turn first valve"
+    },
+    martyrs_skull_objective_km_station_2 = {
+        en = "Turn second valve"
+    },
+    martyrs_skull_objective_km_station_3 = {
+        en = "Turn third valve"
+    },
+    martyrs_skull_objective_km_station_4 = {
+        en = "Turn fourth valve"
+    },
+    martyrs_skull_objective_km_station_5 = {
+        en = "Turn final valve"
+    },
+
+    martyrs_skull_objective_lm_rails_1 = {
+        en = "Follow number sequence"
+    },
+
+    martyrs_skull_objective_dm_rise_A1 = {
+        en = "Grab the power cell"
+    },
+    martyrs_skull_objective_dm_rise_A2 = {
+        en = "Insert the power cell"
+    },
+    martyrs_skull_objective_dm_rise_B1 = {
+        en = "Player two, enter elevator"
+    },
+    martyrs_skull_objective_dm_rise_A3 = {
+        en = "Player one, hold the power switch once player 2 is in the elevator"
+    },
+    martyrs_skull_objective_dm_rise_B2 = {
+        en = "Grab the next power cell"
+    },
+    martyrs_skull_objective_dm_rise_B3 = {
+        en = "Throw power cell down to player one"
+    },
+    martyrs_skull_objective_dm_rise_A4 = {
+        en = "Player one, insert second power cell"
+    },
+    martyrs_skull_objective_dm_rise_A5 = {
+        en = "Hold the next lever for player two"
+    },
+    martyrs_skull_objective_dm_rise_B4 = {
+        en = "Player two, press the elevator button"
+    },
+    martyrs_skull_objective_hm_strain_1 = {
+        en = "Head to control room, and open the door"
+    },
+    martyrs_skull_objective_hm_strain_2 = {
+        en = "Look above the door for the symbols, remember these"
+    },
+    martyrs_skull_objective_hm_strain_3A = {
+        en = "Press the button until you see the right hand symbol from step 2 on the door through the window"
+    },
+    martyrs_skull_objective_hm_strain_3B = {
+        en = "Press the button until you see the left hand symbol from step 2 on the door through the window"
+    },
+    martyrs_skull_objective_hm_strain_4 = {
+        en = "Once the symbols match, press the final button"
     }
 }
 
