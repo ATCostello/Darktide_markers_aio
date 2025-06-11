@@ -75,7 +75,7 @@ local maryrs_skull_walkthrough_markers = {
                 ["objective_placed"] = false,
                 ["objective_text"] = mod:localize("martyrs_skull_objective_cm_habs_A1")
             },
-            {                                                                                                                                                   
+            {
                 ["position"] = {
                     143.583,
                     -157.536,
@@ -2026,10 +2026,8 @@ mod.setup_walkthrough_markers = function(self)
 
                 -- check using the position data if a marker is already placed at the same place
                 if wmarker.placed == false and marker == nil then
-                    if mod:get("martyrs_skull_guide_markers_enable") == true then
-                        Managers.event:trigger("add_world_marker_position", "martyrs_skull_guide", Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3]))
-                        wmarker.placed = true
-                    end
+                    Managers.event:trigger("add_world_marker_position", "martyrs_skull_guide", Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3]))
+                    wmarker.placed = true
                 end
 
                 if marker and marker.widget and marker.widget.style.marker_text and marker.widget.style.icon then

@@ -1405,9 +1405,6 @@ local loc = {
     martyrs_skull_guide_enable = {
         en = "Enable Skull Collection Guide?"
     },
-    martyrs_skull_guide_markers_enable = {
-        en = "Enabled markers for the collection guide?"
-    },
     martyrs_skull_general_settings = {
         en = "General Settings",
         fr = "Paramètres généraux",
