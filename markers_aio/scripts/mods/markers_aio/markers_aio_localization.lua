@@ -1405,6 +1405,9 @@ local loc = {
     martyrs_skull_guide_enable = {
         en = "Enable Skull Collection Guide?"
     },
+    martyrs_skull_guide_disable_if_collected = {
+        en = "Only show guide if not collected?"
+    },
     martyrs_skull_general_settings = {
         en = "General Settings",
         fr = "Paramètres généraux",
@@ -1788,7 +1791,7 @@ local loc = {
     },
     martyrs_skull_objective_hm_strain_4 = {
         en = "Once the symbols match, press the final button"
-    }
+    },
 }
 
 local apply_color_to_text = function(text, r, g, b)

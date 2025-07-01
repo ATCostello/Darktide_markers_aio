@@ -27,7 +27,8 @@ template.check_line_of_sight = mod:get("ammo_med_require_line_of_sight") or fals
 template.screen_clamp = mod:get("ammo_med_keep_on_screen") or false
 
 template.evolve_distance = 1
-template.max_distance = 30
+template.max_distance = mod:get("ammo_med_max_distance") or 30
+
 template.data = {type = "medical_crate_deployable"}
 
 template.scale = 1
@@ -46,12 +47,20 @@ template.position_offset = {0, 0, 1}
 template.screen_margins = {down = 0.23148148148148148, left = 0.234375, right = 0.234375, up = 0.23148148148148148}
 
 template.scale_settings = {
-    scale_from = 0.4, scale_to = 1, distance_max = template.max_distance, distance_min = template.evolve_distance, easing_function = math.easeCubic
+    scale_from = 0.4,
+    scale_to = 1,
+    distance_max = template.max_distance,
+    distance_min = template.evolve_distance,
+    easing_function = math.easeCubic
 }
 
 template.fade_settings = {
-    default_fade = 1, fade_from = 0, fade_to = 1, distance_max = template.max_distance,
-    distance_min = template.max_distance - template.evolve_distance * 2, easing_function = math.easeCubic
+    default_fade = 1,
+    fade_from = 0,
+    fade_to = 1,
+    distance_max = template.max_distance,
+    distance_min = template.max_distance - template.evolve_distance * 2,
+    easing_function = math.easeCubic
 }
 
 template.create_widget_defintion = function(template, scenegraph_id)
@@ -70,56 +79,103 @@ template.create_widget_defintion = function(template, scenegraph_id)
     title_text_style.text_vertical_alignment = "center"
 
     return UIWidget.create_definition(
-               {
+        {
             {
-                pass_type = "texture", style_id = "background", value = "content/ui/materials/hud/interactions/frames/mission_back",
+                pass_type = "texture",
+                style_id = "background",
+                value = "content/ui/materials/hud/interactions/frames/mission_back",
                 value_id = "background",
                 style = {
-                    horizontal_alignment = "center", vertical_alignment = "center", size = background_size, offset = {0, 0, 1},
+                    horizontal_alignment = "center",
+                    vertical_alignment = "center",
+                    size = background_size,
+                    offset = {0, 0, 1},
                     color = {150, 80, 80, 80}
-                }, visibility_function = function(content, style)
+                },
+                visibility_function = function(content, style)
                     return content.background ~= nil
                 end
-            }, {
-                pass_type = "texture", style_id = "ring", value = "content/ui/materials/hud/interactions/frames/mission_top", value_id = "ring",
+            },
+            {
+                pass_type = "texture",
+                style_id = "ring",
+                value = "content/ui/materials/hud/interactions/frames/mission_top",
+                value_id = "ring",
                 style = {
-                    horizontal_alignment = "center", vertical_alignment = "center", size = size, offset = {0, 0, 5}, color = {255, 255, 255, 255}
-                }, visibility_function = function(content, style)
+                    horizontal_alignment = "center",
+                    vertical_alignment = "center",
+                    size = size,
+                    offset = {0, 0, 5},
+                    color = {255, 255, 255, 255}
+                },
+                visibility_function = function(content, style)
                     return content.ring ~= nil
                 end
-            }, {
-                pass_type = "rotated_texture", style_id = "ping", value = "content/ui/materials/hud/interactions/frames/mission_tag",
+            },
+            {
+                pass_type = "rotated_texture",
+                style_id = "ping",
+                value = "content/ui/materials/hud/interactions/frames/mission_tag",
                 value_id = "ping",
                 style = {
-                    horizontal_alignment = "center", vertical_alignment = "center", size = ping_size, offset = {0, 0, 0}, color = {255, 255, 255, 255}
-                }, visibility_function = function(content, style)
+                    horizontal_alignment = "center",
+                    vertical_alignment = "center",
+                    size = ping_size,
+                    offset = {0, 0, 0},
+                    color = {255, 255, 255, 255}
+                },
+                visibility_function = function(content, style)
                     return content.tagged
                 end
-            }, {
-                pass_type = "texture", style_id = "icon", value = "content/ui/materials/hud/interactions/icons/enemy", value_id = "icon",
+            },
+            {
+                pass_type = "texture",
+                style_id = "icon",
+                value = "content/ui/materials/hud/interactions/icons/enemy",
+                value_id = "icon",
                 style = {
-                    horizontal_alignment = "center", vertical_alignment = "center", size = icon_size, offset = {0, 0, 3}, color = {255, 200, 175, 0}
-                }, visibility_function = function(content, style)
+                    horizontal_alignment = "center",
+                    vertical_alignment = "center",
+                    size = icon_size,
+                    offset = {0, 0, 3},
+                    color = {255, 200, 175, 0}
+                },
+                visibility_function = function(content, style)
                     return content.icon ~= nil
                 end
-            }, {
-                pass_type = "text", style_id = "marker_text", value = "", value_id = "marker_text", style = title_text_style,
+            },
+            {
+                pass_type = "text",
+                style_id = "marker_text",
+                value = "",
+                value_id = "marker_text",
+                style = title_text_style,
                 visibility_function = function(content, style)
                     return content.marker_text ~= nil
                 end
-            }, {
-                pass_type = "rotated_texture", style_id = "arrow", value = "content/ui/materials/hud/interactions/frames/direction",
-                value_id = "arrow", style = {
-                    horizontal_alignment = "center", vertical_alignment = "center", size = arrow_size, offset = {0, 0, 2},
+            },
+            {
+                pass_type = "rotated_texture",
+                style_id = "arrow",
+                value = "content/ui/materials/hud/interactions/frames/direction",
+                value_id = "arrow",
+                style = {
+                    horizontal_alignment = "center",
+                    vertical_alignment = "center",
+                    size = arrow_size,
+                    offset = {0, 0, 2},
                     color = Color.ui_hud_green_super_light(255, true)
-                }, visibility_function = function(content, style)
+                },
+                visibility_function = function(content, style)
                     return content.is_clamped and content.arrow ~= nil
-                end, change_function = function(content, style)
+                end,
+                change_function = function(content, style)
                     style.angle = content.angle
                 end
             }
-        }, scenegraph_id
-           )
+        },
+        scenegraph_id
+    )
 end
 
 template.on_enter = function(widget)
@@ -180,8 +236,12 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
     local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
     local ping_pulse_size_increase = ping_anim_progress * 15
 
-    ping_size[1] = (ping_min_size[1] + (ping_max_size[1] - ping_min_size[1]) * scale_progress + ping_pulse_size_increase) * global_scale
-    ping_size[2] = (ping_min_size[2] + (ping_max_size[2] - ping_min_size[2]) * scale_progress + ping_pulse_size_increase) * global_scale
+    ping_size[1] =
+        (ping_min_size[1] + (ping_max_size[1] - ping_min_size[1]) * scale_progress + ping_pulse_size_increase) *
+        global_scale
+    ping_size[2] =
+        (ping_min_size[2] + (ping_max_size[2] - ping_min_size[2]) * scale_progress + ping_pulse_size_increase) *
+        global_scale
 
     local ping_pivot = ping_style.pivot
 
@@ -199,8 +259,10 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 
     local background_size = style.background.size
 
-    background_size[1] = (background_min_size[1] + (background_max_size[1] - background_min_size[1]) * scale_progress) * global_scale
-    background_size[2] = (background_min_size[2] + (background_max_size[2] - background_min_size[2]) * scale_progress) * global_scale
+    background_size[1] =
+        (background_min_size[1] + (background_max_size[1] - background_min_size[1]) * scale_progress) * global_scale
+    background_size[2] =
+        (background_min_size[2] + (background_max_size[2] - background_min_size[2]) * scale_progress) * global_scale
 
     local animating = scale_progress ~= content.scale_progress
 

@@ -1520,15 +1520,15 @@ return {
                                 type = "checkbox",
                                 default_value = true
                             },
-{
+                            {
                                 setting_id = "martyrs_skull_guide_enable",
                                 type = "checkbox",
                                 default_value = false
                             },
                             {
-                                setting_id = "martyrs_skull_guide_markers_enable",
+                                setting_id = "martyrs_skull_guide_disable_if_collected",
                                 type = "checkbox",
-                                default_value = true
+                                default_value = false
                             },
                             {
                                 setting_id = "martyrs_skull_keep_on_screen",

@@ -7,10 +7,17 @@ local WorldMarkerTemplateInteraction = require("scripts/ui/hud/elements/world_ma
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local AchievementCategories = require("scripts/settings/achievements/achievement_categories")
 
+local last_walkthrough_update = 0
+local walkthrough_update_interval = 1 -- throttle for walkthrough update in seconds
+
 mod.update_martyrs_skull_markers = function(self, marker)
 
     if mod:get("martyrs_skull_guide_enable") == true then
-        mod.setup_walkthrough_markers(self)
+        local now = os.clock()
+        if now - last_walkthrough_update > walkthrough_update_interval then
+            last_walkthrough_update = now
+            mod.setup_walkthrough_markers(self)
+        end
     end
 
     if marker and self then
@@ -2023,6 +2030,10 @@ mod.setup_walkthrough_markers = function(self)
             for i = #walkthrough_markers.markers, 1, -1 do
                 local wmarker = walkthrough_markers.markers[i]
                 local marker = mod.check_guide_marker_exists(self, Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1))
+
+                if mod:get("martyrs_skull_guide_disable_if_collected") == true and mod.does_player_need_skull() == false then
+                    return
+                end
 
                 -- check using the position data if a marker is already placed at the same place
                 if wmarker.placed == false and marker == nil then
