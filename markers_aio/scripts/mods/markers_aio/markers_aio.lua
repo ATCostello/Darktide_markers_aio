@@ -158,7 +158,7 @@ HudElementWorldMarkers._get_fade = function(self, fade_settings, distance)
         else
             local distance_fade_fraction =
                 1 - (distance - fade_settings.distance_min) / (fade_settings.distance_max - fade_settings.distance_min)
-            local eased_distance_fade_fraction = easing_function(distance_fade_fraction)
+            local eased_distance_fade_fraction = easing_function and easing_function(distance_fade_fraction)
             local adjusted_fade =
                 fade_settings.fade_from +
                 eased_distance_fade_fraction * (fade_settings.fade_to - fade_settings.fade_from)
