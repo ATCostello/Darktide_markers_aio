@@ -2176,7 +2176,7 @@ HudElementMissionObjectiveFeed._align_objective_widgets = function(self)
     end
 
 
-    local hud_objectives_names_array = self._hud_objectives_names_array
+    local hud_objectives_names_array = self._hud_objectives_names_array or {}
 
     -- Deduplicate the array in-place
     do
