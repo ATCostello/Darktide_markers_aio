@@ -1893,6 +1893,105 @@ local loc = {
 		en = "Once the symbols match, press the final button",
 		["zh-tw"] = "當符號匹配時，按下最後一個按鈕",
 	},
+
+	-- STOLEN RATIONS Markers
+	rations_markers_settings = {
+		en = "STOLEN RATIONS MARKERS",
+	},
+	rations_enable = {
+		en = "Enable Markers",
+		fr = "Activer les marqueurs",
+		ru = "Включить метки",
+		["zh-tw"] = "啟用標記",
+		["zh-cn"] = "启用图标",
+	},
+	rations_general_settings = {
+		en = "General Settings",
+		fr = "Paramètres généraux",
+		ru = "Общие настройки",
+		["zh-tw"] = "一般設定",
+		["zh-cn"] = "通用设定",
+	},
+	rations_keep_on_screen = {
+		en = "Keep on screen",
+		ru = "Держать на экране",
+		fr = "Rester à l'écran",
+		["zh-tw"] = "保持顯示於螢幕",
+		["zh-cn"] = "在画面中持续显示",
+	},
+	rations_require_line_of_sight = {
+		en = "Require line of sight",
+		fr = "Nécessite une ligne de vue",
+		ru = "Должно быть в зоне видимости",
+		["zh-tw"] = "需要視線範圍",
+		["zh-cn"] = "需要视野",
+	},
+	rations_max_distance = {
+		en = "Max distance",
+		fr = "Distance maximale",
+		ru = "Максимальное расстояние",
+		["zh-tw"] = "最遠距離",
+		["zh-cn"] = "最大距离",
+	},
+	rations_max_size = {
+		en = "Maximum size of marker",
+		fr = "Taille maximale du marqueur",
+		ru = "Максимальный размер метки",
+		["zh-tw"] = "圖標的最大尺寸",
+		["zh-cn"] = "图标最大尺寸",
+	},
+	rations_min_size = {
+		en = "Minimum size of marker",
+		fr = "Taille minimale du marqueur",
+		ru = "Минимальный размер метки",
+		["zh-tw"] = "圖標的最小尺寸",
+		["zh-cn"] = "图标最小尺寸",
+	},
+	rations_scale = {
+		en = "Scale",
+		fr = "Scale",
+		ru = "Scale",
+		["zh-tw"] = "圖標縮放大小",
+		["zh-cn"] = "图标缩放比例",
+	},
+	rations_alpha = {
+		en = "Alpha Multiplier",
+		fr = "Multiplicateur d'alpha",
+		ru = "Прозрачность",
+		["zh-tw"] = "透明度倍增器",
+		["zh-cn"] = "透明度",
+	},
+	rations_border_colour = {
+		en = "Border Colour",
+		fr = "Couleur de la bordure",
+		ru = "Цвет границы",
+		["zh-tw"] = "邊框顏色",
+		["zh-cn"] = "边框颜色",
+	},
+	rations_colour = {
+		en = "Stolen Rations Markers Colour",
+	},
+	rations_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	rations_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	rations_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
 }
 
 local apply_color_to_text = function(text, r, g, b)
