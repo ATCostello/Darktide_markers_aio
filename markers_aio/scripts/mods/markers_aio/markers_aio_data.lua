@@ -1040,6 +1040,46 @@ return {
                             }
 
                         }
+                    },
+                    {
+                        setting_id = "broker_stimm_icon_colour",
+                        type = "group",
+                        sub_widgets = {
+                            {
+                                setting_id = "broker_stimm_icon_colour_R",
+                                type = "numeric",
+                                default_value = 200,
+                                range = {
+                                    0,
+                                    255
+                                }
+                            },
+                            {
+                                setting_id = "broker_stimm_icon_colour_G",
+                                type = "numeric",
+                                default_value = 20,
+                                range = {
+                                    0,
+                                    255
+                                }
+                            },
+                            {
+                                setting_id = "broker_stimm_icon_colour_B",
+                                type = "numeric",
+                                default_value = 200,
+                                range = {
+                                    0,
+                                    255
+                                }
+                            },
+                            {
+                                setting_id = "broker_stimm_border_colour",
+                                type = "dropdown",
+                                options = border_colours,
+                                default_value = "Gold"
+                            }
+
+                        }
                     }
                 }
             },

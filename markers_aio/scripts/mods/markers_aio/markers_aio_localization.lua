@@ -967,6 +967,41 @@ local loc = {
 		["zh-tw"] = "邊框顏色",
 		["zh-cn"] = "边框颜色",
 	},
+	broker_stimm_icon_colour = {
+		en = "Hive Scum Stimm Icon Colour",
+		fr = "Hive Scum Stimm Icon Colour",
+		ru = "Hive Scum Stimm Icon Colour",
+		["zh-tw"] = "Hive Scum Stimm Icon Colour",
+		["zh-cn"] = "Hive Scum Stimm Icon Colour",
+	},
+	broker_stimm_icon_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	broker_stimm_icon_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	broker_stimm_icon_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	broker_stimm_border_colour = {
+		en = "Border Colour",
+		fr = "Couleur de la bordure",
+		ru = "Цвет границы",
+		["zh-tw"] = "邊框顏色",
+		["zh-cn"] = "边框颜色",
+	},
 
 	-- TOME MARKERS
 	tome_markers_settings = {
