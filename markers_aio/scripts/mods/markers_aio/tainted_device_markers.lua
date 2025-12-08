@@ -33,7 +33,7 @@ mod.update_TaintedDevices_markers = function(self, marker)
                     marker.widget.alpha_multiplier = 0
                     marker.draw = false
 
-                    marker.markers_aio_type = "tainted"
+                    marker.markers_aio_type = "event"
 
                     marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
 
@@ -41,16 +41,16 @@ mod.update_TaintedDevices_markers = function(self, marker)
 
                     marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
 
-                    marker.template.screen_clamp = mod:get("tainted_keep_on_screen")
+                    marker.template.screen_clamp = mod:get("event_keep_on_screen")
                     marker.block_screen_clamp = false
 
                     marker.widget.content.icon = "content/ui/materials/icons/pocketables/hud/corrupted_auspex_scanner"
-                    marker.widget.style.ring.color = mod.lookup_colour(mod:get("tainted_border_colour"))
+                    marker.widget.style.ring.color = mod.lookup_colour(mod:get("event_border_colour"))
                     marker.widget.style.icon.color = {
                         255,
-                        mod:get("tainted_colour_R"),
-                        mod:get("tainted_colour_G"),
-                        mod:get("tainted_colour_B")
+                        mod:get("event_colour_R"),
+                        mod:get("event_colour_G"),
+                        mod:get("event_colour_B")
                     }
 
                 end

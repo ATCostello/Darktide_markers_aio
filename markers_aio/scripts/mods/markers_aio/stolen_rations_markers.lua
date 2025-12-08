@@ -25,14 +25,13 @@ mod.update_stolenrations_markers = function(self, marker)
 
 				if pickup.name and string.starts(pickup.name, "stolen_rations") then
 					is_hack_device = true
-					dbg_1 = pickup
 				end
 				if is_hack_device then
 					-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 					marker.widget.alpha_multiplier = 0
 					marker.draw = false
 
-					marker.markers_aio_type = "rations"
+					marker.markers_aio_type = "event"
 
 					marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
 
@@ -44,12 +43,12 @@ mod.update_stolenrations_markers = function(self, marker)
 					marker.block_screen_clamp = false
 
 					marker.widget.content.icon = "content/ui/materials/icons/throwables/hud/rock_grenade"
-					marker.widget.style.ring.color = mod.lookup_colour(mod:get("rations_border_colour"))
+					marker.widget.style.ring.color = mod.lookup_colour(mod:get("event_border_colour"))
 					marker.widget.style.icon.color = {
 						255,
-						mod:get("rations_colour_R"),
-                        mod:get("rations_colour_G"),
-                        mod:get("rations_colour_B")
+						mod:get("event_colour_R"),
+						mod:get("event_colour_G"),
+						mod:get("event_colour_B"),
 					}
 				end
 			end

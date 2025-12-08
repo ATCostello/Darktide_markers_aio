@@ -11,7 +11,7 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/tainted_skull_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/luggable_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/stolen_rations_markers")
-
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/atonement_markers")
 
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
 
@@ -512,7 +512,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 						end
 						if mod:get("tainted_enable") then
 							mod.update_TaintedDevices_markers(self, marker)
-							mod.update_stolenrations_markers(self, marker)
 						end
 						if mod:get("tainted_skull_enable") then
 							mod.update_tainted_skull_markers(self, marker)
@@ -522,6 +521,12 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 						end
 						if mod:get("martyrs_skull_enable") then
 							mod.update_martyrs_skull_markers(self, marker)
+						end
+						if mod:get("rations_enable") then
+							mod.update_stolenrations_markers(self, marker)
+						end
+						if mod:get("atonement_enable") then
+							mod.update_atonement_markers(self, marker)
 						end
 
 						mod.fade_icon_not_in_los(marker, ui_renderer)
@@ -577,6 +582,19 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	if marker.markers_aio_type then
 		local curr_alpha_mult = 0
 
+		-- NEW
+		-- Set to fade if user is ADSing
+		local player = Managers.player:local_player(1)
+		local is_ads = false
+		if player then
+			dbg_player = player
+			local player_unit = player.player_unit
+			local unit_data_extension = ScriptUnit.extension(player_unit, "unit_data_system")
+			if unit_data_extension then
+				is_ads = unit_data_extension:read_component("alternate_fire").is_active
+			end
+		end
+
 		-- reset to default opacity if marker is in sight. (helps fix if the opacity is "stuck")
 		if marker.is_inside_frustum and marker.raycast_result == false then
 			marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
@@ -591,7 +609,7 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 
 			if mod:get(marker.markers_aio_type .. "_alpha") then
 				-- true if not in los, false if in los
-				if marker.raycast_result == true then
+				if marker.raycast_result == true or is_ads == true then
 					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha") * los_opacity
 				elseif marker.raycast_result == false then
 					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
@@ -602,7 +620,7 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 		else
 			if mod:get(marker.markers_aio_type .. "_alpha") then
 				-- true if not in los, false if in los
-				if marker.raycast_result == true then
+				if marker.raycast_result == true or is_ads == true then
 					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
 				elseif marker.raycast_result == false then
 					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")

@@ -25,23 +25,23 @@ mod.update_tainted_skull_markers = function(self, marker)
                     marker.draw = false
                     marker.widget.alpha_multiplier = 0
 
-                    marker.markers_aio_type = "tainted_skull"
+                    marker.markers_aio_type = "event"
 
                     marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
-                    marker.template.check_line_of_sight = mod:get("tainted_skull_require_line_of_sight")
+                    marker.template.check_line_of_sight = mod:get("event_require_line_of_sight")
 
                     marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-                    marker.template.screen_clamp = mod:get("tainted_skull_keep_on_screen")
+                    marker.template.screen_clamp = mod:get("event_keep_on_screen")
                     marker.block_screen_clamp = false
 
                     marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
 
-                    marker.widget.style.ring.color = mod.lookup_colour(mod:get("tainted_skull_border_colour"))
+                    marker.widget.style.ring.color = mod.lookup_colour(mod:get("event_border_colour"))
                     marker.widget.style.icon.color = {
                         255,
-                        mod:get("tainted_skull_colour_R"),
-                        mod:get("tainted_skull_colour_G"),
-                        mod:get("tainted_skull_colour_B")
+                        mod:get("event_colour_R"),
+                        mod:get("event_colour_G"),
+                        mod:get("event_colour_B")
                     }
 
                 end
@@ -53,7 +53,7 @@ mod.update_tainted_skull_markers = function(self, marker)
             marker.draw = false
             marker.widget.alpha_multiplier = 0
 
-            marker.markers_aio_type = "tainted_skull"
+            marker.markers_aio_type = "event"
 
             marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
             marker.template.check_line_of_sight = false
@@ -64,12 +64,12 @@ mod.update_tainted_skull_markers = function(self, marker)
 
             marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
 
-            marker.widget.style.ring.color = mod.lookup_colour(mod:get("tainted_skull_border_colour"))
+            marker.widget.style.ring.color = mod.lookup_colour(mod:get("event_border_colour"))
             marker.widget.style.icon.color = {
                 255,
-                mod:get("tainted_skull_colour_R"),
-                mod:get("tainted_skull_colour_G"),
-                mod:get("tainted_skull_colour_B")
+                mod:get("event_colour_R"),
+                mod:get("event_colour_G"),
+                mod:get("event_colour_B")
             }
         end
     end
