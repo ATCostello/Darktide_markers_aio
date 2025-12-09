@@ -131,13 +131,15 @@ mod.update_stimm_markers = function(self, marker)
 				pickup_type == "syringe_broker_pocketable"
 				or marker.data and marker.data.type == "syringe_broker_pocketable"
 			then
-				marker.widget.style.icon.color = {
-					255,
-					mod:get("broker_stimm_icon_colour_R"),
-					mod:get("broker_stimm_icon_colour_G"),
-					mod:get("broker_stimm_icon_colour_B"),
-				}
-				marker.widget.style.ring.color = mod.lookup_colour(mod:get("broker_stimm_border_colour"))
+				if mod:get("broker_stimm_enable") == true then
+					marker.widget.style.icon.color = {
+						255,
+						mod:get("broker_stimm_icon_colour_R"),
+						mod:get("broker_stimm_icon_colour_G"),
+						mod:get("broker_stimm_icon_colour_B"),
+					}
+					marker.widget.style.ring.color = mod.lookup_colour(mod:get("broker_stimm_border_colour"))
+				end
 			end
 		end
 	end
@@ -183,13 +185,15 @@ mod:hook_safe(CLASS.HudElementPlayerWeapon, "update", function(self, dt, t, ui_r
 		}
 		widget.style.icon.color = color
 	elseif weapon_name == "content/items/pocketable/syringe_broker_pocketable" then
-		local color = {
-			255,
-			mod:get("broker_stimm_icon_colour_R"),
-			mod:get("broker_stimm_icon_colour_G"),
-			mod:get("broker_stimm_icon_colour_B"),
-		}
-		widget.style.icon.color = color
+		if mod:get("broker_stimm_enable") == true then
+			local color = {
+				255,
+				mod:get("broker_stimm_icon_colour_R"),
+				mod:get("broker_stimm_icon_colour_G"),
+				mod:get("broker_stimm_icon_colour_B"),
+			}
+			widget.style.icon.color = color
+		end
 	end
 end)
 
@@ -254,13 +258,15 @@ mod:hook_safe(
 									}
 									stimm_widget.style.texture.color = color
 								elseif weapon_name == "content/items/pocketable/syringe_broker_pocketable" then
-									local color = {
-										255,
-										mod:get("broker_stimm_icon_colour_R"),
-										mod:get("broker_stimm_icon_colour_G"),
-										mod:get("broker_stimm_icon_colour_B"),
-									}
-									stimm_widget.style.texture.color = color
+									if mod:get("broker_stimm_enable") == true then
+										local color = {
+											255,
+											mod:get("broker_stimm_icon_colour_R"),
+											mod:get("broker_stimm_icon_colour_G"),
+											mod:get("broker_stimm_icon_colour_B"),
+										}
+										stimm_widget.style.texture.color = color
+									end
 								end
 							end
 						end

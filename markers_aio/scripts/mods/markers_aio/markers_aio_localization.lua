@@ -771,6 +771,9 @@ local loc = {
 		["zh-tw"] = "啟用標記",
 		["zh-cn"] = "启用图标",
 	},
+	broker_stimm_enable = {
+		en = "Enable Hive Scum Stimm Markers"
+	},
 	stimm_general_settings = {
 		en = "General Settings",
 		fr = "Paramètres généraux",

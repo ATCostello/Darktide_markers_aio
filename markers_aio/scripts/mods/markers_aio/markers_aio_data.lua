@@ -817,7 +817,11 @@ return {
 								type = "checkbox",
 								default_value = true,
 							},
-
+							{
+								setting_id = "broker_stimm_enable",
+								type = "checkbox",
+								default_value = true,
+							},
 							{
 								setting_id = "stimm_keep_on_screen",
 								type = "checkbox",
