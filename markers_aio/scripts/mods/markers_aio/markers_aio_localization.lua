@@ -37,6 +37,9 @@ local loc = {
 		["zh-tw"] = "視線外圖標透明度",
 		["zh-cn"] = "视野外图标透明度",
 	},
+	ads_los_opacity = {
+		en = "ADS Line of sight alpha (percentage)",
+	},
 	marker_background_colour = {
 		en = "Marker background colour",
 		["zh-tw"] = "標記背景顏色",
@@ -91,6 +94,9 @@ local loc = {
 		ru = "Максимальное расстояние",
 		["zh-tw"] = "最遠距離",
 		["zh-cn"] = "最大距离",
+	},
+	med_station_max_distance = {
+		en = "Medicae Station marker max distance",
 	},
 	ammo_med_max_size = {
 		en = "Maximum size of marker",

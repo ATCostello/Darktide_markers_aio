@@ -113,6 +113,15 @@ return {
 						},
 					},
 					{
+						setting_id = "ads_los_opacity",
+						type = "numeric",
+						default_value = 25,
+						range = {
+							0,
+							100,
+						},
+					},
+					{
 						setting_id = "marker_background_colour",
 						type = "dropdown",
 						options = background_colours,
@@ -163,6 +172,15 @@ return {
 								setting_id = "ammo_med_max_distance",
 								type = "numeric",
 								default_value = 50,
+								range = {
+									15,
+									100,
+								},
+							},
+							{
+								setting_id = "med_station_max_distance",
+								type = "numeric",
+								default_value = 20,
 								range = {
 									15,
 									100,

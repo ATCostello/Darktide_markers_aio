@@ -192,6 +192,7 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 					local fade_settings = template.fade_settings
 
 					local curr_alpha_mult = 1
+
 					if marker.markers_aio_type then
 						mod.adjust_scale(self, marker, ui_renderer)
 						curr_alpha_mult = mod.fade_icon_not_in_los(marker, ui_renderer) or 1
@@ -600,17 +601,24 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 			marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
 		end
 
+		-- main markers
 		if mod:get("los_fade_enable") == true then
 			-- Calculate opacity from the mod setting
 			local los_opacity = 50
+			local ads_los_opacity = 50
 			if mod:get("los_opacity") then
 				los_opacity = mod:get("los_opacity") / 100
+			end
+			if mod:get("ads_los_opacity") then
+				ads_los_opacity = mod:get("ads_los_opacity") / 100
 			end
 
 			if mod:get(marker.markers_aio_type .. "_alpha") then
 				-- true if not in los, false if in los
-				if marker.raycast_result == true or is_ads == true then
+				if marker.raycast_result == true then
 					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha") * los_opacity
+				elseif marker.raycast_result == false and is_ads == true then
+					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha") * ads_los_opacity
 				elseif marker.raycast_result == false then
 					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
 				else
@@ -620,7 +628,7 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 		else
 			if mod:get(marker.markers_aio_type .. "_alpha") then
 				-- true if not in los, false if in los
-				if marker.raycast_result == true or is_ads == true then
+				if marker.raycast_result == true then
 					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
 				elseif marker.raycast_result == false then
 					marker.widget.alpha_multiplier = mod:get(marker.markers_aio_type .. "_alpha")
@@ -690,13 +698,17 @@ mod.adjust_los_requirement = function(marker)
 		end
 	end
 
-	-- As health station is visible through objects, limit to only 30m distance.
+	-- As health station is visible through objects, limit to only 20m distance.
 	if
 		marker.data
 		and marker.data._active_interaction_type
 		and marker.data._active_interaction_type == "health_station"
 	then
-		if marker.is_inside_frustum and marker.distance and marker.distance < 20 then
+		if
+			marker.is_inside_frustum
+			and marker.distance
+			and marker.distance < (mod:get("med_station_max_distance") or 20)
+		then
 			do_draw(marker)
 		else
 			dont_draw(marker)
