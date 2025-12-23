@@ -342,7 +342,7 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
     content.line_of_sight_progress = line_of_sight_progress
     content.scale_progress = scale_progress
     widget.alpha_multiplier = line_of_sight_progress or 1
-    widget.visible = true
+    widget.visible = mod:get("martyrs_skull_guide_enable") == true
 
     if data then
         data.distance = distance

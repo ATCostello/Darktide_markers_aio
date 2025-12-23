@@ -2018,6 +2018,13 @@ mod.setup_walkthrough_markers = function(self)
 				end
 			end
 
+			if
+				mod:get("martyrs_skull_guide_disable_if_collected") == true
+				and mod.does_player_need_skull() == false
+			then
+				return
+			end
+
 			-- Now, process marker/objective placement logic
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]
@@ -2025,13 +2032,6 @@ mod.setup_walkthrough_markers = function(self)
 					self,
 					Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
 				)
-
-				if
-					mod:get("martyrs_skull_guide_disable_if_collected") == true
-					and mod.does_player_need_skull() == false
-				then
-					return
-				end
 
 				-- check using the position data if a marker is already placed at the same place
 				if wmarker.placed == false and marker == nil then
@@ -2119,16 +2119,7 @@ mod.setup_walkthrough_markers = function(self)
 
 			-- If player is not near any guide marker, remove all objectives
 			if player_near_skull == false then
-				dbg_3 = HudElementMissionObjectiveFeed.marker_objectives
-				for i = 1, #HudElementMissionObjectiveFeed.marker_objectives do
-					remove_objective(HudElementMissionObjectiveFeed.marker_objectives[i])
-				end
-
-				for i = #walkthrough_markers.markers, 1, -1 do
-					local wmarker = walkthrough_markers.markers[i]
-					wmarker.objective_placed = false
-				end
-				walkthrough_markers.title_placed = false
+				mod.disable_guide_objectives(walkthrough_markers)
 			end
 		end
 	end
@@ -2141,6 +2132,44 @@ mod.reset_martyrs_skull_guides = function()
 			wmarker.placed = false
 			wmarker.objective_placed = false
 		end
+	end
+end
+
+mod.get_walkthrough_markers = function()
+	local current_level = Managers.state.mission and Managers.state.mission:mission()
+
+	if not current_level then
+		return nil
+	end
+
+	local walkthrough_markers = maryrs_skull_walkthrough_markers[current_level.name]
+
+	return walkthrough_markers
+end
+
+mod.disable_guide_objectives = function(walkthrough_markers)
+	if not walkthrough_markers then
+		return
+	end
+
+	dbg_3 = HudElementMissionObjectiveFeed.marker_objectives
+	for i = 1, #HudElementMissionObjectiveFeed.marker_objectives do
+		remove_objective(HudElementMissionObjectiveFeed.marker_objectives[i])
+	end
+
+	for i = #walkthrough_markers.markers, 1, -1 do
+		local wmarker = walkthrough_markers.markers[i]
+		wmarker.objective_placed = false
+	end
+	walkthrough_markers.title_placed = false
+end
+
+mod.martyrs_skull_guide_toggle = function()
+	mod:set("martyrs_skull_guide_enable", mod:get("martyrs_skull_guide_enable") == false)
+	last_walkthrough_update = 0
+	if mod:get("martyrs_skull_guide_enable") == false then
+		local walkthrough_markers = mod.get_walkthrough_markers()
+		mod.disable_guide_objectives(walkthrough_markers)
 	end
 end
 
