@@ -1856,6 +1856,8 @@ local maryrs_skull_walkthrough_markers = {
 	},
 }
 
+local cached_mission_achievement = {}
+
 mod.does_player_need_skull = function()
 	local mission_manager = Managers.state.mission
 	local current_mission_name = mission_manager and mission_manager:mission_name()
@@ -1875,36 +1877,41 @@ mod.does_player_need_skull = function()
 	end
 
 	local collected = false
+	local achievement_id = cached_mission_achievement[current_mission_name]
 
-	-- find achievement for collecting skull on current map
-	local achievement_manager = Managers.achievements
+	if achievement_id == nil then
+		-- find achievement for collecting skull on current map
+		local achievement_manager = Managers.achievements
 
-    if not achievement_manager then
-        return true
-    end
-
-	local definitions = achievement_manager:achievement_definitions()
-	local achievement_id = nil
-
-	for _, config in pairs(definitions) do
-		local category = config.category
-		local category_config = AchievementCategories[category]
-		local parent_name = category_config.parent_name or category_config.name
-		local icon = config.icon
-		local stat_name = config.stat_name
-
-		if
-			parent_name == "exploration"
-			and icon
-			and icon:match("missions_achievement_puzzle")
-			and stat_name
-			and stat_name:match(current_mission_name)
-		then
-			achievement_id = config.id
-			break
+		if not achievement_manager then
+			return true
 		end
-	end
 
+		local definitions = achievement_manager:achievement_definitions()
+		achievement_id = nil
+
+		for _, config in pairs(definitions) do
+			local category = config.category
+			local category_config = AchievementCategories[category]
+			local parent_name = category_config.parent_name or category_config.name
+			local icon = config.icon
+			local stat_name = config.stat_name
+
+			if
+				parent_name == "exploration"
+				and icon
+				and icon:match("missions_achievement_puzzle")
+				and stat_name
+				and stat_name:match(current_mission_name)
+			then
+				achievement_id = config.id
+				break
+			end
+		end
+
+		cached_mission_achievement[current_mission_name] = achievement_id == nil and false or achievement_id
+	end
+	
 	if not achievement_id then
 		return true
 	end
