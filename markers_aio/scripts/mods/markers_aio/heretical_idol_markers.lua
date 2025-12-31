@@ -5,6 +5,7 @@ local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hu
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
 local DestructibleExtension = require("scripts/extension_systems/destructible/destructible_extension")
 local UIWidget = require("scripts/managers/ui/ui_widget")
+local AchievementCategories = require("scripts/settings/achievements/achievement_categories")
 
 mod.heretical_idols = {}
 mod._world_markers_list = {}
@@ -66,8 +67,6 @@ mod:hook_safe(
             end
         end
     end
-
-
 )
 
 DestructibleExtension._add_damage = function(self, damage_amount, attack_direction, force_destruction, attacking_unit)
@@ -170,7 +169,6 @@ mod.add_heretical_idol_marker = function(self, unit, section_id)
     end
 end
 
-
 mod.remove_heretical_idol_marker = function(self, unit, section_id)
     if self and self._world_markers_list and unit then
         for _, marker in pairs(self._world_markers_list) do
@@ -187,6 +185,55 @@ mod.remove_heretical_idol_marker = function(self, unit, section_id)
     end
 end
 
+mod.does_player_need_idols = function()
+	local mission_manager = Managers.state.mission
+    local current_mission = mission_manager and mission_manager:mission()
+    local current_mission_zone = current_mission and current_mission.zone_id
+
+    if not current_mission_zone then
+        return true
+    end
+
+	local player_manager = Managers.player
+	local player = player_manager and Managers.player:local_player(1)
+
+    if not player then
+        return true
+    end
+
+    local destroyed_all_idols = false
+
+    -- find achievement for destroying idols for current zone
+    local achievement_manager = Managers.achievements
+
+    if not achievement_manager then
+        return true
+    end
+
+    local definitions = achievement_manager:achievement_definitions()
+
+    for _, config in pairs(definitions) do
+        local stat_name = config.stat_name
+        local category = config.category
+        local category_config = AchievementCategories[category]
+        local parent_name = category_config.parent_name or category_config.name
+
+        if
+            parent_name == "exploration"
+            and stat_name
+            and stat_name:match(current_mission_zone)
+            and stat_name:match("destructible")
+            and config.next == nil
+        then
+            if Managers.achievements:_achievement_completed(player._local_player_id, config.id) then
+                destroyed_all_idols = true
+            end
+            break
+        end
+    end
+
+	return not destroyed_all_idols
+end
 
 mod.update_marker_icon = function(self, marker)
 
@@ -201,12 +248,19 @@ mod.update_marker_icon = function(self, marker)
             marker.draw = false
 
             marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
-            marker.widget.style.icon.color = {
-                255,
-                mod:get("icon_colour_R"),
-                mod:get("icon_colour_G"),
-                mod:get("icon_colour_B")
-            }
+
+            local color_key = "icon"
+
+			if not mod.does_player_need_idols() then
+				color_key = marker.markers_aio_type .. "_completed"
+			end
+
+			marker.widget.style.icon.color = {
+				255,
+				mod:get(color_key .. "_colour_R"),
+				mod:get(color_key .. "_colour_G"),
+				mod:get(color_key .. "_colour_B"),
+			}
             marker.widget.style.ring.color = mod.lookup_colour(mod:get("idol_border_colour"))
             marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
             marker.template.screen_clamp = mod:get("heretical_idol_keep_on_screen")
