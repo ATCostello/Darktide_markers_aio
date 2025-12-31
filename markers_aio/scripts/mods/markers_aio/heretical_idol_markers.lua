@@ -185,6 +185,8 @@ mod.remove_heretical_idol_marker = function(self, unit, section_id)
     end
 end
 
+local cached_zone_achievement = {}
+
 mod.does_player_need_idols = function()
 	local mission_manager = Managers.state.mission
     local current_mission = mission_manager and mission_manager:mission()
@@ -201,38 +203,53 @@ mod.does_player_need_idols = function()
         return true
     end
 
-    local destroyed_all_idols = false
+    local achievement_id = cached_zone_achievement[current_mission_zone]
 
-    -- find achievement for destroying idols for current zone
-    local achievement_manager = Managers.achievements
+    if achievement_id == nil then
+        -- find achievement for destroying idols for current zone
+        local achievement_manager = Managers.achievements
 
-    if not achievement_manager then
+        if not achievement_manager then
+            return true
+        end
+
+        local definitions = achievement_manager:achievement_definitions()
+
+        for _, config in pairs(definitions) do
+            local stat_name = config.stat_name
+            local category = config.category
+            local category_config = AchievementCategories[category]
+            local parent_name = category_config.parent_name or category_config.name
+
+            if
+                parent_name == "exploration"
+                and stat_name
+                and stat_name:match(current_mission_zone)
+                and stat_name:match("destructible")
+                and config.next == nil
+            then
+                achievement_id = config.id
+                break
+            end
+        end
+
+        -- if there is no heretical idol penances for this zone
+        if achievement_id == nil then
+            achievement_id = false
+        end
+
+        cached_zone_achievement[current_mission_zone] = achievement_id
+    end
+
+    if not achievement_id then
         return true
     end
 
-    local definitions = achievement_manager:achievement_definitions()
-
-    for _, config in pairs(definitions) do
-        local stat_name = config.stat_name
-        local category = config.category
-        local category_config = AchievementCategories[category]
-        local parent_name = category_config.parent_name or category_config.name
-
-        if
-            parent_name == "exploration"
-            and stat_name
-            and stat_name:match(current_mission_zone)
-            and stat_name:match("destructible")
-            and config.next == nil
-        then
-            if Managers.achievements:_achievement_completed(player._local_player_id, config.id) then
-                destroyed_all_idols = true
-            end
-            break
-        end
+    if Managers.achievements:_achievement_completed(player._local_player_id, achievement_id) then
+        return false
+    else
+        return true
     end
-
-	return not destroyed_all_idols
 end
 
 mod.update_marker_icon = function(self, marker)
