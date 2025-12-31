@@ -53,7 +53,7 @@ template.max_distance = mod:get("martyrs_skull_max_distance") or 50
 template.data = {}
 
 template.scale = 1
-
+template.visible = true
 template.line_of_sight_speed = 15
 
 template.min_size = {
@@ -342,7 +342,7 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
     content.line_of_sight_progress = line_of_sight_progress
     content.scale_progress = scale_progress
     widget.alpha_multiplier = line_of_sight_progress or 1
-    widget.visible = mod:get("martyrs_skull_guide_enable") == true
+    widget.visible = template.visible
 
     if data then
         data.distance = distance
