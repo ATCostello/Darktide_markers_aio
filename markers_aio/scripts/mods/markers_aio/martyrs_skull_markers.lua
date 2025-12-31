@@ -59,11 +59,17 @@ mod.update_martyrs_skull_markers = function(self, marker)
 
 			marker.widget.style.ring.color = mod.lookup_colour(mod:get(marker.markers_aio_type .. "_border_colour"))
 
+			local color_key = marker.markers_aio_type
+
+			if not mod.does_player_need_skull() then
+				color_key = color_key .. "_collected"
+			end
+
 			marker.widget.style.icon.color = {
 				255,
-				mod:get(marker.markers_aio_type .. "_colour_R"),
-				mod:get(marker.markers_aio_type .. "_colour_G"),
-				mod:get(marker.markers_aio_type .. "_colour_B"),
+				mod:get(color_key .. "_colour_R"),
+				mod:get(color_key .. "_colour_G"),
+				mod:get(color_key .. "_colour_B"),
 			}
 		end
 	end
@@ -1851,65 +1857,75 @@ local maryrs_skull_walkthrough_markers = {
 }
 
 mod.does_player_need_skull = function()
+	local mission_manager = Managers.state.mission
+	local current_mission_name = mission_manager and mission_manager:mission_name()
+
+	if not current_mission_name then
+		return true
+	end
+
 	local characters_needing = {}
 
 	-- Grab current players in-game
 	local player_manager = Managers.player
-	local player = Managers.player:local_player(1)
+	local player = player_manager and Managers.player:local_player(1)
 
-	-- only show players needing skull if players are detected
-	if player_manager and player then
-		-- find achievement for collecting skull on current map
-		local current_mission_martyrskull_achievement_id
-		local achievement_manager = Managers.achievements
+	if not player then
+		return true
+	end
 
-		if achievement_manager then
-			local definitions = achievement_manager:achievement_definitions()
-			for _, config in pairs(definitions) do
-				local id = config.id
-				local category = config.category
-				local category_config = AchievementCategories[category]
-				local parent_name = category_config.parent_name or category_config.name
+	local collected = false
 
-				if parent_name == "exploration" then
-					if config.icon and config.icon:match("missions_achievement_puzzle") then
-						local current_mission = Managers.state.mission:mission_name()
-						if config.stat_name:match(current_mission) then
-							current_mission_martyrskull_achievement_id = config.id
-						end
-					end
-				end
-			end
-		end
+	-- find achievement for collecting skull on current map
+	local achievement_manager = Managers.achievements
 
-		local player_id = player._local_player_id
-		local player_character_name = player._profile.name
+    if not achievement_manager then
+        return true
+    end
 
-		local collected = false
+	local definitions = achievement_manager:achievement_definitions()
+	local achievement_id = nil
 
-		if player_character_name then
-			-- set collected to achievement status
+	for _, config in pairs(definitions) do
+		local category = config.category
+		local category_config = AchievementCategories[category]
+		local parent_name = category_config.parent_name or category_config.name
+		local icon = config.icon
+		local stat_name = config.stat_name
 
-			if player and current_mission_martyrskull_achievement_id then
-				if
-					Managers.achievements:_achievement_completed(player_id, current_mission_martyrskull_achievement_id)
-				then
-					collected = true
-				end
-			end
-
-			if collected == false then
-				-- need to collect
-				characters_needing[#characters_needing + 1] = player_character_name
-			end
-		end
-
-		if collected == false then
-			return true
+		if
+			parent_name == "exploration"
+			and icon
+			and icon:match("missions_achievement_puzzle")
+			and stat_name
+			and stat_name:match(current_mission_name)
+		then
+			achievement_id = config.id
+			break
 		end
 	end
 
-	return false
+	if not achievement_id then
+		return true
+	end
+
+	local player_id = player._local_player_id
+	local player_character_name = player._profile.name
+
+	if player_character_name then
+		if
+			Managers.achievements:_achievement_completed(player_id, achievement_id)
+		then
+			collected = true
+		end
+
+		if collected == false then
+			-- need to collect
+			characters_needing[#characters_needing + 1] = player_character_name
+		end
+	end
+
+	return not collected
 end
 
 mod.check_guide_marker_exists = function(self, guide_position)
