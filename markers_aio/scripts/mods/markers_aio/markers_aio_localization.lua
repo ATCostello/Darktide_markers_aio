@@ -549,6 +549,30 @@ local loc = {
 		ru = "Прозрачность",
 		["zh-tw"] = "透明度倍增器",
 		["zh-cn"] = "透明度",
+	},	
+	heretical_idol_completed_colour = {
+		en = "Heretical Idols Completed Colour",
+	},
+	heretical_idol_completed_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	heretical_idol_completed_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	heretical_idol_completed_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
 	},
 
 	icon_colour = {
@@ -1529,6 +1553,30 @@ local loc = {
 		["zh-cn"] = "绿",
 	},
 	martyrs_skull_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	martyrs_skull_collected_colour = {
+		en = "Martyrs Skull Collected Colour",
+	},
+	martyrs_skull_collected_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	martyrs_skull_collected_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	martyrs_skull_collected_colour_B = {
 		en = "B",
 		fr = "B",
 		ru = "С",
