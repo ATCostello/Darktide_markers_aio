@@ -1459,7 +1459,7 @@ local loc = {
 		["zh-tw"] = "啟用顱骨收集指南？",
 	},
 	martyrs_skull_guide_toggle = {
-		en = "Toggle Guide",
+		en = "Toggle Guide Visibility",
 	},
 	martyrs_skull_guide_disable_if_collected = {
 		en = "Only show guide if not collected?",
