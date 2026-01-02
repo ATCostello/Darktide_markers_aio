@@ -16,18 +16,13 @@ local HudElementMissionObjectiveFeed =
 
 local last_walkthrough_update = 0
 local walkthrough_update_interval = 1 -- throttle for walkthrough update in seconds
-local current_level_name = nil
-local is_guide_visible = false
+local is_guide_visible = mod:get("martyrs_skull_guide_visible")
+if is_guide_visible == nil then
+	mod:set("martyrs_skull_guide_visible", true)
+	is_guide_visible = true
+end
 
 mod.update_martyrs_skull_markers = function(self, marker)
-	self._level = Managers.state.mission:mission()
-	local level_name = self._level.name
-
-	if current_level_name ~= level_name  then
-		is_guide_visible = true
-	end
-	current_level_name = level_name
-
 	if mod:get("martyrs_skull_guide_enable") == true then
 		local now = os.clock()
 		if now - last_walkthrough_update > walkthrough_update_interval then
