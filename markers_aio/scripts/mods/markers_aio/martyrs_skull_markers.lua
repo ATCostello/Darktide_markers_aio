@@ -16,11 +16,7 @@ local HudElementMissionObjectiveFeed =
 
 local last_walkthrough_update = 0
 local walkthrough_update_interval = 1 -- throttle for walkthrough update in seconds
-local is_guide_visible = mod:get("martyrs_skull_guide_visible")
-if is_guide_visible == nil then
-	mod:set("martyrs_skull_guide_visible", true)
-	is_guide_visible = true
-end
+local is_guide_visible = mod:get("martyrs_skull_guide_visible") == true
 
 mod.update_martyrs_skull_markers = function(self, marker)
 	if mod:get("martyrs_skull_guide_enable") == true then
@@ -2209,6 +2205,7 @@ mod.martyrs_skull_guide_toggle = function()
 		mod:echo("Disable 'Only show guide if not collected' as you already have collected this skull")
 	else
 		is_guide_visible = not is_guide_visible
+		mod:set("martyrs_skull_guide_visible", is_guide_visible)
 		last_walkthrough_update = 0
 	end
 end
