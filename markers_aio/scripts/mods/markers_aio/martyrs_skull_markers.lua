@@ -1,5 +1,7 @@
 local mod = get_mod("markers_aio")
 
+mod.modules['martyrs_skull'] = true
+
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local Pickups = require("scripts/settings/pickup/pickups")
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
@@ -14,6 +16,7 @@ local HudElementMissionObjectiveFeed =
 
 local last_walkthrough_update = 0
 local walkthrough_update_interval = 1 -- throttle for walkthrough update in seconds
+local is_guide_visible = mod:get("martyrs_skull_guide_visible") == true
 
 mod.update_martyrs_skull_markers = function(self, marker)
 	if mod:get("martyrs_skull_guide_enable") == true then
@@ -2018,6 +2021,49 @@ mod.setup_walkthrough_markers = function(self)
 				end
 			end
 
+			if
+				mod:get("martyrs_skull_guide_disable_if_collected") == true
+				and mod.does_player_need_skull() == false
+			then
+				if #walkthrough_markers > 0 then
+					mod.disable_guide_objectives(mod.get_walkthrough_markers(), false)
+				end
+				return
+			end
+
+			if player_near_skull == true and walkthrough_markers.title_placed == false then
+				-- add maryr's skull guide header to objectives
+				local needed = ""
+				if mod.does_player_need_skull() == true then
+					needed = "\nYou haven't collected this skull before."
+				else
+					needed = "\nYou have already collected this skull."
+				end
+
+				local objective = _create_objective(
+					0 .. "_" .. current_level_name .. "_marker_guide_0",
+					nil,
+					nil,
+					true,
+					apply_color_to_text(
+						Localize(self._level.mission_name) .. "\n" .. walkthrough_markers.title,
+						216,
+						229,
+						207
+					)
+						.. "\n"
+						.. apply_color_to_text(walkthrough_markers.players_required, 169, 191, 153)
+						.. needed
+				)
+				objective._icon = "content/ui/materials/hud/communication_wheel/icons/enemy"
+
+				HudElementMissionObjectiveFeed.marker_objectives[#HudElementMissionObjectiveFeed.marker_objectives + 1] =
+					objective
+
+				Managers.event:trigger("event_add_mission_objective", objective)
+				walkthrough_markers.title_placed = true
+			end
+
 			-- Now, process marker/objective placement logic
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]
@@ -2025,13 +2071,6 @@ mod.setup_walkthrough_markers = function(self)
 					self,
 					Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
 				)
-
-				if
-					mod:get("martyrs_skull_guide_disable_if_collected") == true
-					and mod.does_player_need_skull() == false
-				then
-					return
-				end
 
 				-- check using the position data if a marker is already placed at the same place
 				if wmarker.placed == false and marker == nil then
@@ -2048,14 +2087,16 @@ mod.setup_walkthrough_markers = function(self)
 				end
 
 				if player_near_skull == true then
-					if wmarker.objective_placed == false and marker ~= nil then
-						marker.markers_aio_type = "martyrs_skull"
-						marker.widget.content.marker_text = wmarker.marker_text
+					if marker ~= nil then
+						marker.template.visible = is_guide_visible
+						if wmarker.objective_placed == false then
+							marker.markers_aio_type = "martyrs_skull"
+							marker.widget.content.marker_text = wmarker.marker_text
+						end
 					end
 
 					-- check if the objective is already placed at the same place
-
-					if wmarker.objective_placed == false then
+					if is_guide_visible and wmarker.objective_placed == false then
 						if wmarker.objective_text ~= nil and wmarker.objective_text ~= "" then
 							local objective_name = i
 								.. "_"
@@ -2081,54 +2122,12 @@ mod.setup_walkthrough_markers = function(self)
 
 						wmarker.objective_placed = true
 					end
-
-					-- add maryr's skull guide header to objectives
-					if i == 1 and walkthrough_markers.title_placed == false and marker ~= nil then
-						local needed = ""
-						if mod.does_player_need_skull() == true then
-							needed = "\nYou haven't collected this skull before."
-						else
-							needed = "\nYou have already collected this skull."
-						end
-
-						local objective = _create_objective(
-							0 .. "_" .. current_level_name .. "_marker_guide_0",
-							nil,
-							nil,
-							true,
-							apply_color_to_text(
-								Localize(self._level.mission_name) .. "\n" .. walkthrough_markers.title,
-								216,
-								229,
-								207
-							)
-								.. "\n"
-								.. apply_color_to_text(walkthrough_markers.players_required, 169, 191, 153)
-								.. needed
-						)
-						objective._icon = "content/ui/materials/hud/communication_wheel/icons/enemy"
-
-						HudElementMissionObjectiveFeed.marker_objectives[#HudElementMissionObjectiveFeed.marker_objectives + 1] =
-							objective
-
-						Managers.event:trigger("event_add_mission_objective", objective)
-						walkthrough_markers.title_placed = true
-					end
 				end
 			end
 
 			-- If player is not near any guide marker, remove all objectives
-			if player_near_skull == false then
-				dbg_3 = HudElementMissionObjectiveFeed.marker_objectives
-				for i = 1, #HudElementMissionObjectiveFeed.marker_objectives do
-					remove_objective(HudElementMissionObjectiveFeed.marker_objectives[i])
-				end
-
-				for i = #walkthrough_markers.markers, 1, -1 do
-					local wmarker = walkthrough_markers.markers[i]
-					wmarker.objective_placed = false
-				end
-				walkthrough_markers.title_placed = false
+			if player_near_skull == false or not is_guide_visible then
+				mod.disable_guide_objectives(walkthrough_markers, player_near_skull)
 			end
 		end
 	end
@@ -2141,6 +2140,56 @@ mod.reset_martyrs_skull_guides = function()
 			wmarker.placed = false
 			wmarker.objective_placed = false
 		end
+	end
+end
+
+mod.get_walkthrough_markers = function()
+	local current_level = Managers.state.mission and Managers.state.mission:mission()
+
+	if not current_level then
+		return nil
+	end
+
+	local walkthrough_markers = maryrs_skull_walkthrough_markers[current_level.name]
+
+	return walkthrough_markers
+end
+
+mod.disable_guide_objectives = function(walkthrough_markers, keep_header)
+	if not walkthrough_markers then
+		return
+	end
+
+	keep_header = keep_header or false
+
+	dbg_3 = HudElementMissionObjectiveFeed.marker_objectives
+	for i = #HudElementMissionObjectiveFeed.marker_objectives, keep_header and 2 or 1, -1 do
+		remove_objective(HudElementMissionObjectiveFeed.marker_objectives[i])
+		HudElementMissionObjectiveFeed.marker_objectives[i] = nil
+	end
+
+	for i = #walkthrough_markers.markers, 1, -1 do
+		local wmarker = walkthrough_markers.markers[i]
+		wmarker.objective_placed = false
+	end
+	if not keep_header then
+		walkthrough_markers.title_placed = false
+	end
+end
+
+mod.martyrs_skull_guide_toggle = function()
+	if mod:get("martyrs_skull_guide_disable_if_collected") == true and mod.does_player_need_skull() == false then
+		mod:echo("Disable 'Only show guide if not collected' as you already have collected this skull")
+	else
+		is_guide_visible = not is_guide_visible
+		mod:set("martyrs_skull_guide_visible", is_guide_visible)
+		last_walkthrough_update = 0
+	end
+end
+
+mod.martyrs_skull_on_setting_changed = function(setting_id)
+	if setting_id == "martyrs_skull_guide_disable_if_collected" then
+		last_walkthrough_update = 0
 	end
 end
 

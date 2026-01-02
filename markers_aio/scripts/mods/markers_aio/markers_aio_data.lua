@@ -1378,6 +1378,15 @@ return {
 								function_name = "martyrs_skull_toggle_los",
 							},
 							{
+								setting_id = "martyrs_skull_guide_toggle",
+								type = "keybind",
+								default_value = {},
+								keybind_global = true,
+								keybind_trigger = "pressed",
+								keybind_type = "function_call",
+								function_name = "martyrs_skull_guide_toggle",
+							},
+							{
 								setting_id = "martyrs_skull_max_distance",
 								type = "numeric",
 								default_value = 50,
