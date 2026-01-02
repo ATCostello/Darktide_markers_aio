@@ -651,6 +651,39 @@ return {
 							},
 						},
 					},
+					{
+						setting_id = "heretical_idol_completed_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "heretical_idol_completed_colour_R",
+								type = "numeric",
+								default_value = 127,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "heretical_idol_completed_colour_G",
+								type = "numeric",
+								default_value = 127,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "heretical_idol_completed_colour_B",
+								type = "numeric",
+								default_value = 127,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
 				},
 			},
 			{
@@ -1378,6 +1411,15 @@ return {
 								function_name = "martyrs_skull_toggle_los",
 							},
 							{
+								setting_id = "martyrs_skull_guide_toggle",
+								type = "keybind",
+								default_value = {},
+								keybind_global = true,
+								keybind_trigger = "pressed",
+								keybind_type = "function_call",
+								function_name = "martyrs_skull_guide_toggle",
+							},
+							{
 								setting_id = "martyrs_skull_max_distance",
 								type = "numeric",
 								default_value = 50,
@@ -1439,6 +1481,39 @@ return {
 								setting_id = "martyrs_skull_colour_B",
 								type = "numeric",
 								default_value = 0,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
+					{
+						setting_id = "martyrs_skull_collected_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "martyrs_skull_collected_colour_R",
+								type = "numeric",
+								default_value = 127,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "martyrs_skull_collected_colour_G",
+								type = "numeric",
+								default_value = 127,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "martyrs_skull_collected_colour_B",
+								type = "numeric",
+								default_value = 127,
 								range = {
 									0,
 									255,
