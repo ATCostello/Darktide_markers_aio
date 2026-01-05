@@ -185,7 +185,21 @@ mod.remove_heretical_idol_marker = function(self, unit, section_id)
     end
 end
 
-local cached_zone_achievement = {}
+local cached_zone_achievement = {
+    ["dust"] = nil,
+    ["entertainment"] = nil,
+    ["operations"] = nil,
+    ["hub"] = nil,
+    ["placeholder"] = nil,
+    ["prologue"] = nil,
+    ["tank_foundry"] = nil,
+    ["throneside"] = nil,
+    ["training_grounds"] = nil,
+    ["transit"] = nil,
+    ["horde"] = nil,
+    ["void"] = nil,
+    ["watertown"] = nil,
+}
 
 mod.does_player_need_idols = function()
 	local mission_manager = Managers.state.mission
