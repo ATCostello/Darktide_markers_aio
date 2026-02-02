@@ -12,7 +12,12 @@ local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 -- FoundYa Compatibility (Adds relevant marker categories and uses FoundYa distances instead.)
 local FoundYa = get_mod("FoundYa")
 
+local __hooks_installed = false
 mod.on_all_mods_loaded = function()
+	if __hooks_installed then
+		return
+	end
+	__hooks_installed = true
 	local is_mod_loading = true
 	mod:hook_require("scripts/extension_systems/unit_templates", function(instance)
 		if is_mod_loading then
@@ -78,6 +83,22 @@ end
 mod.medical_crate_charges = {}
 
 local med_crate_decals = mod:persistent_table("med_crate_decals")
+-- GC helper to clean up any orphaned decals periodically
+local function cleanup_med_crate_decals()
+	for posstr, arr in pairs(med_crate_decals) do
+		local decal = arr[1]
+		local unit = arr[2]
+		if (not Unit.alive(unit)) or (decal and not Unit.alive(decal)) then
+			if decal and Unit.alive(decal) then
+				local world = Unit.world(decal)
+				if world then
+					World.destroy_unit(world, decal)
+				end
+			end
+			med_crate_decals[posstr] = nil
+		end
+	end
+end
 
 local ProximityHeal = require("scripts/extension_systems/proximity/side_relation_gameplay_logic/proximity_heal")
 
@@ -133,9 +154,11 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 			local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
 
 			if not med_crate_decals[position_string] or med_crate_decals[position_string] == nil then
-				-- Create decal unit
-				local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
-				if decal_unit then
+			-- Create decal unit
+			local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
+			if decal_unit then
+			-- ensure decal is despawned when source unit is destroyed
+			ScriptUnit.set_extension_for_unit(decal_unit, "markers_aio_cleanup", { source_unit = unit, key = position_string })
 					-- Set size of unit
 					local diameter = medical_crate_config.proximity_radius * 2 + 1.5
 					Unit.set_local_scale(decal_unit, 1, Vector3(diameter, diameter, 1))
@@ -200,16 +223,13 @@ mod.update_ammo_med_markers = function(self, marker)
 		local decal_unit = array[1]
 		local world
 
-		if not Unit.alive(unit) and Unit.alive(decal_unit) then
+		if (not Unit.alive(unit)) and decal_unit and Unit.alive(decal_unit) then
 			world = Unit.world(decal_unit)
-		end
-
-		if decal_unit and world then
-			World.destroy_unit(world, decal_unit)
+			if world then
+				World.destroy_unit(world, decal_unit)
+			end
 			med_crate_decals[posstr] = nil
-		end
-
-		if not Unit.alive(unit) and not Unit.alive(decal_unit) then
+		elseif (not Unit.alive(unit)) and (not decal_unit or not Unit.alive(decal_unit)) then
 			med_crate_decals[posstr] = nil
 		end
 	end

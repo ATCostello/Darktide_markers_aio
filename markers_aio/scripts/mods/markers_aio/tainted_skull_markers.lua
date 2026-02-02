@@ -6,72 +6,78 @@ local WorldMarkerTemplateInteraction = require("scripts/ui/hud/elements/world_ma
 local UIWidget = require("scripts/managers/ui/ui_widget")
 
 mod.update_tainted_skull_markers = function(self, marker)
+    if not (marker and self) then return end
 
-    if marker and self then
-        local unit = marker.unit
+    local pt = mod.get_marker_pickup_type(marker)
+    local is_tainted = false
+    if pt then
+        local pickup = Pickups.by_name[pt]
+        is_tainted = pickup and pickup.name == "skulls_01_pickup"
+    end
+    local is_totem = marker.type and marker.type == "nurgle_totem"
+    if not (is_tainted or is_totem) then return end
 
-        local pickup_type = mod.get_marker_pickup_type(marker)
+    marker.markers_aio_type = "event"
+    if not marker._aio_event_inited then
+        marker._aio_event_inited = true
+        marker.draw = false
+        marker.widget.alpha_multiplier = 0
+        marker._aio_last_bg = nil
+        marker._aio_last_ring = nil
+        marker._aio_last_icon_color = nil
+        marker._aio_last_icon_asset = nil
+        marker._aio_last_keep_on_screen = nil
+        marker._aio_last_max_distance = nil
+        marker._aio_last_los_req = nil
+    end
 
-        if pickup_type then
-            local pickup = Pickups.by_name[pickup_type]
+    -- shared icon asset
+    local icon_asset = "content/ui/materials/hud/interactions/icons/enemy"
+    if marker._aio_last_icon_asset ~= icon_asset then
+        marker.widget.content.icon = icon_asset
+        marker._aio_last_icon_asset = icon_asset
+    end
 
-            if pickup then
-                local is_tainted_skull = false
-                if pickup.name and pickup.name == "skulls_01_pickup" then
-                    is_tainted_skull = true
-                end
-                if is_tainted_skull then
+    -- background
+    local bg_key = mod:get("marker_background_colour")
+    if marker._aio_last_bg ~= bg_key then
+        marker.widget.style.background.color = mod.lookup_colour(bg_key)
+        marker._aio_last_bg = bg_key
+    end
 
-                    marker.draw = false
-                    marker.widget.alpha_multiplier = 0
+    -- LOS requirement and clamp
+    local los_req = is_totem and false or mod:get("event_require_line_of_sight")
+    if marker._aio_last_los_req ~= los_req then
+        marker.template.check_line_of_sight = los_req
+        marker._aio_last_los_req = los_req
+    end
 
-                    marker.markers_aio_type = "event"
+    local keep_on = is_totem and true or mod:get("event_keep_on_screen")
+    if marker._aio_last_keep_on_screen ~= keep_on then
+        marker.template.screen_clamp = keep_on
+        marker.block_screen_clamp = false
+        marker._aio_last_keep_on_screen = keep_on
+    end
 
-                    marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
-                    marker.template.check_line_of_sight = mod:get("event_require_line_of_sight")
+    -- max distance
+    local max_distance = mod:get("event_max_distance")
+    if marker._aio_last_max_distance ~= max_distance then
+        marker.template.max_distance = max_distance
+        marker._aio_last_max_distance = max_distance
+    end
 
-                    marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-                    marker.template.screen_clamp = mod:get("event_keep_on_screen")
-                    marker.block_screen_clamp = false
+    -- ring and icon color
+    local ring_key = mod:get("event_border_colour")
+    if marker._aio_last_ring ~= ring_key then
+        marker.widget.style.ring.color = mod.lookup_colour(ring_key)
+        marker._aio_last_ring = ring_key
+    end
 
-                    marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
-
-                    marker.widget.style.ring.color = mod.lookup_colour(mod:get("event_border_colour"))
-                    marker.widget.style.icon.color = {
-                        255,
-                        mod:get("event_colour_R"),
-                        mod:get("event_colour_G"),
-                        mod:get("event_colour_B")
-                    }
-
-                end
-            end
-        end
-
-        if marker.type and marker.type == "nurgle_totem" then
-
-            marker.draw = false
-            marker.widget.alpha_multiplier = 0
-
-            marker.markers_aio_type = "event"
-
-            marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
-            marker.template.check_line_of_sight = false
-
-            marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-            marker.template.screen_clamp = true
-            marker.block_screen_clamp = false
-
-            marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
-
-            marker.widget.style.ring.color = mod.lookup_colour(mod:get("event_border_colour"))
-            marker.widget.style.icon.color = {
-                255,
-                mod:get("event_colour_R"),
-                mod:get("event_colour_G"),
-                mod:get("event_colour_B")
-            }
-        end
+    local icon_color = {255, mod:get("event_colour_R"), mod:get("event_colour_G"), mod:get("event_colour_B")}
+    local last = marker._aio_last_icon_color
+    if not last or last[2] ~= icon_color[2] or last[3] ~= icon_color[3] or last[4] ~= icon_color[4] then
+        marker.widget.style.icon.color = icon_color
+        marker._aio_last_icon_color = icon_color
     end
 end
 
