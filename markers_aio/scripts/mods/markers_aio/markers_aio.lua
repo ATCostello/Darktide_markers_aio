@@ -36,6 +36,7 @@ mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
 	self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
 	self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
 
+	-- reset runtime state on (re)init to avoid growth across missions/hot-joins
 	mod.active_chests = {}
 	mod.current_heretical_idol_markers = {}
 	mod.reset_martyrs_skull_guides()
@@ -45,7 +46,8 @@ mod:hook_safe(CLASS.MissionObjectiveSystem, "hot_join_sync", function(self, send
 	mod.reset_martyrs_skull_guides()
 end)
 
-totem_units = {}
+local totem_units = {}
+_G.totem_units = totem_units -- expose for other modules without polluting with multiple instances
 -- add a marker to nurgle totems...
 mod:hook_safe(CLASS.PropUnitDataExtension, "setup_from_component", function(self, prop_data_name)
 	if prop_data_name == "nurgle_totem" then
@@ -481,7 +483,8 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 			self:_raycast_markers(temp_marker_raycast_queue)
 		end
 
-		dbg_markers = markers_by_type
+		-- avoid leaving debug globals referenced each frame
+		-- dbg_markers = markers_by_type
 
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
@@ -544,6 +547,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 								for i, unit in pairs(totem_units) do
 									if marker.unit == unit then
 										totem_exists = true
+										break
 									end
 								end
 
@@ -566,17 +570,17 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 	end
 
 	local markers_to_remove = #temp_array_markers_to_remove
-
+	
 	if markers_to_remove > 0 then
-		for i = 1, markers_to_remove do
-			local marker = temp_array_markers_to_remove[i]
-
-			self:_unregister_marker(marker)
-		end
-
-		table.clear(temp_array_markers_to_remove)
+	for i = 1, markers_to_remove do
+	local marker = temp_array_markers_to_remove[i]
+	self:_unregister_marker(marker)
 	end
-end
+	end
+	-- ensure temp arrays are cleared every frame to prevent growth/retained references
+	table.clear(temp_array_markers_to_remove)
+	table.clear(temp_marker_raycast_queue)
+	end
 
 -- Fade out markers that are behind objects, depending on the set "los_opacity"
 mod.fade_icon_not_in_los = function(marker, ui_renderer)
@@ -588,7 +592,6 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 		local player = Managers.player:local_player(1)
 		local is_ads = false
 		if player then
-			dbg_player = player
 			local player_unit = player.player_unit
 			local unit_data_extension = ScriptUnit.extension(player_unit, "unit_data_system")
 			if unit_data_extension then

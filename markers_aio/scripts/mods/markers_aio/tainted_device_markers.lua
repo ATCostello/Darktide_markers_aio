@@ -12,50 +12,69 @@ end
 
 
 mod.update_TaintedDevices_markers = function(self, marker)
+    if not (marker and self) then return end
 
-    if marker and self then
-        local unit = marker.unit
+    local pt = mod.get_marker_pickup_type(marker)
+    if not pt then return end
+    local pickup = Pickups.by_name[pt]
+    if not (pickup and pickup.name == "communications_hack_device") then return end
 
-        local pickup_type = mod.get_marker_pickup_type(marker)
+    marker.markers_aio_type = "event"
+    if not marker._aio_event_tainted_inited then
+        marker._aio_event_tainted_inited = true
+        marker.widget.alpha_multiplier = 0
+        marker.draw = false
+        marker._aio_last_bg = nil
+        marker._aio_last_ring = nil
+        marker._aio_last_icon_color = nil
+        marker._aio_last_icon_asset = nil
+        marker._aio_last_keep_on_screen = nil
+        marker._aio_last_max_distance = nil
+        marker._aio_last_los_req = nil
+    end
 
-        if pickup_type then
-            local pickup = Pickups.by_name[pickup_type]
+    local bg_key = mod:get("marker_background_colour")
+    if marker._aio_last_bg ~= bg_key then
+        marker.widget.style.background.color = mod.lookup_colour(bg_key)
+        marker._aio_last_bg = bg_key
+    end
 
-            if pickup then
-                local is_hack_device = false
+    local los_req = mod:get("event_require_line_of_sight")
+    if marker._aio_last_los_req ~= los_req then
+        marker.template.check_line_of_sight = los_req
+        marker._aio_last_los_req = los_req
+    end
 
-                if pickup.name and pickup.name == "communications_hack_device" then
-                    is_hack_device = true
-                end
-                if is_hack_device then
+    local max_distance = mod:get("event_max_distance")
+    if marker._aio_last_max_distance ~= max_distance then
+        marker.template.max_distance = max_distance
+        marker._aio_last_max_distance = max_distance
+    end
 
-                    -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
-                    marker.widget.alpha_multiplier = 0
-                    marker.draw = false
+    local keep_on = mod:get("event_keep_on_screen")
+    if marker._aio_last_keep_on_screen ~= keep_on then
+        marker.template.screen_clamp = keep_on
+        marker.block_screen_clamp = false
+        marker._aio_last_keep_on_screen = keep_on
+    end
 
-                    marker.markers_aio_type = "event"
+    local icon_asset = "content/ui/materials/icons/pocketables/hud/corrupted_auspex_scanner"
+    if marker._aio_last_icon_asset ~= icon_asset then
+        marker.widget.content.icon = icon_asset
+        marker._aio_last_icon_asset = icon_asset
+    end
 
-                    marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
+    local ring_key = mod:get("event_border_colour")
+    if marker._aio_last_ring ~= ring_key then
+        marker.widget.style.ring.color = mod.lookup_colour(ring_key)
+        marker._aio_last_ring = ring_key
+    end
 
-                    marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
-
-                    marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-
-                    marker.template.screen_clamp = mod:get("event_keep_on_screen")
-                    marker.block_screen_clamp = false
-
-                    marker.widget.content.icon = "content/ui/materials/icons/pocketables/hud/corrupted_auspex_scanner"
-                    marker.widget.style.ring.color = mod.lookup_colour(mod:get("event_border_colour"))
-                    marker.widget.style.icon.color = {
-                        255,
-                        mod:get("event_colour_R"),
-                        mod:get("event_colour_G"),
-                        mod:get("event_colour_B")
-                    }
-
-                end
-            end
-        end
+    local icon_color = {255, mod:get("event_colour_R"), mod:get("event_colour_G"), mod:get("event_colour_B")}
+    local last = marker._aio_last_icon_color
+    if not last or last[2] ~= icon_color[2] or last[3] ~= icon_color[3] or last[4] ~= icon_color[4] then
+        marker.widget.style.icon.color = icon_color
+        marker._aio_last_icon_color = icon_color
     end
 end
 
