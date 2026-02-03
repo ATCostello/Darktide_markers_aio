@@ -167,7 +167,7 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 					local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
 					if field_improv_active and mod:get("display_field_improv_colour") == true then
-						Quaternion.set_xyzw(material_value, 2.8, -0.15, 3.0, 0.6)					
+						Quaternion.set_xyzw(material_value, 2.8, -0.15, 3.0, 0.6)
 					else
 						Quaternion.set_xyzw(material_value, 0, 2, 0, 0.5)
 					end
@@ -239,6 +239,32 @@ mod.update_ammo_med_markers = function(self, marker)
 
 		local pickup_type = mod.get_marker_pickup_type(marker)
 
+		-- EARLY CLASSIFICATION (runs even if visuals are disabled)
+		if not marker.markers_aio_type then
+			if
+				pickup_type == "small_clip"
+				or pickup_type == "large_clip"
+				or pickup_type == "small_grenade"
+				or pickup_type == "ammo_cache_pocketable"
+				or pickup_type == "medical_crate_pocketable"
+				or pickup_type == "medical_crate_deployable"
+				or pickup_type == "ammo_cache_deployable"
+				or marker.data and marker.data._active_interaction_type == "health_station"
+			then
+				marker.markers_aio_type = "ammo_med"
+			end
+		end
+
+		-- If not ammo/med, stop here
+		if marker.markers_aio_type ~= "ammo_med" then
+			return
+		end
+
+		-- Visual updates gated by fs
+		if not mod.frame_settings.enable.ammo_med then
+			return
+		end
+
 		if pickup_type then
 			add_to_list_if_not_present(pickup_types, pickup_type)
 		end
@@ -261,7 +287,6 @@ mod.update_ammo_med_markers = function(self, marker)
 			or marker.data and marker.data.type == "ammo_cache_deployable"
 			or marker.data and marker.data._active_interaction_type == "health_station"
 		then
-			marker.markers_aio_type = "ammo_med"
 
 			-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 			marker.widget.alpha_multiplier = 0
@@ -279,7 +304,9 @@ mod.update_ammo_med_markers = function(self, marker)
 			marker.template.screen_clamp = mod:get("ammo_med_keep_on_screen")
 			marker.block_screen_clamp = false
 
-			self._marker_templates[MarkerTemplate.name] = MarkerTemplate
+			if not self._marker_templates[MarkerTemplate.name] then
+				self._marker_templates[MarkerTemplate.name] = MarkerTemplate
+			end
 
 			local max_spawn_distance_sq = max_distance * max_distance
 			HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
