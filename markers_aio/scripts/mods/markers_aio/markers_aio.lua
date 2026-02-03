@@ -284,6 +284,11 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 			-- Far markers get lower Z, near markers higher Z
 			offset[3] = BASE_Z + (i * Z_STRIDE)
 
+			-- If transform hasn't been applied yet, render fully transparent to avoid pop-in
+			if not marker._aio_transformed then
+				widget.alpha_multiplier = 0
+			end
+
 			UIWidget.draw(widget, ui_renderer)
 		end
 	end
@@ -549,6 +554,9 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					local fs = mod.frame_settings
 					local is_interaction = marker.type == "interaction" or marker.markers_aio_type ~= nil
 
+					-- Keep invisible on the very first frame until transform is applied
+					ensure_invisible_until_transformed(marker)
+
 					if update_function then
 						update_function(self, ui_renderer, marker.widget, marker, template, dt, t)
 					end
@@ -596,6 +604,11 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					if marker.markers_aio_type then
 						mod.adjust_los_requirement(marker)
 						mod.adjust_distance_visibility(marker)
+					end
+
+					-- Mark transformed once we have distance and offsets computed
+					if marker.widget and marker.widget.offset and marker.distance then
+						marker._aio_transformed = true
 					end
 				end
 			end
@@ -649,6 +662,16 @@ end
 
 local do_draw = function(marker)
 	marker.draw = true
+end
+
+-- Ensure markers start fully transparent until their first transform has applied
+local function ensure_invisible_until_transformed(marker)
+	if not marker._aio_transformed then
+		local widget = marker.widget
+		if widget then
+			widget.alpha_multiplier = 0
+		end
+	end
 end
 
 local dont_draw = function(marker)
