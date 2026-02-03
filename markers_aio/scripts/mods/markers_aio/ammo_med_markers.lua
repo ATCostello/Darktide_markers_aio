@@ -154,11 +154,9 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 			local position_string = tostring(tx) .. "," .. tostring(ty) .. "," .. tostring(tz)
 
 			if not med_crate_decals[position_string] or med_crate_decals[position_string] == nil then
-			-- Create decal unit
-			local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
-			if decal_unit then
-			-- ensure decal is despawned when source unit is destroyed
-			ScriptUnit.set_extension_for_unit(decal_unit, "markers_aio_cleanup", { source_unit = unit, key = position_string })
+				-- Create decal unit
+				local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
+				if decal_unit then
 					-- Set size of unit
 					local diameter = medical_crate_config.proximity_radius * 2 + 1.5
 					Unit.set_local_scale(decal_unit, 1, Vector3(diameter, diameter, 1))
@@ -169,14 +167,16 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 					local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
 					if field_improv_active and mod:get("display_field_improv_colour") == true then
-						Quaternion.set_xyzw(material_value, 1, 0.1, 1, 0.5)
+						Quaternion.set_xyzw(material_value, 2.8, -0.15, 3.0, 0.6)					
 					else
-						Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
+						Quaternion.set_xyzw(material_value, 0, 2, 0, 0.5)
 					end
+
 					Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
+					Unit.set_vector4_for_material(decal_unit, "projector", "tint_color", material_value, true)
 
 					-- Set low opacity
-					Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.06)
+					Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.15)
 					med_crate_decals[position_string] = {
 						decal_unit,
 						unit,
