@@ -634,7 +634,7 @@ mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, na
 	marker_text_style.offset = {
 		0,
 		0,
-		900,
+		0,
 	}
 	marker_text_style.text_color = Color.ui_hud_green_super_light(255, true)
 	marker_text_style.text_horizontal_alignment = "center"

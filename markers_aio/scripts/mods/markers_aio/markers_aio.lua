@@ -35,7 +35,7 @@ mod.fc_typecache = {}
 
 -- Ensure markers start fully transparent until their first transform has applied
 local function ensure_invisible_until_transformed(marker)
-	if not marker._aio_transformed and marker.widget then
+	if marker.markers_aio_type and not marker._aio_transformed and marker.widget then
 		marker.widget.alpha_multiplier = 0
 	end
 end
@@ -290,7 +290,7 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 
 	-- Draw in sorted order with increasing Z
 	local BASE_Z = 0
-	local Z_STRIDE = 100
+	local Z_STRIDE = 4
 
 	for i = 1, #drawable_markers do
 		local marker = drawable_markers[i]
@@ -301,6 +301,11 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 
 			-- Far markers get lower Z, near markers higher Z
 			offset[3] = BASE_Z + (i * Z_STRIDE)
+
+			-- Make marker text offset infront of widget
+			if widget.content.marker_text and widget.content.marker_text ~= "" then
+				widget.style.marker_text.offset[3] = BASE_Z + (i * Z_STRIDE) + 2
+			end
 
 			UIWidget.draw(widget, ui_renderer)
 		end
@@ -336,8 +341,6 @@ local function force_text_full_alpha(marker)
 
 	text_style.color[1] = corrected_alpha
 end
-
-
 
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
 	-- Build per-frame state
@@ -580,7 +583,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		end
 
 		-- avoid leaving debug globals referenced each frame
-		-- dbg_markers = markers_by_type
+		dbg_markers = markers_by_type
 
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
@@ -650,18 +653,13 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 						marker._aio_transformed = true
 					end
 
-					--if marker._aio_transformed and not marker._aio_fade_initialized then
-					--	marker.widget.alpha_multiplier = 0
-					--	marker._aio_fade_initialized = true
-					--end
-
 					-- Update AIO markers every frame
 					if marker.markers_aio_type and marker._aio_transformed then
 						mod.fade_icon_not_in_los(marker, ui_renderer) -- smooth fade / LOS
 						mod.adjust_scale(self, marker, ui_renderer) -- smooth distance-based scaling
 					end
 
-					-- Force full-opacity text for critical supplies
+					-- Force full-opacity text
 					if marker.data then
 						local t = marker.data._active_interaction_type
 
