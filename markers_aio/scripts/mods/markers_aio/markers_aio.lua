@@ -33,6 +33,13 @@ mod.frame_settings = {}
 -- Lazy per-marker-type cache (settings snapshot per frame)
 mod.fc_typecache = {}
 
+-- Ensure markers start fully transparent until their first transform has applied
+local function ensure_invisible_until_transformed(marker)
+	if not marker._aio_transformed and marker.widget then
+		marker.widget.alpha_multiplier = 0
+	end
+end
+
 -- Global colour lookup (no per-call table allocs)
 local COLOUR_LOOKUP = {
 	Gold = { 255, 232, 188, 109 },
@@ -118,6 +125,7 @@ local function build_frame_settings(mod)
 	fs.los_enabled = mod:get("los_fade_enable") == true
 	fs.los_opacity = (mod:get("los_opacity") or 100) / 100
 	fs.ads_los_opacity = (mod:get("ads_los_opacity") or 100) / 100
+	fs.ads_blend = math.lerp(fs.ads_blend or 0, is_ads and 1 or 0, 0.25)
 
 	-- Feature toggles (queried ONCE)
 	fs.enable = {
@@ -231,8 +239,16 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 				if widget and content then
 					-- AIO markers
 					if marker.markers_aio_type then
-						mod.adjust_scale(self, marker, ui_renderer)
-						mod.fade_icon_not_in_los(marker, ui_renderer)
+						if marker.markers_aio_type and not marker._aio_scale_ready then
+							marker.draw = false
+						end
+
+						if marker.markers_aio_type and not marker._aio_alpha_ready then
+							if marker.widget then
+								marker.widget.alpha_multiplier = 0
+							end
+							marker.draw = false
+						end
 
 					-- Vanilla markers
 					else
@@ -283,11 +299,6 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 
 			-- Far markers get lower Z, near markers higher Z
 			offset[3] = BASE_Z + (i * Z_STRIDE)
-
-			-- If transform hasn't been applied yet, render fully transparent to avoid pop-in
-			if not marker._aio_transformed then
-				widget.alpha_multiplier = 0
-			end
 
 			UIWidget.draw(widget, ui_renderer)
 		end
@@ -548,6 +559,9 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 				local marker = markers[i]
 
 				if marker and marker.update then
+					-- Reset AIO classification every frame to avoid cross-contamination
+					marker.markers_aio_type = nil
+
 					local template = marker.template
 					local update_function = template.update_function
 
@@ -561,44 +575,41 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 						update_function(self, ui_renderer, marker.widget, marker, template, dt, t)
 					end
 
-					-- Only run expensive classification logic when relevant
-					if is_interaction then
-						if fs.enable.tome then
-							mod.update_tome_markers(self, marker)
-						end
-						if fs.enable.material then
-							mod.update_material_markers(self, marker)
-						end
-						if fs.enable.ammo_med then
-							mod.update_ammo_med_markers(self, marker)
-						end
-						if fs.enable.stimm then
-							mod.update_stimm_markers(self, marker)
-						end
-						if fs.enable.chest then
-							mod.update_chest_markers(self, marker)
-						end
-						if fs.enable.heretical_idol then
-							mod.update_marker_icon(self, marker)
-						end
-						if fs.enable.tainted then
-							mod.update_TaintedDevices_markers(self, marker)
-						end
-						if fs.enable.tainted_skull then
-							mod.update_tainted_skull_markers(self, marker)
-						end
-						if fs.enable.luggable then
-							mod.update_luggable_markers(self, marker)
-						end
-						if fs.enable.martyrs_skull then
-							mod.update_martyrs_skull_markers(self, marker)
-						end
-						if fs.enable.rations then
-							mod.update_stolenrations_markers(self, marker)
-						end
-						if fs.enable.atonement then
-							mod.update_atonement_markers(self, marker)
-						end
+					if fs.enable.tome then
+						mod.update_tome_markers(self, marker)
+					end
+					if fs.enable.material then
+						mod.update_material_markers(self, marker)
+					end
+					if fs.enable.ammo_med then
+						mod.update_ammo_med_markers(self, marker)
+					end
+					if fs.enable.stimm then
+						mod.update_stimm_markers(self, marker)
+					end
+					if fs.enable.chest then
+						mod.update_chest_markers(self, marker)
+					end
+					if fs.enable.heretical_idol then
+						mod.update_marker_icon(self, marker)
+					end
+					if fs.enable.tainted then
+						mod.update_TaintedDevices_markers(self, marker)
+					end
+					if fs.enable.tainted_skull then
+						mod.update_tainted_skull_markers(self, marker)
+					end
+					if fs.enable.luggable then
+						mod.update_luggable_markers(self, marker)
+					end
+					if fs.enable.martyrs_skull then
+						mod.update_martyrs_skull_markers(self, marker)
+					end
+					if fs.enable.rations then
+						mod.update_stolenrations_markers(self, marker)
+					end
+					if fs.enable.atonement then
+						mod.update_atonement_markers(self, marker)
 					end
 
 					if marker.markers_aio_type then
@@ -609,6 +620,17 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					-- Mark transformed once we have distance and offsets computed
 					if marker.widget and marker.widget.offset and marker.distance then
 						marker._aio_transformed = true
+					end
+
+					--if marker._aio_transformed and not marker._aio_fade_initialized then
+					--	marker.widget.alpha_multiplier = 0
+					--	marker._aio_fade_initialized = true
+					--end
+
+					-- Update AIO markers every frame
+					if marker.markers_aio_type and marker._aio_transformed then
+						mod.fade_icon_not_in_los(marker, ui_renderer) -- smooth fade / LOS
+						mod.adjust_scale(self, marker, ui_renderer) -- smooth distance-based scaling
 					end
 				end
 			end
@@ -636,100 +658,158 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 		return
 	end
 
+	local widget = marker.widget
+	if not widget then
+		return
+	end
+
 	local fs = mod.frame_settings
 	local tc = get_type_cache(mod, marker.markers_aio_type)
 
-	-- health station exception
-	if marker.data and marker.data._active_interaction_type == "health_station" then
-		marker.widget.alpha_multiplier = tc.alpha
+	-- Pinged markers are always fully visible
+	if widget.content and widget.content.tagged == true then
+		widget.alpha_multiplier = tc.alpha
+		marker._aio_alpha_ready = true
 		return tc.alpha
 	end
 
-	local alpha = tc.alpha
+	-- Health station exception
+	if marker.data and marker.data._active_interaction_type == "health_station" then
+		widget.alpha_multiplier = tc.alpha
+		marker._aio_alpha_ready = true
+		return tc.alpha
+	end
 
-	if fs.los_enabled then
-		if marker.raycast_result == true then
-			alpha = alpha * fs.los_opacity
-		elseif fs.is_ads then
-			alpha = alpha * fs.ads_los_opacity
+	-- No raycast yet = assume blocked LOS
+	local has_raycast = marker.raycast_result ~= nil
+
+	local base_alpha = tc.alpha
+	local los_alpha
+
+	if fs.is_ads then
+		los_alpha = fs.ads_los_opacity or fs.los_opacity or 1
+	else
+		los_alpha = fs.los_opacity or 1
+	end
+	local ads_alpha = math.lerp(1, fs.ads_los_opacity or 1, fs.ads_blend)
+	
+	------------------------------------------------
+	-- Distance-based alpha (ONLY for IN-LOS markers)
+	------------------------------------------------
+	local distance_factor = 1
+
+	if tc.max_distance and marker.distance then
+		local d = math.clamp(marker.distance / tc.max_distance, 0, 1)
+
+		-- Smoothstep for softness
+		d = d * d * (3 - 2 * d)
+
+		if d > 0.5 then
+			-- Mid → far: fade DOWN to LOS opacity
+			distance_factor = math.lerp(1, los_alpha, (d - 0.5) * 2)
 		end
 	end
 
-	local current = marker.widget.alpha_multiplier or 0
-	marker.widget.alpha_multiplier = math.lerp(current, alpha, 0.8)
-	return alpha
+	------------------------------------------------
+	-- LOS logic
+	------------------------------------------------
+	local target_alpha = base_alpha
+
+	-- Apply ADS opacity globally (both LOS and non-LOS)
+	if fs.is_ads and (marker.raycast_result == false) then
+		-- In LOS: ADS dim applies
+		target_alpha = target_alpha * ads_alpha
+	end
+
+	if fs.los_enabled then
+		-- Out of LOS OR no raycast yet
+		if not has_raycast or marker.raycast_result == true then
+			target_alpha = target_alpha * los_alpha
+		else
+			-- In LOS → distance-shaped opacity
+			target_alpha = target_alpha * distance_factor
+		end
+	end
+
+	------------------------------------------------
+	-- Init + smoothing
+	------------------------------------------------
+	if not marker._aio_alpha_ready then
+		widget.alpha_multiplier = target_alpha
+		marker._aio_alpha_ready = true
+		return target_alpha
+	end
+
+	local current = widget.alpha_multiplier or target_alpha
+	widget.alpha_multiplier = math.lerp(current, target_alpha, 0.8)
+
+	return target_alpha
+end
+
+local function can_draw(marker)
+	return marker._aio_transformed == true and marker._aio_scale_ready == true and marker._aio_alpha_ready == true
 end
 
 local do_draw = function(marker)
-	marker.draw = true
-end
-
--- Ensure markers start fully transparent until their first transform has applied
-local function ensure_invisible_until_transformed(marker)
-	if not marker._aio_transformed then
-		local widget = marker.widget
-		if widget then
-			widget.alpha_multiplier = 0
-		end
+	if can_draw(marker) then
+		marker.draw = true
+	else
+		marker.draw = false
 	end
 end
 
 local dont_draw = function(marker)
-	if marker then
-		-- if the marker is tagged, always show.
-		if
-			marker.is_inside_frustum
-			and marker.widget
-			and marker.widget.content
-			and marker.widget.content
-			and marker.widget.content.tagged == true
-		then
-			do_draw(marker)
-		else
-			marker.draw = false
-		end
+	if not marker then
+		return
+	end
+
+	-- Tagged markers still must respect transform readiness
+	if
+		marker.is_inside_frustum
+		and marker.widget
+		and marker.widget.content
+		and marker.widget.content.tagged == true
+		and can_draw(marker)
+	then
+		marker.draw = true
+	else
+		marker.draw = false
 	end
 end
 
--- Adjust whether markers are shown behind objects or not, depending on which marker type and which settings are enabled.
 mod.adjust_los_requirement = function(marker)
-	if marker.markers_aio_type then
-		if mod:get(marker.markers_aio_type .. "_require_line_of_sight") == true then
-			if marker.is_inside_frustum then
-				if marker.raycast_result == false then
-					do_draw(marker)
-				elseif mod:get(marker.markers_aio_type .. "_keep_on_screen") then
-					do_draw(marker)
-				else
-					dont_draw(marker)
-				end
-			elseif marker.raycast_result == false and mod:get(marker.markers_aio_type .. "_keep_on_screen") then
+	if not marker.markers_aio_type then
+		return
+	end
+
+	local fs = mod.frame_settings
+	local tc = get_type_cache(mod, marker.markers_aio_type)
+
+	if tc.require_los then
+		if marker.is_inside_frustum then
+			if marker.raycast_result == false then
+				do_draw(marker)
+			elseif tc.keep_on_screen then
 				do_draw(marker)
 			else
 				dont_draw(marker)
 			end
+		elseif marker.raycast_result == false and tc.keep_on_screen then
+			do_draw(marker)
 		else
-			if marker.is_inside_frustum then
-				do_draw(marker)
-			elseif mod:get(marker.markers_aio_type .. "_keep_on_screen") then
-				do_draw(marker)
-			else
-				dont_draw(marker)
-			end
+			dont_draw(marker)
+		end
+	else
+		if marker.is_inside_frustum or tc.keep_on_screen then
+			do_draw(marker)
+		else
+			dont_draw(marker)
 		end
 	end
 
-	-- As health station is visible through objects, limit to only 20m distance.
-	if
-		marker.data
-		and marker.data._active_interaction_type
-		and marker.data._active_interaction_type == "health_station"
-	then
-		if
-			marker.is_inside_frustum
-			and marker.distance
-			and marker.distance < (mod:get("med_station_max_distance") or 20)
-		then
+	-- Health station exception (cached distance)
+	if marker.data and marker.data._active_interaction_type == "health_station" then
+		if marker.is_inside_frustum and marker.distance and marker.distance < (fs.med_station_max_distance or 20) then
 			do_draw(marker)
 		else
 			dont_draw(marker)
@@ -756,19 +836,18 @@ mod.adjust_scale = function(self, marker, ui_renderer)
 	end
 
 	local scale = 1
-	local scale_key = marker.markers_aio_type .. "_scale"
-	local user_scale = mod:get(scale_key)
-	if user_scale then
-		scale = user_scale / 100
-	end
+	local tc = get_type_cache(mod, marker.markers_aio_type)
+	local scale = tc.scale or 1
 
 	marker.scale = self:_get_scale(scale_settings, distance)
 	local new_scale = marker.ignore_scale and 1 or marker.scale * scale
 	marker.scale = new_scale
 
 	if not marker._aio_scale_initialized then
+		-- Hard-apply scale instantly before first draw
 		self:_apply_scale(widget, new_scale)
 		marker._aio_scale_initialized = true
+		marker._aio_scale_ready = true
 		return
 	end
 
@@ -837,11 +916,14 @@ end
 
 -- force hide the markers if the distance is greater than their max. (Helps ensure markers wont be "stuck" on the screen on rare occurances)
 mod.adjust_distance_visibility = function(marker)
-	if marker.markers_aio_type then
-		local max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-		if max_distance and marker.distance > max_distance then
-			dont_draw(marker)
-		end
+	if not marker.markers_aio_type then
+		return
+	end
+
+	local tc = get_type_cache(mod, marker.markers_aio_type)
+
+	if tc.max_distance and marker.distance > tc.max_distance then
+		dont_draw(marker)
 	end
 end
 
