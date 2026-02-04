@@ -24,65 +24,36 @@ mod.update_martyrs_skull_markers = function(self, marker)
 		end
 	end
 
-	if not (marker and self) then return end
-	local pickup_type = mod.get_marker_pickup_type(marker)
-	if pickup_type ~= "collectible_01_pickup" then return end
+	if marker and self then
+		local unit = marker.unit
 
-	marker.markers_aio_type = "martyrs_skull"
-	if not marker._aio_martyrs_inited then
-		marker._aio_martyrs_inited = true
-		marker.draw = false
-		marker.widget.alpha_multiplier = 0
-		marker._aio_last_bg = nil
-		marker._aio_last_ring = nil
-		marker._aio_last_icon_color = nil
-		marker._aio_last_icon_asset = nil
-		marker._aio_last_keep_on_screen = nil
-		marker._aio_last_max_distance = nil
-		marker._aio_last_los_req = nil
-	end
+		local pickup_type = mod.get_marker_pickup_type(marker)
 
-	-- background
-	local bg_key = mod:get("marker_background_colour")
-	if marker._aio_last_bg ~= bg_key then
-		marker.widget.style.background.color = mod.lookup_colour(bg_key)
-		marker._aio_last_bg = bg_key
-	end
+		if pickup_type == "collectible_01_pickup" then
+			marker.draw = false
+			marker.widget.alpha_multiplier = 0
 
-	-- clamp/LOS/max distance
-	local los_req = mod:get("martyrs_skull_require_line_of_sight")
-	if marker._aio_last_los_req ~= los_req then
-		marker.template.check_line_of_sight = los_req
-		marker._aio_last_los_req = los_req
-	end
-	local keep_on = mod:get("martyrs_skull_keep_on_screen")
-	if marker._aio_last_keep_on_screen ~= keep_on then
-		marker.template.screen_clamp = keep_on
-		marker.block_screen_clamp = false
-		marker._aio_last_keep_on_screen = keep_on
-	end
-	local max_distance = mod:get("martyrs_skull_max_distance")
-	if marker._aio_last_max_distance ~= max_distance then
-		marker.template.max_distance = max_distance
-		marker._aio_last_max_distance = max_distance
-	end
+			marker.markers_aio_type = "martyrs_skull"
 
-	-- icon asset and colors
-	local icon_asset = "content/ui/materials/hud/interactions/icons/enemy"
-	if marker._aio_last_icon_asset ~= icon_asset then
-		marker.widget.content.icon = icon_asset
-		marker._aio_last_icon_asset = icon_asset
-	end
-	local ring_key = mod:get("martyrs_skull_border_colour")
-	if marker._aio_last_ring ~= ring_key then
-		marker.widget.style.ring.color = mod.lookup_colour(ring_key)
-		marker._aio_last_ring = ring_key
-	end
-	local icon_color = {255, mod:get("martyrs_skull_colour_R"), mod:get("martyrs_skull_colour_G"), mod:get("martyrs_skull_colour_B")}
-	local last = marker._aio_last_icon_color
-	if not last or last[2] ~= icon_color[2] or last[3] ~= icon_color[3] or last[4] ~= icon_color[4] then
-		marker.widget.style.icon.color = icon_color
-		marker._aio_last_icon_color = icon_color
+			marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
+
+			marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
+
+			marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+			marker.template.screen_clamp = mod:get(marker.markers_aio_type .. "_keep_on_screen")
+			marker.block_screen_clamp = false
+
+			marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
+
+			marker.widget.style.ring.color = mod.lookup_colour(mod:get(marker.markers_aio_type .. "_border_colour"))
+
+			marker.widget.style.icon.color = {
+				255,
+				mod:get(marker.markers_aio_type .. "_colour_R"),
+				mod:get(marker.markers_aio_type .. "_colour_G"),
+				mod:get(marker.markers_aio_type .. "_colour_B"),
+			}
+		end
 	end
 end
 
@@ -1867,47 +1838,66 @@ local maryrs_skull_walkthrough_markers = {
 	},
 }
 
-mod._martyrs_need_cache = mod._martyrs_need_cache or { mission = nil, player_id = nil, result = false, t = 0 }
 mod.does_player_need_skull = function()
-	local player = Managers.player and Managers.player:local_player(1)
-	if not player then return false end
-	local current_mission = Managers.state.mission and Managers.state.mission:mission_name()
-	if not current_mission then return false end
-	local player_id = player._local_player_id
+	local characters_needing = {}
 
-	-- cache for 2 seconds to avoid expensive scans
-	local now = os.clock()
-	local cache = mod._martyrs_need_cache
-	if cache.mission == current_mission and cache.player_id == player_id and (now - cache.t) < 2 then
-		return cache.result
-	end
+	-- Grab current players in-game
+	local player_manager = Managers.player
+	local player = Managers.player:local_player(1)
 
-	local achievement_manager = Managers.achievements
-	local collected = false
-	if achievement_manager then
+	-- only show players needing skull if players are detected
+	if player_manager and player then
+		-- find achievement for collecting skull on current map
 		local current_mission_martyrskull_achievement_id
-		local definitions = achievement_manager:achievement_definitions()
-		for _, config in pairs(definitions) do
-			local category = config.category
-			local category_config = AchievementCategories[category]
-			local parent_name = category_config and (category_config.parent_name or category_config.name)
-			if parent_name == "exploration" and config.icon and config.icon:match("missions_achievement_puzzle") then
-				if config.stat_name and config.stat_name:match(current_mission) then
-					current_mission_martyrskull_achievement_id = config.id
-					break
+		local achievement_manager = Managers.achievements
+
+		if achievement_manager then
+			local definitions = achievement_manager:achievement_definitions()
+			for _, config in pairs(definitions) do
+				local id = config.id
+				local category = config.category
+				local category_config = AchievementCategories[category]
+				local parent_name = category_config.parent_name or category_config.name
+
+				if parent_name == "exploration" then
+					if config.icon and config.icon:match("missions_achievement_puzzle") then
+						local current_mission = Managers.state.mission:mission_name()
+						if config.stat_name:match(current_mission) then
+							current_mission_martyrskull_achievement_id = config.id
+						end
+					end
 				end
 			end
 		end
-		if current_mission_martyrskull_achievement_id then
-			collected = Managers.achievements:_achievement_completed(player_id, current_mission_martyrskull_achievement_id) or false
+
+		local player_id = player._local_player_id
+		local player_character_name = player._profile.name
+
+		local collected = false
+
+		if player_character_name then
+			-- set collected to achievement status
+
+			if player and current_mission_martyrskull_achievement_id then
+				if
+					Managers.achievements:_achievement_completed(player_id, current_mission_martyrskull_achievement_id)
+				then
+					collected = true
+				end
+			end
+
+			if collected == false then
+				-- need to collect
+				characters_needing[#characters_needing + 1] = player_character_name
+			end
+		end
+
+		if collected == false then
+			return true
 		end
 	end
 
-	cache.mission = current_mission
-	cache.player_id = player_id
-	cache.result = not collected
-	cache.t = now
-	return cache.result
+	return false
 end
 
 mod.check_guide_marker_exists = function(self, guide_position)
@@ -2011,7 +2001,6 @@ mod.setup_walkthrough_markers = function(self)
 	self._level = Managers.state.mission:mission()
 	local current_level_name = self._level.name
 	player_near_skull = false
-	local need_skull = mod.does_player_need_skull()
 
 	for level_name, walkthrough_markers in pairs(maryrs_skull_walkthrough_markers) do
 		if current_level_name == level_name then
@@ -2037,7 +2026,10 @@ mod.setup_walkthrough_markers = function(self)
 					Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
 				)
 
-				if mod:get("martyrs_skull_guide_disable_if_collected") == true and need_skull == false then
+				if
+					mod:get("martyrs_skull_guide_disable_if_collected") == true
+					and mod.does_player_need_skull() == false
+				then
 					return
 				end
 
@@ -2093,7 +2085,7 @@ mod.setup_walkthrough_markers = function(self)
 					-- add maryr's skull guide header to objectives
 					if i == 1 and walkthrough_markers.title_placed == false and marker ~= nil then
 						local needed = ""
-						if need_skull == true then
+						if mod.does_player_need_skull() == true then
 							needed = "\nYou haven't collected this skull before."
 						else
 							needed = "\nYou have already collected this skull."
@@ -2127,6 +2119,7 @@ mod.setup_walkthrough_markers = function(self)
 
 			-- If player is not near any guide marker, remove all objectives
 			if player_near_skull == false then
+				dbg_3 = HudElementMissionObjectiveFeed.marker_objectives
 				for i = 1, #HudElementMissionObjectiveFeed.marker_objectives do
 					remove_objective(HudElementMissionObjectiveFeed.marker_objectives[i])
 				end
@@ -2212,33 +2205,23 @@ HudElementMissionObjectiveFeed._align_objective_widgets = function(self)
 		end
 	end
 
-	-- Deduplicate only if duplicates exist to avoid per-frame reallocations
+	-- Deduplicate the array in-place
 	do
-		local seen, has_dup = {}, false
+		local seen = {}
+		local new_array = {}
 		for i = 1, #hud_objectives_sorted do
 			local name = hud_objectives_sorted[i]
-			if seen[name] then
-				has_dup = true
-				break
+			if not seen[name] then
+				seen[name] = true
+				new_array[#new_array + 1] = name
 			end
-			seen[name] = true
 		end
-		if has_dup then
-			local new_array = {}
-			local seen2 = {}
-			for i = 1, #hud_objectives_sorted do
-				local name = hud_objectives_sorted[i]
-				if not seen2[name] then
-					seen2[name] = true
-					new_array[#new_array + 1] = name
-				end
-			end
-			for i = 1, #new_array do
-				hud_objectives_sorted[i] = new_array[i]
-			end
-			for i = #new_array + 1, #hud_objectives_sorted do
-				hud_objectives_sorted[i] = nil
-			end
+		-- Replace the original array contents
+		for i = 1, #new_array do
+			hud_objectives_sorted[i] = new_array[i]
+		end
+		for i = #new_array + 1, #hud_objectives_sorted do
+			hud_objectives_sorted[i] = nil
 		end
 	end
 

@@ -24,21 +24,21 @@ local loc = {
 		["zh-cn"] = "图标改进集成设置",
 	},
 	los_fade_enable = {
-		en = "Fade out icons out of line of sight",
+		en = "Fade out icons out of line of sight?",
 		fr = "Fade out icons out of line of sight",
 		ru = "Fade out icons out of line of sight",
 		["zh-tw"] = "視線外淡化圖標",
 		["zh-cn"] = "视野外图标淡出",
 	},
 	los_opacity = {
-		en = "Line of sight alpha (percentage)",
+		en = "Out of Line of sight marker opacity (percentage)",
 		fr = "Line of sight alpha (percentage)",
 		ru = "Line of sight alpha (percentage)",
 		["zh-tw"] = "視線外圖標透明度",
 		["zh-cn"] = "视野外图标透明度",
 	},
 	ads_los_opacity = {
-		en = "ADS Line of sight alpha (percentage)",
+		en = "ADS Line of sight marker opacity (percentage)",
 		["zh-tw"] = "瞄準視線外的圖標透明度",
 	},
 	marker_background_colour = {

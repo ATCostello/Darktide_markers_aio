@@ -71,6 +71,8 @@ mod:hook_safe(
 )
 
 DestructibleExtension._add_damage = function(self, damage_amount, attack_direction, force_destruction, attacking_unit)
+    Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
+
     local destruction_info = self._destruction_info
     local unit = self._unit
     local current_stage_index = destruction_info.current_stage_index
@@ -92,14 +94,13 @@ DestructibleExtension._add_damage = function(self, damage_amount, attack_directi
             for i, unit in pairs(totem_units) do
                 if self._unit == unit then
                     table.remove(totem_units, i)
-                    break
                 end
             end
 
             if self._collectible_data then
                 if self._collectible_data.unit and self._collectible_data.section_id then
-                    Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
                     mod.remove_heretical_idol_marker(self, self._collectible_data.unit, self._collectible_data.section_id)
+
                 end
             end
 
@@ -122,18 +123,18 @@ end
 
 
 DestructibleExtension.rpc_destructible_last_destruction = function(self)
+    Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
+
     Unit.flow_event(self._unit, "lua_last_destruction")
 
     for i, unit in pairs(totem_units) do
         if self._unit == unit then
             table.remove(totem_units, i)
-            break
         end
     end
 
     if self._collectible_data then
         if self._collectible_data.unit and self._collectible_data.section_id then
-            Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
             mod.remove_heretical_idol_marker(self, self._collectible_data.unit, self._collectible_data.section_id)
         end
     end
@@ -156,17 +157,13 @@ mod.add_heretical_idol_marker = function(self, unit, section_id)
         HereticalIdolTemplate.section_id = section_id
         local marker_type = HereticalIdolTemplate.name
 
-        -- removed request_world_markers_list here to avoid unnecessary overhead; we only request when removing
+        Managers.event:trigger("request_world_markers_list", callback(self, "_cb_world_markers_list_request"))
 
         if section_id then
-            if processed_idols[section_id] then
-                return
-            end
             if Unit.alive(unit) then
                 if mod.current_heretical_idol_markers[section_id] == nil then
                     Managers.event:trigger("add_world_marker_unit", marker_type, unit)
                     mod.current_heretical_idol_markers[section_id] = unit
-                    processed_idols[section_id] = true
                 end
             end
         end
@@ -180,17 +177,10 @@ mod.remove_heretical_idol_marker = function(self, unit, section_id)
             if marker.markers_aio_type and marker.markers_aio_type == "heretical_idol" then
                 if marker.unit and marker.unit == unit then
                     marker.draw = false
-                    if marker.widget then
-                        marker.widget.visible = false
-                        marker.widget.alpha_multiplier = 0
-                    end
+                    marker.widget.visible = false
+                    marker.widget.alpha_multiplier = 0
+                    table.insert(markers_list_to_remove, marker)
                     Managers.event:trigger("remove_world_marker", marker.id)
-                    -- clear caches to avoid leaks and duplicates
-                    if section_id then
-                        mod.current_heretical_idol_markers[section_id] = nil
-                        processed_idols[section_id] = nil
-                    end
-                    break
                 end
             end
         end
@@ -206,31 +196,36 @@ mod.update_marker_icon = function(self, marker)
         if marker.type and marker.type == "heretical_idol" then
 
             marker.markers_aio_type = "heretical_idol"
-            -- initialize visual/static properties once
-            if not marker._aio_heretical_inited then
-                marker.widget.alpha_multiplier = 0
-                marker.draw = false
+            -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
+            marker.widget.alpha_multiplier = 0
+            marker.draw = false
 
-                marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
-                marker.widget.style.icon.color = {
-                    255,
-                    mod:get("icon_colour_R"),
-                    mod:get("icon_colour_G"),
-                    mod:get("icon_colour_B")
-                }
-                marker.widget.style.ring.color = mod.lookup_colour(mod:get("idol_border_colour"))
-                marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
-                marker.template.screen_clamp = mod:get("heretical_idol_keep_on_screen")
-                marker.block_screen_clamp = false
-                marker._aio_heretical_inited = true
-            end
+            marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
+            marker.widget.style.icon.color = {
+                255,
+                mod:get("icon_colour_R"),
+                mod:get("icon_colour_G"),
+                mod:get("icon_colour_B")
+            }
+            marker.widget.style.ring.color = mod.lookup_colour(mod:get("idol_border_colour"))
+            marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
+            marker.template.screen_clamp = mod:get("heretical_idol_keep_on_screen")
+            marker.block_screen_clamp = false
 
-            if marker._aio_heretical_max_distance ~= max_distance then
-                marker.template.max_distance = max_distance
-                marker.template.fade_settings.distance_max = max_distance
-                marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 2
-                marker._aio_heretical_max_distance = max_distance
-            end
+            local max_spawn_distance_sq = max_distance * max_distance
+            HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
+
+            marker.template.max_distance = max_distance
+            marker.template.fade_settings.distance_max = max_distance
+            marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 2
+
+            -- for i = 0, #markers_list_to_remove do
+            --    local remove_marker = markers_list_to_remove[i]
+            --    if remove_marker and remove_marker.id == marker.id then
+            --        marker.widget.style.icon.color = {255, 255, 0, 0}
+            --        table.remove(markers_list_to_remove, i)
+            --    end
+            -- end
         end
     end
 end

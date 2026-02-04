@@ -26,77 +26,88 @@ end
 
 
 mod.update_tome_markers = function(self, marker)
-    if not (marker and self) then return end
-
-    local pickup_type = mod.get_marker_pickup_type(marker)
-    if not pickup_type then return end
-    local pickup = Pickups.by_name[pickup_type]
-    if not (pickup and pickup.is_side_mission_pickup) then return end
-
-    marker.markers_aio_type = "tome"
-    if not marker._aio_tome_inited then
-        marker._aio_tome_inited = true
-        marker.widget.alpha_multiplier = 0
-        marker.draw = false
-        marker._aio_last_ring = nil
-        marker._aio_last_bg = nil
-        marker._aio_last_icon_asset = nil
-        marker._aio_last_icon_color = nil
-        marker._aio_last_keep_on_screen = nil
-        marker._aio_last_max_distance = nil
-    end
-
-    local ring_key = mod:get("tome_border_colour")
-    if marker._aio_last_ring ~= ring_key then
-        marker.widget.style.ring.color = mod.lookup_colour(ring_key)
-        marker._aio_last_ring = ring_key
-    end
-
-    local bg_key = mod:get("marker_background_colour")
-    if marker._aio_last_bg ~= bg_key then
-        marker.widget.style.background.color = mod.lookup_colour(bg_key)
-        marker._aio_last_bg = bg_key
-    end
-
-    local keep_on = mod:get("tome_keep_on_screen")
-    if marker._aio_last_keep_on_screen ~= keep_on then
-        marker.template.screen_clamp = keep_on
-        marker.block_screen_clamp = false
-        marker._aio_last_keep_on_screen = keep_on
-    end
-
     local max_distance = get_max_distance()
-    if marker._aio_last_max_distance ~= max_distance then
-        local max_spawn_distance_sq = max_distance * max_distance
-        HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
 
-        self.max_distance = max_distance
-        if self.fade_settings then
-            self.fade_settings.distance_max = max_distance
-            self.fade_settings.distance_min = max_distance - (self.evolve_distance or 0) * 2
+    if marker and self then
+        local unit = marker.unit
+
+        local pickup_type = mod.get_marker_pickup_type(marker)
+
+        if pickup_type then
+            local pickup = Pickups.by_name[pickup_type]
+
+            if pickup then
+                local is_tome = pickup.is_side_mission_pickup
+                if is_tome then
+
+                    marker.markers_aio_type = "tome"
+                    -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
+                    marker.widget.alpha_multiplier = 0
+                    marker.draw = false
+
+                    marker.widget.style.ring.color = mod.lookup_colour(mod:get("tome_border_colour"))
+
+                    marker.widget.style.icon.color = {
+                        255,
+                        255,
+                        255,
+                        242,
+                        0
+                    }
+                    marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
+
+                    marker.template.screen_clamp = mod:get("tome_keep_on_screen")
+                    marker.block_screen_clamp = false
+
+                    -- marker.widget.content.is_clamped = false
+
+                    local max_spawn_distance_sq = max_distance * max_distance
+                    HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
+
+                    self.max_distance = max_distance
+
+                    if self.fade_settings then
+                        self.fade_settings.distance_max = max_distance
+                        self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+                    end
+
+                    marker.template.max_distance = max_distance
+                    marker.template.fade_settings.distance_max = max_distance
+                    marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 2
+
+                    local pickup_name = Unit.has_data(unit, "pickup_type") and Unit.get_data(unit, "pickup_type")
+
+                    local max_distance = get_max_distance()
+
+                    self.max_distance = max_distance
+
+                    if self.fade_settings then
+                        self.fade_settings.distance_max = max_distance
+                        self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+                    end
+
+                    marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_default"
+
+                    -- set colour depending on if grim or scripture
+                    if pickup.unit_name == "content/pickups/pocketables/side_mission/grimoire/grimoire_pickup_01" then
+                        marker.widget.style.icon.color = {
+                            255,
+                            mod:get("grim_colour_R"),
+                            mod:get("grim_colour_G"),
+                            mod:get("grim_colour_B")
+                        }
+                    else
+                        marker.widget.style.icon.color = {
+                            255,
+                            mod:get("script_colour_R"),
+                            mod:get("script_colour_G"),
+                            mod:get("script_colour_B")
+                        }
+                    end
+
+                end
+            end
         end
-        marker.template.max_distance = max_distance
-        marker.template.fade_settings.distance_max = max_distance
-        marker.template.fade_settings.distance_min = marker.template.max_distance - (marker.template.evolve_distance or 0) * 2
-        marker._aio_last_max_distance = max_distance
-    end
-
-    local icon_asset = "content/ui/materials/hud/interactions/icons/pocketable_default"
-    if marker._aio_last_icon_asset ~= icon_asset then
-        marker.widget.content.icon = icon_asset
-        marker._aio_last_icon_asset = icon_asset
-    end
-
-    local icon_color
-    if pickup.unit_name == "content/pickups/pocketables/side_mission/grimoire/grimoire_pickup_01" then
-        icon_color = {255, mod:get("grim_colour_R"), mod:get("grim_colour_G"), mod:get("grim_colour_B")}
-    else
-        icon_color = {255, mod:get("script_colour_R"), mod:get("script_colour_G"), mod:get("script_colour_B")}
-    end
-    local last = marker._aio_last_icon_color
-    if not last or last[2] ~= icon_color[2] or last[3] ~= icon_color[3] or last[4] ~= icon_color[4] then
-        marker.widget.style.icon.color = icon_color
-        marker._aio_last_icon_color = icon_color
     end
 end
 

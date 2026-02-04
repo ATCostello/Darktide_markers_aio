@@ -79,84 +79,188 @@ end
 
 
 mod.update_chest_markers = function(self, marker)
-    if not (marker and self) then return end
+    local max_distance = get_max_distance()
 
-    -- cleanup closed chests
-    for key, chest in pairs(mod.active_chests) do
+    for _, chest in pairs(mod.active_chests) do
         if chest and chest._current_state ~= "closed" then
             mod.remove_chest_markers(chest._unit, self._markers)
-            mod.active_chests[key] = nil
+            mod.active_chests[_] = nil
         end
     end
 
-    if not (marker.data and marker.data._active_interaction_type == "chest") then return end
+    if marker and self then
+        local unit = marker.unit
+        if marker.data and marker.data._active_interaction_type == "chest" then
 
-    local unit = marker.unit
-    self._chest_extension = self._chest_extension or ScriptUnit.has_extension(unit, "chest_system")
-    mod.active_chests[unit] = self._chest_extension
+            self._chest_extension = ScriptUnit.has_extension(unit, "chest_system")
 
-    local max_distance = get_max_distance()
-    marker.markers_aio_type = "chest"
+            mod.active_chests[unit] = self._chest_extension
+            local chest_items = {}
 
-    -- initialize once per marker
-    if not marker._aio_chest_inited then
-        marker._aio_chest_inited = true
-        marker._aio_last_ring = nil
-        marker._aio_last_bg = nil
-        marker._aio_last_icon_color = nil
-        marker._aio_last_icon_asset = nil
-        marker._aio_last_max_distance = nil
-        marker._aio_last_keep_on_screen = nil
-    end
+            -- Retrieve all items within chests, only works in private lobbies... Disabled for now 
+            --[[if self._chest_extension then
+                chest_items = mod.get_all_items_in_chest(self, unit)
 
-    -- ring/background/icon static values
-    local ring_colour_key = mod:get("chest_border_colour")
-    if marker._aio_last_ring ~= ring_colour_key then
-        marker.widget.style.ring.color = mod.lookup_colour(ring_colour_key)
-        marker._aio_last_ring = ring_colour_key
-    end
+                local local_player = Managers.player:local_player(1)
+                local local_player_unit = local_player.player_unit
 
-    local bg_colour_key = mod:get("marker_background_colour")
-    if marker._aio_last_bg ~= bg_colour_key then
-        marker.widget.style.background.color = mod.lookup_colour(bg_colour_key)
-        marker._aio_last_bg = bg_colour_key
-    end
+                local chest_pos = POSITION_LOOKUP[unit]
 
-    local icon_color = {255, mod:get("chest_icon_colour_R"), mod:get("chest_icon_colour_G"), mod:get("chest_icon_colour_B")}
-    local last = marker._aio_last_icon_color
-    if not last or last[2] ~= icon_color[2] or last[3] ~= icon_color[3] or last[4] ~= icon_color[4] then
-        marker.widget.style.icon.color = icon_color
-        marker._aio_last_icon_color = icon_color
-    end
+                local tx, ty, tz = Vector3.to_elements(chest_pos)
+                tx = tonumber(string.format("%.2f", tx))
+                ty = tonumber(string.format("%.2f", ty))
+                tz = tonumber(string.format("%.2f", tz))
 
-    local icon_asset = mod:get("chest_icon")
-    if marker._aio_last_icon_asset ~= icon_asset then
-        marker.widget.content.icon = icon_asset
-        marker._aio_last_icon_asset = icon_asset
-    end
+                for _, pickup_name in pairs(chest_items) do
 
-    local keep_on = mod:get("chest_keep_on_screen")
-    if marker._aio_last_keep_on_screen ~= keep_on then
-        marker.template.screen_clamp = keep_on
-        marker.block_screen_clamp = false
-        marker._aio_last_keep_on_screen = keep_on
-    end
+                    tz = tz + (0.2 * _)
 
-    if marker._aio_last_max_distance ~= max_distance then
-        local max_spawn_distance_sq = max_distance * max_distance
-        HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
+                    local absolute_position = Vector3(tx, ty, tz)
 
-        self.max_distance = max_distance
-        if self.fade_settings then
-            self.fade_settings.distance_max = max_distance
-            self.fade_settings.distance_min = max_distance - (self.evolve_distance or 0) * 2
+                    local current_marker = mod.check_if_marker_exists_at_pos(absolute_position, self._markers)
+                    if current_marker == false then
+                        Managers.event:trigger("add_world_marker_position", MarkerTemplate.name, absolute_position)
+                    else
+                        current_marker.data.chest_unit = unit
+
+                        local max_distance = get_max_distance()
+
+                        -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
+                        marker.widget.alpha_multiplier = 0
+                        marker.draw = false
+                        current_marker.widget.alpha_multiplier = 0
+                        current_marker.draw = false
+
+                        local max_spawn_distance_sq = max_distance * max_distance
+                        HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
+
+                        self.max_distance = max_distance
+
+                        if self.fade_settings then
+                            self.fade_settings.distance_max = max_distance
+                            self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+                        end
+
+                        current_marker.raycast_result = marker.raycast_result
+                        current_marker.template.max_distance = max_distance
+                        current_marker.template.fade_settings.distance_max = max_distance
+                        current_marker.template.fade_settings.distance_min =
+                            current_marker.template.max_distance - current_marker.template.evolve_distance * 2
+
+                        self.max_distance = max_distance
+                        if self.fade_settings then
+                            self.fade_settings.distance_max = max_distance
+                            self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+                        end
+
+                        -- MARKER EXISTS, NEED TO CHANGE TO THE TYPE OF ITEM INSIDE (showing default icon styles)... (also update my other marker mods to work with this (update the icons properly))
+                        if pickup_name == "large_metal" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
+                            current_marker.data.type = "large_metal"
+
+                        elseif pickup_name == "small_metal" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
+                            current_marker.data.type = "small_metal"
+
+                        elseif pickup_name == "large_platinum" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
+                            current_marker.data.type = "large_platinum"
+
+                        elseif pickup_name == "small_platinum" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
+                            current_marker.data.type = "small_platinum"
+
+                        elseif pickup_name == "small_clip" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/ammunition"
+                            current_marker.data.type = "small_clip"
+
+                        elseif pickup_name == "large_clip" then
+                            current_marker.widget.content.icon = "content/ui/materials/icons/presets/preset_16"
+                            current_marker.data.type = "large_clip"
+
+                        elseif pickup_name == "small_grenade" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/grenade"
+                            current_marker.data.type = "small_grenade"
+
+                        elseif pickup_name == "ammo_cache_pocketable" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_ammo"
+                            current_marker.data.type = "ammo_cache_pocketable"
+
+                        elseif pickup_name == "medical_crate_pocketable" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
+                            current_marker.data.type = "medical_crate_pocketable"
+
+                        elseif pickup_name == "syringe_ability_boost_pocketable" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_syringe_ability"
+                            current_marker.data.type = "syringe_ability_boost_pocketable"
+
+                        elseif pickup_name == "syringe_corruption_pocketable" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_syringe_corruption"
+                            current_marker.data.type = "syringe_corruption_pocketable"
+
+                        elseif pickup_name == "syringe_power_boost_pocketable" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_syringe_power"
+                            current_marker.data.type = "syringe_power_boost_pocketable"
+
+                        elseif pickup_name == "syringe_speed_boost_pocketable" then
+                            current_marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_syringe_speed"
+                            current_marker.data.type = "syringe_speed_boost_pocketable"
+                        end
+                    end
+
+                end
+
+                if #chest_items == 0 then
+                    mod.remove_chest_markers(unit, self._markers)
+                end
+            end]]
+
+            marker.markers_aio_type = "chest"
+
+            marker.widget.style.ring.color = mod.lookup_colour(mod:get("chest_border_colour"))
+
+            marker.widget.style.icon.color = {
+                255,
+                95,
+                158,
+                160
+            }
+            marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
+
+            marker.template.screen_clamp = mod:get("chest_keep_on_screen")
+            marker.block_screen_clamp = false
+
+            -- marker.widget.content.is_clamped = false
+
+            local max_spawn_distance_sq = max_distance * max_distance
+            HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
+
+            self.max_distance = max_distance
+
+            if self.fade_settings then
+                self.fade_settings.distance_max = max_distance
+                self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+            end
+
+            marker.template.max_distance = max_distance
+            marker.template.fade_settings.distance_max = max_distance
+            marker.template.fade_settings.distance_min = marker.template.max_distance - marker.template.evolve_distance * 2
+
+            self.max_distance = max_distance
+            if self.fade_settings then
+                self.fade_settings.distance_max = max_distance
+                self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+            end
+
+            marker.widget.style.icon.color = {
+                255,
+                mod:get("chest_icon_colour_R"),
+                mod:get("chest_icon_colour_G"),
+                mod:get("chest_icon_colour_B")
+            }
+            marker.widget.content.icon = mod:get("chest_icon")
         end
 
-        marker.template.max_distance = max_distance
-        marker.template.fade_settings.distance_max = max_distance
-        marker.template.fade_settings.distance_min = marker.template.max_distance - (marker.template.evolve_distance or 0) * 2
-
-        marker._aio_last_max_distance = max_distance
     end
 end
 

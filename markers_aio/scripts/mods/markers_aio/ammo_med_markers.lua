@@ -12,12 +12,7 @@ local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 -- FoundYa Compatibility (Adds relevant marker categories and uses FoundYa distances instead.)
 local FoundYa = get_mod("FoundYa")
 
-local __hooks_installed = false
 mod.on_all_mods_loaded = function()
-	if __hooks_installed then
-		return
-	end
-	__hooks_installed = true
 	local is_mod_loading = true
 	mod:hook_require("scripts/extension_systems/unit_templates", function(instance)
 		if is_mod_loading then
@@ -83,22 +78,6 @@ end
 mod.medical_crate_charges = {}
 
 local med_crate_decals = mod:persistent_table("med_crate_decals")
--- GC helper to clean up any orphaned decals periodically
-local function cleanup_med_crate_decals()
-	for posstr, arr in pairs(med_crate_decals) do
-		local decal = arr[1]
-		local unit = arr[2]
-		if (not Unit.alive(unit)) or (decal and not Unit.alive(decal)) then
-			if decal and Unit.alive(decal) then
-				local world = Unit.world(decal)
-				if world then
-					World.destroy_unit(world, decal)
-				end
-			end
-			med_crate_decals[posstr] = nil
-		end
-	end
-end
 
 local ProximityHeal = require("scripts/extension_systems/proximity/side_relation_gameplay_logic/proximity_heal")
 
@@ -167,16 +146,14 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 					local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
 					if field_improv_active and mod:get("display_field_improv_colour") == true then
-						Quaternion.set_xyzw(material_value, 2.8, -0.15, 3.0, 0.6)					
+						Quaternion.set_xyzw(material_value, 1, 0.1, 1, 0.5)
 					else
-						Quaternion.set_xyzw(material_value, 0, 2, 0, 0.5)
+						Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
 					end
-
 					Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
-					Unit.set_vector4_for_material(decal_unit, "projector", "tint_color", material_value, true)
 
 					-- Set low opacity
-					Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.15)
+					Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.06)
 					med_crate_decals[position_string] = {
 						decal_unit,
 						unit,
@@ -223,13 +200,16 @@ mod.update_ammo_med_markers = function(self, marker)
 		local decal_unit = array[1]
 		local world
 
-		if (not Unit.alive(unit)) and decal_unit and Unit.alive(decal_unit) then
+		if not Unit.alive(unit) and Unit.alive(decal_unit) then
 			world = Unit.world(decal_unit)
-			if world then
-				World.destroy_unit(world, decal_unit)
-			end
+		end
+
+		if decal_unit and world then
+			World.destroy_unit(world, decal_unit)
 			med_crate_decals[posstr] = nil
-		elseif (not Unit.alive(unit)) and (not decal_unit or not Unit.alive(decal_unit)) then
+		end
+
+		if not Unit.alive(unit) and not Unit.alive(decal_unit) then
 			med_crate_decals[posstr] = nil
 		end
 	end
