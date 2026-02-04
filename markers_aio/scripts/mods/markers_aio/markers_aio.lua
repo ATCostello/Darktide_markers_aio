@@ -127,6 +127,8 @@ local function build_frame_settings(mod)
 	fs.ads_los_opacity = (mod:get("ads_los_opacity") or 100) / 100
 	fs.ads_blend = math.lerp(fs.ads_blend or 0, is_ads and 1 or 0, 0.25)
 
+	fs.med_station_max_distance = mod:get("med_station_max_distance") or 20
+
 	-- Feature toggles (queried ONCE)
 	fs.enable = {
 		tome = mod:get("tome_enable"),
@@ -310,6 +312,32 @@ local temp_array_markers_to_remove = {}
 local temp_marker_raycast_queue = {}
 local HudElementWorldMarkersSettings =
 	require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
+
+local function force_text_full_alpha(marker)
+	if not marker or not marker.widget or not marker.widget.style then
+		return
+	end
+
+	local widget = marker.widget
+	local style = widget.style
+	local text_style = style.marker_text
+
+	if not text_style or not text_style.color then
+		return
+	end
+
+	local widget_alpha = widget.alpha_multiplier or 1
+	if widget_alpha <= 0 then
+		return
+	end
+
+	-- Counter BOTH widget + renderer alpha
+	local corrected_alpha = math.clamp(255 / widget_alpha, 0, 255)
+
+	text_style.color[1] = corrected_alpha
+end
+
+
 
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
 	-- Build per-frame state
@@ -632,6 +660,15 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 						mod.fade_icon_not_in_los(marker, ui_renderer) -- smooth fade / LOS
 						mod.adjust_scale(self, marker, ui_renderer) -- smooth distance-based scaling
 					end
+
+					-- Force full-opacity text for critical supplies
+					if marker.data then
+						local t = marker.data._active_interaction_type
+
+						if t == "health_station" or t == "ammo_crate_deployable" or t == "medical_crate_deployable" then
+							force_text_full_alpha(marker)
+						end
+					end
 				end
 			end
 		end
@@ -692,7 +729,7 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 		los_alpha = fs.los_opacity or 1
 	end
 	local ads_alpha = math.lerp(1, fs.ads_los_opacity or 1, fs.ads_blend)
-	
+
 	------------------------------------------------
 	-- Distance-based alpha (ONLY for IN-LOS markers)
 	------------------------------------------------
@@ -784,6 +821,16 @@ mod.adjust_los_requirement = function(marker)
 
 	local fs = mod.frame_settings
 	local tc = get_type_cache(mod, marker.markers_aio_type)
+
+	-- Absolute health station override
+	if marker.data and marker.data._active_interaction_type == "health_station" then
+		if marker.is_inside_frustum then
+			do_draw(marker)
+		else
+			dont_draw(marker)
+		end
+		return
+	end
 
 	if tc.require_los then
 		if marker.is_inside_frustum then
@@ -877,6 +924,11 @@ mod.adjust_scale = function(self, marker, ui_renderer)
 				marker.widget.style.marker_text.font_size = font_size
 			end
 		end
+	end
+
+	-- Health stations must always be scale-ready
+	if marker.data and marker.data._active_interaction_type == "health_station" then
+		marker._aio_scale_ready = true
 	end
 end
 
