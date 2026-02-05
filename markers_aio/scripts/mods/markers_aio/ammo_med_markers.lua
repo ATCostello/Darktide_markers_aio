@@ -473,10 +473,12 @@ mod.update_ammo_med_markers = function(self, marker)
 					marker.widget.content.field_improv = ""
 				end
 
-				marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
-				marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+				if marker.widget.style.field_improv then
+					marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
+					marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
 
-				marker.widget.style.field_improv.offset[1] = 35 * marker.scale
+					marker.widget.style.field_improv.offset[1] = 35 * marker.scale
+				end
 			elseif
 				pickup_type == "ammo_cache_deployable"
 				or marker.data and marker.data.type == "ammo_cache_deployable"
@@ -498,10 +500,12 @@ mod.update_ammo_med_markers = function(self, marker)
 					marker.widget.content.field_improv = ""
 				end
 
-				marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
-				marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+				if marker.widget.style.field_improv then
+					marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
+					marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
 
-				marker.widget.style.field_improv.offset[1] = 35 * marker.scale
+					marker.widget.style.field_improv.offset[1] = 35 * marker.scale
+				end
 			elseif
 				pickup_type == "medical_crate_pocketable"
 				or marker.data and marker.data.type == "medical_crate_pocketable"
