@@ -34,9 +34,17 @@ mod.frame_settings = {}
 mod.fc_typecache = {}
 
 -- Ensure markers start fully transparent until their first transform has applied
-local function ensure_invisible_until_transformed(marker)
-	if marker.markers_aio_type and not marker._aio_transformed and marker.widget then
-		marker.widget.alpha_multiplier = 0
+local function ensure_invisible_until_ready(marker)
+	if not marker.widget then
+		return
+	end
+
+	-- Hide until transform + alpha + scale are ready
+	if marker.markers_aio_type then
+		if not marker._aio_transformed or not marker._aio_alpha_ready or not marker._aio_scale_ready then
+			marker.widget.alpha_multiplier = 0
+			marker.draw = false
+		end
 	end
 end
 
@@ -85,6 +93,10 @@ end)
 local function get_type_cache(mod, marker_type)
 	local cache = mod.fc_typecache
 	local tc = cache[marker_type]
+
+	if marker_type == nil then
+		return
+	end
 
 	if tc then
 		return tc
@@ -229,86 +241,48 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 	local markers_by_type = self._markers_by_type
 	local drawable_markers = {}
 
-	-- Collect drawable markers instead of drawing immediately
 	for _, markers in pairs(markers_by_type) do
 		for i = 1, #markers do
 			local marker = markers[i]
-
-			if marker.draw then
-				local widget = marker.widget
-				local content = widget and widget.content
-
-				if widget and content then
-					-- AIO markers
-					if marker.markers_aio_type then
-						if marker.markers_aio_type and not marker._aio_scale_ready then
-							marker.draw = false
-						end
-
-						if marker.markers_aio_type and not marker._aio_alpha_ready then
-							if marker.widget then
-								marker.widget.alpha_multiplier = 0
-							end
-							marker.draw = false
-						end
-
-					-- Vanilla markers
-					else
-						local template = marker.template
-						local distance = content.distance
-
-						if template.scale_settings then
-							marker.scale = self:_get_scale(template.scale_settings, distance)
-							self:_apply_scale(widget, marker.ignore_scale and 1 or marker.scale)
-						end
-
-						if template.fade_settings and not marker.block_fade_settings then
-							widget.alpha_multiplier = (widget.alpha_multiplier or 1)
-								* self:_get_fade(template.fade_settings, distance)
-						end
-					end
-
-					drawable_markers[#drawable_markers + 1] = marker
-				end
+			if marker.draw and marker.widget then
+				drawable_markers[#drawable_markers + 1] = marker
 			end
 		end
 	end
 
-	-- Sort by distance: FAR first, NEAR last
 	table.sort(drawable_markers, function(a, b)
-		local da = a.distance or 0
-		local db = b.distance or 0
+		-- Objectives always draw last (highest Z)
+		if a.type == "objective" and b.type ~= "objective" then
+			return false
+		elseif b.type == "objective" and a.type ~= "objective" then
+			return true
+		end
 
+		-- Vanilla vs AIO ordering
 		if a.markers_aio_type and not b.markers_aio_type then
 			return false
 		elseif not a.markers_aio_type and b.markers_aio_type then
 			return true
 		end
 
-		return da > db
+		return (a.distance or 0) > (b.distance or 0)
 	end)
 
-	-- Draw in sorted order with increasing Z
 	local BASE_Z = 0
 	local Z_STRIDE = 4
 
 	for i = 1, #drawable_markers do
 		local marker = drawable_markers[i]
 		local widget = marker.widget
+		local offset = widget.offset
 
-		if widget then
-			local offset = widget.offset
+		offset[3] = BASE_Z + (i * Z_STRIDE)
 
-			-- Far markers get lower Z, near markers higher Z
-			offset[3] = BASE_Z + (i * Z_STRIDE)
-
-			-- Make marker text offset infront of widget
-			if widget.content.marker_text and widget.content.marker_text ~= "" then
-				widget.style.marker_text.offset[3] = BASE_Z + (i * Z_STRIDE) + 2
-			end
-
-			UIWidget.draw(widget, ui_renderer)
+		if widget.content.marker_text and widget.content.marker_text ~= "" then
+			widget.style.marker_text.offset[3] = offset[3] + 2
 		end
+
+		UIWidget.draw(widget, ui_renderer)
 	end
 end
 
@@ -342,6 +316,24 @@ local function force_text_full_alpha(marker)
 	text_style.color[1] = corrected_alpha
 end
 
+local function compute_distance_alpha(marker, max_distance)
+	if not max_distance or not marker.distance then
+		return 1
+	end
+
+	local d = math.clamp(marker.distance / max_distance, 0, 1)
+
+	if d < 0.85 then
+		return 1
+	end
+
+	local t = (d - 0.85) / 0.25
+	t = math.clamp(t, 0, 1)
+	t = t * t * (3 - 2 * t) -- smoothstep
+
+	return 1 - t
+end
+
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
 	-- Build per-frame state
 	build_frame_settings(mod)
@@ -350,7 +342,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 	table.clear(mod.fc_typecache)
 
 	local raycasts_allowed = self._raycast_frame_counter == 0
-
 	self._raycast_frame_counter = (self._raycast_frame_counter + 1)
 		% HudElementWorldMarkersSettings.raycasts_frame_delay
 
@@ -377,7 +368,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
-
 				local id = marker.id
 				local template = marker.template
 				local update = markers_by_id[id] ~= nil
@@ -388,12 +378,16 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 				local screen_margins = template.screen_margins
 				local max_distance = template.max_distance
 
+				-- Never distance-cull base game objective markers
+				if marker.type == "objective" or (template and template.name == "objective") then
+					max_distance = nil
+				end
+
 				if marker.block_max_distance then
 					max_distance = math.huge
 				end
 
 				local life_time = template.life_time
-				local check_line_of_sight = template.check_line_of_sight
 				local marker_position
 
 				if update then
@@ -408,7 +402,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 							local unit_node = template.unit_node
 							local node = unit_node and Unit.has_node(unit, unit_node) and Unit.node(unit, unit_node)
 								or 1
-
 							marker_position = Unit.world_position(unit, node)
 						else
 							remove = true
@@ -417,7 +410,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 					if life_time then
 						local duration = marker.duration or 0
-
 						duration = math.min(duration + dt, life_time)
 
 						if life_time <= duration then
@@ -435,7 +427,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 				if update then
 					local position_offset = template.position_offset
-
 					if position_offset then
 						marker_position.x = marker_position.x + position_offset[1]
 						marker_position.y = marker_position.y + position_offset[2]
@@ -445,7 +436,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					Vector3Box.store(marker.position, marker_position)
 
 					local distance = Vector3.distance(marker_position, camera_position)
-
 					content.distance = distance
 					marker.distance = distance
 
@@ -454,26 +444,22 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 					if not out_of_reach then
 						local marker_direction = Vector3.normalize(marker_position - camera_position)
-
-						marker_direction = Vector3.normalize(marker_direction)
-
 						local forward_dot_dir = Vector3.dot(camera_direction, marker_direction)
 						local is_inside_frustum = Camera.inside_frustum(camera, marker_position) > 0
 						local camera_left = Vector3.cross(camera_direction, Vector3.up())
 						local left_dot_dir = Vector3.dot(camera_left, marker_direction)
 						local angle = math.atan2(left_dot_dir, forward_dot_dir)
-						local is_behind = forward_dot_dir < 0 and true or false
+						local is_behind = forward_dot_dir < 0
 						local is_under = marker_position.z < camera_position.z
-						local x, y, _ = self:_convert_world_to_screen_position(camera, marker_position)
-						local pixel_offset = template.pixel_offset
+						local x, y = self:_convert_world_to_screen_position(camera, marker_position)
 
+						local pixel_offset = template.pixel_offset
 						if pixel_offset then
 							x = x + pixel_offset[1]
 							y = y + pixel_offset[2]
 						end
 
 						local screen_x, screen_y = self:_get_screen_offset(scale)
-
 						x = x - screen_x
 						y = y - screen_y
 
@@ -481,9 +467,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 							false, false, false, false, false
 
 						if screen_clamp then
-							local clamped_x, clamped_y
-
-							clamped_x, clamped_y, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down =
+							x, y, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down =
 								self:_clamp_to_screen(
 									x,
 									y,
@@ -498,74 +482,30 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 									camera_position_down
 								)
 							is_clamped = is_clamped_left or is_clamped_right or is_clamped_up or is_clamped_down
-							x = clamped_x
-							y = clamped_y
 						end
 
 						if not is_clamped then
 							if is_behind then
 								draw = false
 							elseif not is_inside_frustum then
-								local vertical_pixel_overlap, horizontal_pixel_overlap
-
-								if x < 0 then
-									horizontal_pixel_overlap = math.abs(x)
-								elseif x > root_size[1] then
-									horizontal_pixel_overlap = x - root_size[1]
-								end
-
-								if y < 0 then
-									vertical_pixel_overlap = math.abs(y)
-								elseif y > root_size[2] then
-									vertical_pixel_overlap = y - root_size[2]
-								end
-
-								if vertical_pixel_overlap or horizontal_pixel_overlap then
-									draw = false
-
-									local check_widget_visible = template.check_widget_visible
-
-									if check_widget_visible then
-										draw = check_widget_visible(
-											widget,
-											vertical_pixel_overlap,
-											horizontal_pixel_overlap
-										)
-									end
-								else
-									draw = false
-								end
+								draw = false
 							end
-						elseif is_clamped_left or is_clamped_right then
-							if is_clamped_left then
-								angle = 0
-							elseif is_clamped_right then
-								angle = math.pi
-							end
-						elseif is_clamped_up then
-							angle = math.pi * 0.5
-						elseif is_clamped_down then
-							angle = -math.pi * 0.5
 						end
 
 						content.is_inside_frustum = is_inside_frustum
 						content.is_clamped = is_clamped
 						content.is_under = is_under
-						content.distance = distance
 						content.angle = angle
 						marker.is_inside_frustum = is_inside_frustum
 						marker.is_clamped = is_clamped
 						marker.is_under = is_under
-						marker.distance = distance
 						marker.angle = angle
 
 						local offset = widget.offset
-
 						offset[1] = x * inverse_scale
 						offset[2] = y * inverse_scale
 
 						marker.raycast_frame_count = (marker.raycast_frame_count or 0) + 1
-
 						if raycasts_allowed then
 							temp_marker_raycast_queue[#temp_marker_raycast_queue + 1] = marker
 						end
@@ -582,30 +522,20 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 			self:_raycast_markers(temp_marker_raycast_queue)
 		end
 
-		-- avoid leaving debug globals referenced each frame
-		dbg_markers = markers_by_type
-
-		for marker_type, markers in pairs(markers_by_type) do
+		for _, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
-
 				if marker and marker.update then
-					-- Reset AIO classification every frame to avoid cross-contamination
 					marker.markers_aio_type = nil
+					ensure_invisible_until_ready(marker)
 
 					local template = marker.template
 					local update_function = template.update_function
-
-					local fs = mod.frame_settings
-					local is_interaction = marker.type == "interaction" or marker.markers_aio_type ~= nil
-
-					-- Keep invisible on the very first frame until transform is applied
-					ensure_invisible_until_transformed(marker)
-
 					if update_function then
 						update_function(self, ui_renderer, marker.widget, marker, template, dt, t)
 					end
 
+					local fs = mod.frame_settings
 					if fs.enable.tome then
 						mod.update_tome_markers(self, marker)
 					end
@@ -643,30 +573,32 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 						mod.update_atonement_markers(self, marker)
 					end
 
+					if marker.widget and marker.distance and not marker.markers_aio_type then
+						local template = marker.template
+						local max_distance = template and template.max_distance
+							or (marker.markers_aio_type and get_type_cache(mod, marker.markers_aio_type).max_distance)
+
+						if max_distance then
+							local dist_alpha = compute_distance_alpha(marker, max_distance)
+
+							marker.widget.alpha_multiplier = (marker.widget.alpha_multiplier or 1) * dist_alpha
+						end
+					end
+
 					if marker.markers_aio_type then
 						mod.adjust_los_requirement(marker)
 						mod.adjust_distance_visibility(marker)
 					end
 
-					-- Mark transformed once we have distance and offsets computed
 					if marker.widget and marker.widget.offset and marker.distance then
 						marker._aio_transformed = true
 					end
 
-					-- Update AIO markers every frame
 					if marker.markers_aio_type and marker._aio_transformed then
-						mod.fade_icon_not_in_los(marker, ui_renderer) -- smooth fade / LOS
-						mod.adjust_scale(self, marker, ui_renderer) -- smooth distance-based scaling
+						mod.fade_icon_not_in_los(marker, ui_renderer)
 					end
 
-					-- Force full-opacity text
-					if marker.data then
-						local t = marker.data._active_interaction_type
-
-						if t == "health_station" or t == "ammo_crate_deployable" or t == "medical_crate_deployable" then
-							force_text_full_alpha(marker)
-						end
-					end
+					mod.adjust_scale(self, marker, ui_renderer)
 				end
 			end
 		end
@@ -674,15 +606,10 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		self._camera = self._parent:player_camera()
 	end
 
-	local markers_to_remove = #temp_array_markers_to_remove
-
-	if markers_to_remove > 0 then
-		for i = 1, markers_to_remove do
-			local marker = temp_array_markers_to_remove[i]
-			self:_unregister_marker(marker)
-		end
+	for i = 1, #temp_array_markers_to_remove do
+		self:_unregister_marker(temp_array_markers_to_remove[i])
 	end
-	-- ensure temp arrays are cleared every frame to prevent growth/retained references
+
 	table.clear(temp_array_markers_to_remove)
 	table.clear(temp_marker_raycast_queue)
 end
@@ -736,12 +663,17 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	if tc.max_distance and marker.distance then
 		local d = math.clamp(marker.distance / tc.max_distance, 0, 1)
 
-		-- Smoothstep for softness
-		d = d * d * (3 - 2 * d)
+		-- Remap [0.75 → 1.0] → [1 → 0]
+		if d >= 0.75 then
+			local t = (d - 0.75) / 0.25 -- 0 → 1
+			t = math.clamp(t, 0, 1)
 
-		if d > 0.5 then
-			-- Mid → far: fade DOWN to LOS opacity
-			distance_factor = math.lerp(1, los_alpha, (d - 0.5) * 2)
+			-- Smoothstep (no pop-in)
+			t = t * t * (3 - 2 * t)
+
+			distance_factor = 1 - t
+		else
+			distance_factor = 1
 		end
 	end
 
@@ -753,13 +685,15 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	-- Apply ADS opacity globally (both LOS and non-LOS)
 	if fs.is_ads and (marker.raycast_result == false) then
 		-- In LOS: ADS dim applies
-		target_alpha = target_alpha * ads_alpha
+		--target_alpha = target_alpha * ads_alpha
+		target_alpha = (target_alpha * distance_factor) * ads_alpha
 	end
 
 	if fs.los_enabled then
 		-- Out of LOS OR no raycast yet
 		if not has_raycast or marker.raycast_result == true then
-			target_alpha = target_alpha * los_alpha
+			--target_alpha = target_alpha * los_alpha
+			target_alpha = target_alpha * distance_factor
 		else
 			-- In LOS → distance-shaped opacity
 			target_alpha = target_alpha * distance_factor
@@ -770,9 +704,10 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	-- Init + smoothing
 	------------------------------------------------
 	if not marker._aio_alpha_ready then
-		widget.alpha_multiplier = target_alpha
+		-- Initialize from ZERO to prevent flash
+		widget.alpha_multiplier = 0
 		marker._aio_alpha_ready = true
-		return target_alpha
+		return 0
 	end
 
 	local current = widget.alpha_multiplier or target_alpha
@@ -866,9 +801,9 @@ end
 mod.adjust_scale = function(self, marker, ui_renderer)
 	marker.scale_original = marker.scale
 
-	if not marker.markers_aio_type then
-		return
-	end
+	--if not marker.markers_aio_type then
+	--	return
+	--end
 
 	local widget = marker.widget
 	local content = widget.content
@@ -882,7 +817,10 @@ mod.adjust_scale = function(self, marker, ui_renderer)
 
 	local scale = 1
 	local tc = get_type_cache(mod, marker.markers_aio_type)
-	local scale = tc.scale or 1
+
+	if tc then
+		scale = tc.scale or 1
+	end
 
 	marker.scale = self:_get_scale(scale_settings, distance)
 	local new_scale = marker.ignore_scale and 1 or marker.scale * scale
