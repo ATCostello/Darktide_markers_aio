@@ -693,7 +693,7 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 		-- Out of LOS OR no raycast yet
 		if not has_raycast or marker.raycast_result == true then
 			--target_alpha = target_alpha * los_alpha
-			target_alpha = target_alpha * distance_factor
+			target_alpha = (target_alpha * distance_factor) * los_alpha
 		else
 			-- In LOS → distance-shaped opacity
 			target_alpha = target_alpha * distance_factor
@@ -768,8 +768,6 @@ mod.adjust_los_requirement = function(marker)
 	if tc.require_los then
 		if marker.is_inside_frustum then
 			if marker.raycast_result == false then
-				do_draw(marker)
-			elseif tc.keep_on_screen then
 				do_draw(marker)
 			else
 				dont_draw(marker)
