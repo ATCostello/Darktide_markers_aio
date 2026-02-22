@@ -1,5 +1,7 @@
 local mod = get_mod("markers_aio")
 
+mod.modules = {}
+
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/chest_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers")
@@ -985,6 +987,17 @@ mod.toggle_los = function(marker_type)
 			mod:set(marker_type .. "_require_line_of_sight", true)
 		else
 			mod:set(marker_type .. "_require_line_of_sight", false)
+		end
+	end
+end
+
+if mod.modules then
+	mod.on_setting_changed = function(setting_id)
+		for module in pairs(mod.modules) do
+			local module_on_setting_changed = mod[module .. '_on_setting_changed']
+			if module_on_setting_changed then
+				module_on_setting_changed(setting_id)
+			end
 		end
 	end
 end
