@@ -368,8 +368,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		local markers_by_type = self._markers_by_type
 		local ALIVE = ALIVE
 
-		dbg_markers = markers_by_type
-
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
