@@ -12,6 +12,7 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/luggable_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/stolen_rations_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/atonement_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/unknown_markers")
 
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
 
@@ -155,6 +156,7 @@ local function build_frame_settings(mod)
 		martyrs_skull = mod:get("martyrs_skull_enable"),
 		rations = mod:get("rations_enable"),
 		atonement = mod:get("atonement_enable"),
+		unknown = mod:get("unknown_enable"),
 	}
 end
 
@@ -233,7 +235,7 @@ local HudElementWorldMarkersSettings =
 	require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
 
 HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
-	local camera = self._camera
+	local camera = self:_get_camera()
 	if not camera then
 		return
 	end
@@ -342,10 +344,11 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 	table.clear(mod.fc_typecache)
 
 	local raycasts_allowed = self._raycast_frame_counter == 0
+
 	self._raycast_frame_counter = (self._raycast_frame_counter + 1)
 		% HudElementWorldMarkersSettings.raycasts_frame_delay
 
-	local camera = self._camera
+	local camera = self:_get_camera()
 
 	if camera then
 		local scale = ui_renderer.scale
@@ -365,6 +368,8 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		local markers_by_type = self._markers_by_type
 		local ALIVE = ALIVE
 
+		dbg_markers = markers_by_type
+
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
@@ -372,6 +377,11 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 				local template = marker.template
 				local update = markers_by_id[id] ~= nil
 				local remove = marker.remove
+
+				if not marker.widget then
+					return
+				end
+
 				local widget = marker.widget
 				local content = widget.content
 				local screen_clamp = template.screen_clamp and not marker.block_screen_clamp
@@ -573,6 +583,11 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 						mod.update_atonement_markers(self, marker)
 					end
 
+					-- Unknown markers will get subtle changes so they work with distance/occlusion and have same background colour
+					if not marker.markers_aio_type and fs.enable.unknown then
+						mod.update_unknown_markers(self, marker)
+					end
+
 					if marker.widget and marker.distance and not marker.markers_aio_type then
 						local template = marker.template
 						local max_distance = template and template.max_distance
@@ -603,7 +618,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 			end
 		end
 	else
-		self._camera = self._parent:player_camera()
+		self._player_camera = self._parent:player_camera()
 	end
 
 	for i = 1, #temp_array_markers_to_remove do

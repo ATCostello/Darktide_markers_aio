@@ -1223,7 +1223,7 @@ return {
 					},
 				},
 			},
-		
+
 			{
 				setting_id = "luggable_markers_settings",
 				type = "group",
@@ -1544,6 +1544,111 @@ return {
 								setting_id = "event_colour_B",
 								type = "numeric",
 								default_value = 0,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
+				},
+			},
+
+			{
+				setting_id = "unknown_markers_settings",
+				type = "group",
+				sub_widgets = {
+					{
+						setting_id = "unknown_general_settings",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "unknown_enable",
+								type = "checkbox",
+								default_value = true,
+							},
+
+							{
+								setting_id = "unknown_keep_on_screen",
+								type = "checkbox",
+								default_value = false,
+							},
+							{
+								setting_id = "unknown_require_line_of_sight",
+								type = "checkbox",
+								default_value = true,
+							},
+							{
+								setting_id = "unknown_toggle_los",
+								type = "keybind",
+								default_value = {},
+								keybind_global = true,
+								keybind_trigger = "pressed",
+								keybind_type = "function_call",
+								function_name = "unknown_toggle_los",
+							},
+							{
+								setting_id = "unknown_max_distance",
+								type = "numeric",
+								default_value = 50,
+								range = {
+									20,
+									100,
+								},
+							},
+							{
+								setting_id = "unknown_scale",
+								type = "numeric",
+								default_value = 100,
+								range = {
+									50,
+									150,
+								},
+							},
+							{
+								setting_id = "unknown_alpha",
+								type = "numeric",
+								default_value = 1,
+								range = {
+									0.1,
+									1,
+								},
+								decimals_number = 2,
+							},
+							{
+								setting_id = "unknown_border_colour",
+								type = "dropdown",
+								options = border_colours,
+								default_value = "Gold",
+							},
+						},
+					},
+					{
+						setting_id = "unknown_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "unknown_colour_R",
+								type = "numeric",
+								default_value = 255,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "unknown_colour_G",
+								type = "numeric",
+								default_value = 255,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "unknown_colour_B",
+								type = "numeric",
+								default_value = 255,
 								range = {
 									0,
 									255,
