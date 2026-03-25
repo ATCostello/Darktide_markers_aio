@@ -98,12 +98,14 @@ end)
 
 mod.add_medkit_marker_and_proximity = function(self, unit)
 	local marker_exists = false
+
 	if self and self._world_markers_list and not table.is_empty(self._world_markers_list) then
 		for _, marker in pairs(self._world_markers_list) do
-			if marker.type == "interaction" and marker.data._active_interaction_type == "health" then
-			end
-			if marker.unit == self._unit then
-				marker_exists = true
+			if marker.type == "med_marker" then
+				if marker.unit == self._unit then
+					marker_exists = true
+					mod:echo("marker exists " .. tostring(marker_exists))
+				end
 			end
 		end
 	end
@@ -146,10 +148,11 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 					local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
 					if field_improv_active and mod:get("display_field_improv_colour") == true then
-						Quaternion.set_xyzw(material_value, 1, 0.1, 1, 0.5)
+						Quaternion.set_xyzw(material_value, 0.6, 0, 0.8, 0.5)
 					else
 						Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
 					end
+
 					Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
 
 					-- Set low opacity
@@ -567,8 +570,8 @@ mod.update_ammo_med_markers = function(self, marker)
 				end
 
 				if marker.widget.style.icon then
-					marker.widget.style.icon.size[1] = 48
-					marker.widget.style.icon.size[2] = 48
+					marker.widget.style.icon.size[1] = marker.widget.style.icon.size[1] * marker.scale
+					marker.widget.style.icon.size[2] = marker.widget.style.icon.size[2] * marker.scale
 				end
 
 				if marker.widget.style.field_improv then
@@ -615,7 +618,7 @@ mod.update_ammo_med_markers = function(self, marker)
 						and marker.widget.style.marker_text
 						and marker.widget.style.icon
 					then
-						marker.widget.style.marker_text.font_size = 14
+						marker.widget.style.marker_text.font_size = 14 * marker.scale
 					end
 				end
 			end

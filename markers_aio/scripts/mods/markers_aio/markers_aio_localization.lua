@@ -1,14 +1,119 @@
 local mod = get_mod("markers_aio")
+mod.version = "2.11.0"
+mod:info("Enemies Improved is installed, using version: " .. tostring(mod.version))
 
+mod.lookup_border_color = function(colour_string)
+	local border_colours = {
+		["Gold"] = {
+			255,
+			232,
+			188,
+			109,
+		},
+		["Silver"] = {
+			255,
+			187,
+			198,
+			201,
+		},
+		["Steel"] = {
+			255,
+			161,
+			166,
+			169,
+		},
+		["Tarnished"] = {
+			255,
+			120,
+			57,
+			0,
+		},
+	}
+	return border_colours[colour_string]
+end
+
+local function lerp(a, b, t)
+	return a + (b - a) * t
+end
+
+mod.gradientText = function(text, startColor, endColor, colorSpaces)
+	local result = ""
+	local length = #text
+	local visibleIndex = 0
+
+	-- Count visible characters
+	for i = 1, length do
+		local char = text:sub(i, i)
+		if colorSpaces or char ~= " " then
+			visibleIndex = visibleIndex + 1
+		end
+	end
+
+	local currentIndex = 0
+
+	for i = 1, length do
+		local char = text:sub(i, i)
+
+		if not colorSpaces and char == " " then
+			result = result .. char
+		else
+			currentIndex = currentIndex + 1
+			local t = (visibleIndex <= 1) and 0 or (currentIndex - 1) / (visibleIndex - 1)
+
+			local r = math.floor(lerp(startColor[1], endColor[1], t))
+			local g = math.floor(lerp(startColor[2], endColor[2], t))
+			local b = math.floor(lerp(startColor[3], endColor[3], t))
+
+			result = result .. string.format("{#color(%d,%d,%d)}%s", r, g, b, char)
+		end
+	end
+
+	result = result .. "{#reset()}"
+	return result
+end
+
+local colours = {
+	title = "200,140,20",
+	subtitle = "226,199,126",
+	text = "169,191,153",
+}
+
+-- rainbow
+-- en = "{#color(255,0,0)}M{#color(255,85,0)}a{#color(255,170,0)}r{#color(255,255,0)}k{#color(170,255,0)}e{#color(85,255,0)}r{#color(0,255,0)}s {#color(0,255,85)}I{#color(0,255,170)}m{#color(0,255,255)}p{#color(0,170,255)}r{#color(0,85,255)}o{#color(0,0,255)}v{#color(85,0,255)}e{#color(170,0,255)}d {#color(255,0,255)}A{#color(255,0,170)}I{#color(255,0,85)}O{#reset()}",
+-- fire
+-- en = "{#color(255,0,0)}M{#color(255,32,0)}a{#color(255,64,0)}r{#color(255,96,0)}k{#color(255,128,0)}e{#color(255,160,0)}r{#color(255,192,0)}s {#color(255,224,0)}I{#color(255,240,64)}m{#color(255,255,128)}p{#color(255,255,160)}r{#color(255,255,192)}o{#color(255,255,210)}v{#color(255,255,225)}e{#color(255,255,240)}d {#color(255,255,255)}A{#color(255,220,180)}I{#color(255,200,150)}O{#reset()}",
+-- ice
+-- en = "{#color(0,128,255)}M{#color(0,110,255)}a{#color(0,90,255)}r{#color(0,70,255)}k{#color(30,50,255)}e{#color(60,30,255)}r{#color(90,0,255)}s {#color(120,0,255)}I{#color(140,0,255)}m{#color(160,0,255)}p{#color(180,0,255)}r{#color(200,0,255)}o{#color(220,0,255)}v{#color(235,0,255)}e{#color(245,0,255)}d {#color(255,0,255)}A{#color(255,0,200)}I{#color(255,0,150)}O{#reset()}",
+-- green
+-- en = "{#color(0,255,120)}M{#color(0,255,130)}a{#color(0,255,140)}r{#color(0,255,150)}k{#color(0,255,160)}e{#color(0,255,170)}r{#color(0,255,180)}s {#color(0,255,190)}I{#color(0,255,200)}m{#color(0,255,210)}p{#color(0,255,220)}r{#color(0,255,230)}o{#color(0,255,240)}v{#color(0,255,250)}e{#color(0,240,255)}d {#color(0,220,255)}A{#color(0,200,255)}I{#color(0,180,255)}O{#reset()}",
+-- neon
+-- en = "{#color(255,0,255)}M{#color(200,0,255)}a{#color(150,0,255)}r{#color(100,0,255)}k{#color(50,0,255)}e{#color(0,0,255)}r{#color(0,100,255)}s {#color(0,200,255)}I{#color(0,255,200)}m{#color(0,255,100)}p{#color(0,255,0)}r{#color(100,255,0)}o{#color(200,255,0)}v{#color(255,255,0)}e{#color(255,150,0)}d {#color(255,100,0)}A{#color(255,50,0)}I{#color(255,0,0)}O{#reset()}",
 local loc = {
 	mod_name = {
-		en = "Markers Improved AIO",
+		en = "{#color("
+			.. colours.title
+			.. ")} {#color(0,128,255)}M{#color(0,110,255)}a{#color(0,90,255)}r{#color(0,70,255)}k{#color(30,50,255)}e{#color(60,30,255)}r{#color(90,0,255)}s {#color(120,0,255)}I{#color(140,0,255)}m{#color(160,0,255)}p{#color(180,0,255)}r{#color(200,0,255)}o{#color(220,0,255)}v{#color(235,0,255)}e{#color(245,0,255)}d {#color(255,0,255)}A{#color(255,0,200)}I{#color(255,0,150)}O{#reset()}",
 		ru = "Улучшенные метки - все в одном",
 		["zh-tw"] = "標記改進整合版",
 		["zh-cn"] = "图标改进集成",
 	},
 	mod_description = {
-		en = "Combines all my 'Markers' mods in to one easy to install package. ",
+		en = "{#color("
+			.. colours.text
+			.. ")}Adds brand new markers to some collectables, options such as distance, colour choices, line-of-sight toggles, a whole in-mission Martyr's Skull collection guide and more.{#reset()}\n\n"
+			.. "{#color("
+			.. colours.subtitle
+			.. ")}Author: "
+			.. "{#color("
+			.. colours.text
+			.. ")}Alfthebigheaded\n"
+			.. "{#color("
+			.. colours.subtitle
+			.. ")}Version: {#color("
+			.. colours.text
+			.. ")}"
+			.. mod.version
+			.. "{#reset()}",
 		fr = "Combine tous mes mods 'Marqueurs' en un seul paquet facile à installer. ",
 		ru = "Markers Improved AIO - Объединяет все мои моды «Меток» в один простой в установке пакет.",
 		["zh-tw"] = "將所有「標記」模組整合成一個方便安裝的套件。",
@@ -1577,7 +1682,9 @@ local loc = {
 		en = "Terminal",
 		["zh-tw"] = "終端",
 	},
-
+	Tarnished = {
+		en = "Tarnished",
+	},
 	-- new toggle LOS settings
 	martyrs_skull_toggle_los = {
 		en = "Toggle 'Require Line of Sight'",
@@ -2044,6 +2151,250 @@ local loc = {
 		["zh-tw"] = "切換「需要視線範圍」",
 	},
 
+	-- Expedition Markers
+	expedition_markers_settings = {
+		en = "EXPEDITION MARKERS",
+	},
+	expedition_enable = {
+		en = "Enable Markers",
+		fr = "Activer les marqueurs",
+		ru = "Включить метки",
+		["zh-tw"] = "啟用標記",
+		["zh-cn"] = "启用图标",
+	},
+	expedition_general_settings = {
+		en = "General Settings",
+		fr = "Paramètres généraux",
+		ru = "Общие настройки",
+		["zh-tw"] = "一般設定",
+		["zh-cn"] = "通用设定",
+	},
+	expedition_keep_on_screen = {
+		en = "Keep on screen",
+		ru = "Держать на экране",
+		fr = "Rester à l'écran",
+		["zh-tw"] = "保持顯示於螢幕",
+		["zh-cn"] = "在画面中持续显示",
+	},
+	expedition_require_line_of_sight = {
+		en = "Require line of sight",
+		fr = "Nécessite une ligne de vue",
+		ru = "Должно быть в зоне видимости",
+		["zh-tw"] = "需要視線範圍",
+		["zh-cn"] = "需要视野",
+	},
+	expedition_max_distance = {
+		en = "Max distance",
+		fr = "Distance maximale",
+		ru = "Максимальное расстояние",
+		["zh-tw"] = "最遠距離",
+		["zh-cn"] = "最大距离",
+	},
+	expedition_max_size = {
+		en = "Maximum size of marker",
+		fr = "Taille maximale du marqueur",
+		ru = "Максимальный размер метки",
+		["zh-tw"] = "圖標的最大尺寸",
+		["zh-cn"] = "图标最大尺寸",
+	},
+	expedition_min_size = {
+		en = "Minimum size of marker",
+		fr = "Taille minimale du marqueur",
+		ru = "Минимальный размер метки",
+		["zh-tw"] = "圖標的最小尺寸",
+		["zh-cn"] = "图标最小尺寸",
+	},
+	expedition_scale = {
+		en = "Scale",
+		fr = "Scale",
+		ru = "Scale",
+		["zh-tw"] = "圖標縮放大小",
+		["zh-cn"] = "图标缩放比例",
+	},
+	expedition_alpha = {
+		en = "Alpha Multiplier",
+		fr = "Multiplicateur d'alpha",
+		ru = "Прозрачность",
+		["zh-tw"] = "透明度倍增器",
+		["zh-cn"] = "透明度",
+	},
+	expedition_border_colour = {
+		en = "Border Colour (General)",
+		fr = "Couleur de la bordure",
+		ru = "Цвет границы",
+		["zh-tw"] = "邊框顏色",
+		["zh-cn"] = "边框颜色",
+	},
+	expedition_border_colour_1 = {
+		en = "Border Colour (Tier 1 loot)",
+		fr = "Couleur de la bordure",
+		ru = "Цвет границы",
+		["zh-tw"] = "邊框顏色",
+		["zh-cn"] = "边框颜色",
+	},
+	expedition_border_colour_2 = {
+		en = "Border Colour (Tier 2 loot)",
+		fr = "Couleur de la bordure",
+		ru = "Цвет границы",
+		["zh-tw"] = "邊框顏色",
+		["zh-cn"] = "边框颜色",
+	},
+	expedition_border_colour_3 = {
+		en = "Border Colour (Tier 3 loot)",
+		fr = "Couleur de la bordure",
+		ru = "Цвет границы",
+		["zh-tw"] = "邊框顏色",
+		["zh-cn"] = "边框颜色",
+	},
+	expedition_colour = {
+		en = "Expedition Markers Colour (General)",
+	},
+	expedition_pickups_colour = {
+		en = "Expedition Pickup Markers Colour",
+	},
+	expedition_currency_colour = {
+		en = "Expedition Salvage Markers Colour",
+	},
+	expedition_reliquary_colour = {
+		en = "Expedition Reliquary Markers Colour",
+	},
+	expedition_remnants_colour = {
+		en = "Expedition Tech-Remnant Markers Colour",
+	},
+	expedition_crate_colour = {
+		en = "Expedition Loot Crate Markers Colour",
+	},
+	expedition_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	expedition_reliquary_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	expedition_pickups_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	expedition_currency_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	expedition_remnants_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	expedition_crate_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	expedition_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	expedition_reliquary_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	expedition_pickups_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	expedition_currency_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	expedition_remnants_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	expedition_crate_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	expedition_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	expedition_reliquary_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	expedition_pickups_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	expedition_currency_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	expedition_remnants_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	expedition_crate_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	expedition_toggle_los = {
+		en = "Toggle 'Require Line of Sight'",
+		["zh-tw"] = "切換「需要視線範圍」",
+	},
+
 	-- Unknown Markers
 	unknown_markers_settings = {
 		en = "UNKNOWN MARKERS (Those not covered elsewhere!)",
@@ -2087,7 +2438,7 @@ local loc = {
 		en = "Maximum size of marker",
 		fr = "Taille maximale du marqueur",
 		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
+		["zh-tw"] = "圖標的最��尺寸",
 		["zh-cn"] = "图标最大尺寸",
 	},
 	unknown_min_size = {
@@ -2115,7 +2466,7 @@ local loc = {
 		en = "Border Colour",
 		fr = "Couleur de la bordure",
 		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
+		["zh-tw"] = "邊框��色",
 		["zh-cn"] = "边框颜色",
 	},
 	unknown_colour = {
@@ -2152,30 +2503,6 @@ local apply_color_to_text = function(text, r, g, b)
 	return "{#color(" .. r .. "," .. g .. "," .. b .. ")}" .. text .. "{#reset()}"
 end
 
-local lookup_border_color = function(colour_string)
-	local border_colours = {
-		["Gold"] = {
-			255,
-			232,
-			188,
-			109,
-		},
-		["Silver"] = {
-			255,
-			187,
-			198,
-			201,
-		},
-		["Steel"] = {
-			255,
-			161,
-			166,
-			169,
-		},
-	}
-	return border_colours[colour_string]
-end
-
 local apply_colours = function()
 	-- e.g. key = "Steel", values = "en = 'steel', fr = 'acier' etc"     ->    language = "en", text="Steel"
 	for key, values in pairs(loc) do
@@ -2200,9 +2527,9 @@ local apply_colours = function()
 		end
 
 		-- BORDER COLOURS
-		if key == "Gold" or key == "Silver" or key == "Steel" then
+		if key == "Gold" or key == "Silver" or key == "Steel" or key == "Tarnished" then
 			for language, text in pairs(values) do
-				local argb = lookup_border_color(key)
+				local argb = mod.lookup_border_color(key)
 
 				if argb ~= nil then
 					local temp = apply_color_to_text(key, argb[2], argb[3], argb[4])

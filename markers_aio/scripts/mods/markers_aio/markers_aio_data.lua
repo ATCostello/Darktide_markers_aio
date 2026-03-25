@@ -1,36 +1,13 @@
 local mod = get_mod("markers_aio")
 
-local lookup_border_color = function(colour_string)
-	local border_colours = {
-		["Gold"] = {
-			255,
-			232,
-			188,
-			109,
-		},
-		["Silver"] = {
-			255,
-			187,
-			198,
-			201,
-		},
-		["Steel"] = {
-			255,
-			161,
-			166,
-			169,
-		},
-	}
-	return border_colours[colour_string]
-end
-
 local apply_color_to_text = function(text, r, g, b)
 	return "{#color(" .. r .. "," .. g .. "," .. b .. ")}" .. text .. "{#reset()}"
 end
 
-local Gold = lookup_border_color("Gold")
-local Silver = lookup_border_color("Silver")
-local Steel = lookup_border_color("Steel")
+local Gold = mod.lookup_border_color("Gold")
+local Silver = mod.lookup_border_color("Silver")
+local Steel = mod.lookup_border_color("Steel")
+local Tarnished = mod.lookup_border_color("Tarnished")
 
 local border_colours = {
 	{
@@ -44,6 +21,10 @@ local border_colours = {
 	{
 		text = apply_color_to_text(mod:localize("Steel"), Steel[2], Steel[3], Steel[4]),
 		value = "Steel",
+	},
+	{
+		text = apply_color_to_text(mod:localize("Tarnished"), Tarnished[2], Tarnished[3], Tarnished[4]),
+		value = "Tarnished",
 	},
 }
 
@@ -115,7 +96,7 @@ return {
 					{
 						setting_id = "ads_los_opacity",
 						type = "numeric",
-						default_value = 25,
+						default_value = 50,
 						range = {
 							0,
 							100,
@@ -125,7 +106,7 @@ return {
 						setting_id = "marker_background_colour",
 						type = "dropdown",
 						options = background_colours,
-						default_value = "Black",
+						default_value = "Terminal",
 					},
 				},
 			},
@@ -173,7 +154,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									15,
+									0,
 									100,
 								},
 							},
@@ -182,7 +163,7 @@ return {
 								type = "numeric",
 								default_value = 20,
 								range = {
-									15,
+									0,
 									100,
 								},
 							},
@@ -483,7 +464,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},
@@ -587,7 +568,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},
@@ -691,7 +672,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},
@@ -864,7 +845,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},
@@ -1124,7 +1105,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},
@@ -1269,7 +1250,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},
@@ -1351,12 +1332,12 @@ return {
 							{
 								setting_id = "martyrs_skull_guide_enable",
 								type = "checkbox",
-								default_value = false,
+								default_value = true,
 							},
 							{
 								setting_id = "martyrs_skull_guide_disable_if_collected",
 								type = "checkbox",
-								default_value = false,
+								default_value = true,
 							},
 							{
 								setting_id = "martyrs_skull_keep_on_screen",
@@ -1382,7 +1363,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},
@@ -1487,7 +1468,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},
@@ -1555,6 +1536,294 @@ return {
 			},
 
 			{
+				setting_id = "expedition_markers_settings",
+				type = "group",
+				sub_widgets = {
+					{
+						setting_id = "expedition_general_settings",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "expedition_enable",
+								type = "checkbox",
+								default_value = true,
+							},
+
+							{
+								setting_id = "expedition_keep_on_screen",
+								type = "checkbox",
+								default_value = false,
+							},
+							{
+								setting_id = "expedition_require_line_of_sight",
+								type = "checkbox",
+								default_value = true,
+							},
+							{
+								setting_id = "expedition_toggle_los",
+								type = "keybind",
+								default_value = {},
+								keybind_global = true,
+								keybind_trigger = "pressed",
+								keybind_type = "function_call",
+								function_name = "expedition_toggle_los",
+							},
+							{
+								setting_id = "expedition_max_distance",
+								type = "numeric",
+								default_value = 50,
+								range = {
+									0,
+									200,
+								},
+							},
+							{
+								setting_id = "expedition_scale",
+								type = "numeric",
+								default_value = 100,
+								range = {
+									50,
+									150,
+								},
+							},
+							{
+								setting_id = "expedition_alpha",
+								type = "numeric",
+								default_value = 1,
+								range = {
+									0.1,
+									1,
+								},
+								decimals_number = 2,
+							},
+							{
+								setting_id = "expedition_border_colour",
+								type = "dropdown",
+								options = border_colours,
+								default_value = "Silver",
+							},
+							{
+								setting_id = "expedition_border_colour_1",
+								type = "dropdown",
+								options = border_colours,
+								default_value = "Tarnished",
+							},
+							{
+								setting_id = "expedition_border_colour_2",
+								type = "dropdown",
+								options = border_colours,
+								default_value = "Steel",
+							},
+							{
+								setting_id = "expedition_border_colour_3",
+								type = "dropdown",
+								options = border_colours,
+								default_value = "Gold",
+							},
+						},
+					},
+					{
+						setting_id = "expedition_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "expedition_colour_R",
+								type = "numeric",
+								default_value = 192,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_colour_G",
+								type = "numeric",
+								default_value = 194,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_colour_B",
+								type = "numeric",
+								default_value = 110,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
+					{
+						setting_id = "expedition_pickups_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "expedition_pickups_colour_R",
+								type = "numeric",
+								default_value = 223,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_pickups_colour_G",
+								type = "numeric",
+								default_value = 108,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_pickups_colour_B",
+								type = "numeric",
+								default_value = 110,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
+					{
+						setting_id = "expedition_currency_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "expedition_currency_colour_R",
+								type = "numeric",
+								default_value = 233,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_currency_colour_G",
+								type = "numeric",
+								default_value = 185,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_currency_colour_B",
+								type = "numeric",
+								default_value = 110,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
+					{
+						setting_id = "expedition_reliquary_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "expedition_reliquary_colour_R",
+								type = "numeric",
+								default_value = 108,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_reliquary_colour_G",
+								type = "numeric",
+								default_value = 158,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_reliquary_colour_B",
+								type = "numeric",
+								default_value = 255,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
+					{
+						setting_id = "expedition_remnants_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "expedition_remnants_colour_R",
+								type = "numeric",
+								default_value = 137,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_remnants_colour_G",
+								type = "numeric",
+								default_value = 206,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_remnants_colour_B",
+								type = "numeric",
+								default_value = 125,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
+					{
+						setting_id = "expedition_crate_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "expedition_crate_colour_R",
+								type = "numeric",
+								default_value = 198,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_crate_colour_G",
+								type = "numeric",
+								default_value = 110,
+								range = {
+									0,
+									255,
+								},
+							},
+							{
+								setting_id = "expedition_crate_colour_B",
+								type = "numeric",
+								default_value = 0,
+								range = {
+									0,
+									255,
+								},
+							},
+						},
+					},
+				},
+			},
+
+			{
 				setting_id = "unknown_markers_settings",
 				type = "group",
 				sub_widgets = {
@@ -1592,7 +1861,7 @@ return {
 								type = "numeric",
 								default_value = 50,
 								range = {
-									20,
+									0,
 									100,
 								},
 							},

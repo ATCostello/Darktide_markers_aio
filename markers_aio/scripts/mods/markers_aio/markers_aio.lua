@@ -13,6 +13,7 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/stolen_rations_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/atonement_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/unknown_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/expedition_markers")
 
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
 
@@ -58,6 +59,7 @@ local COLOUR_LOOKUP = {
 	Brass = { 255, 226, 199, 126 },
 	Terminal = Color.terminal_background(200, true),
 	Default = { 255, 161, 166, 169 },
+	Tarnished = { 255, 130, 115, 102 },
 }
 
 mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
@@ -142,7 +144,7 @@ local function build_frame_settings(mod)
 
 	fs.med_station_max_distance = mod:get("med_station_max_distance") or 20
 
-	-- Feature toggles (queried ONCE)
+	-- Feature toggles
 	fs.enable = {
 		tome = mod:get("tome_enable"),
 		material = mod:get("material_enable"),
@@ -156,6 +158,7 @@ local function build_frame_settings(mod)
 		martyrs_skull = mod:get("martyrs_skull_enable"),
 		rations = mod:get("rations_enable"),
 		atonement = mod:get("atonement_enable"),
+		expedition = mod:get("expedition_enable"),
 		unknown = mod:get("unknown_enable"),
 	}
 end
@@ -530,11 +533,14 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 			self:_raycast_markers(temp_marker_raycast_queue)
 		end
 
+		dbg_markers = markers_by_type
+
 		for _, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
 				if marker and marker.update then
 					marker.markers_aio_type = nil
+
 					ensure_invisible_until_ready(marker)
 
 					local template = marker.template
@@ -579,6 +585,9 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					end
 					if fs.enable.atonement then
 						mod.update_atonement_markers(self, marker)
+					end
+					if fs.enable.expedition then
+						mod.update_expedition_markers(self, marker)
 					end
 
 					-- Unknown markers will get subtle changes so they work with distance/occlusion and have same background colour
