@@ -1,6 +1,6 @@
 local mod = get_mod("markers_aio")
 mod.version = "2.11.0"
-mod:info("Enemies Improved is installed, using version: " .. tostring(mod.version))
+mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
 	local border_colours = {
