@@ -249,7 +249,7 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 
 		offset[3] = BASE_Z + (i * Z_STRIDE)
 
-		if widget.content.marker_text and widget.content.marker_text ~= "" then
+		if widget.style.marker_text and widget.content.marker_text and widget.content.marker_text ~= "" then
 			widget.style.marker_text.offset[3] = offset[3] + 2
 		end
 
