@@ -94,6 +94,7 @@ template.create_widget_defintion = function(template, scenegraph_id)
 	title_text_style.text_color = Color.ui_hud_green_super_light(255, true)
 	title_text_style.text_horizontal_alignment = "center"
 	title_text_style.text_vertical_alignment = "center"
+	title_text_style.font_type = mod:get("font_type")
 
 	return UIWidget.create_definition({
 		{

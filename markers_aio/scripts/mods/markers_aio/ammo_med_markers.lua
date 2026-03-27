@@ -617,6 +617,8 @@ mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, na
 	marker_text_style.text_vertical_alignment = "center"
 	marker_text_style.drop_shadow = true
 
+	marker_text_style.font_type = mod:get("font_type")
+
 	local marker_text_pass = {
 		pass_type = "text",
 		style_id = "marker_text_ammo_med",

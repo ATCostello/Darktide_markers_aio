@@ -2043,14 +2043,40 @@ mod.setup_walkthrough_markers = function(self)
 					wmarker.placed = true
 				end
 
-				if marker and marker.widget and marker.widget.style.marker_text and marker.widget.style.icon then
-					marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1] / 2
+				-- set font size
+				if
+					marker
+					and marker.widget
+					and marker.widget.style.marker_text_ammo_med
+					and marker.widget.style.icon
+				then
+					marker.widget.style.marker_text_ammo_med.font_size = marker.widget.style.icon.size[1] / 1.7
+				end
+
+				-- use field_improv icon as a marker widget type
+				if marker and marker.widget and marker.widget.content.field_improv_ammo_med then
+					marker.widget.content.field_improv_ammo_med =
+						"content/ui/materials/icons/difficulty/flat/difficulty_skull_uprising"
+				end
+
+				if
+					marker
+					and marker.widget
+					and marker.widget.style.field_improv_ammo_med
+					and marker.widget.style.icon
+				then
+					marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
+					marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
+					marker.widget.style.field_improv_ammo_med.color = { 255, 210, 175, 0 }
+					marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
+
+					marker.widget.style.ring.color = mod.lookup_colour(mod:get("martyrs_skull_border_colour"))
 				end
 
 				if player_near_skull == true then
 					if wmarker.objective_placed == false and marker ~= nil then
 						marker.markers_aio_type = "martyrs_skull"
-						marker.widget.content.marker_text = wmarker.marker_text
+						marker.widget.content.marker_text_ammo_med = wmarker.marker_text
 					end
 
 					-- check if the objective is already placed at the same place
@@ -2307,5 +2333,5 @@ mod:command("teleport_marker", "Teleport to a Martyr's Skull marker by index or 
 	local pos = Vector3(target_marker.position[1], target_marker.position[2], target_marker.position[3])
 
 	PlayerMovement.teleport_fixed_update(player.player_unit, pos)
-	mod:echo("Teleported to marker " .. (target_marker.marker_text or arg))
+	mod:echo("Teleported to marker " .. (target_marker.marker_text_ammo_med or arg))
 end)
