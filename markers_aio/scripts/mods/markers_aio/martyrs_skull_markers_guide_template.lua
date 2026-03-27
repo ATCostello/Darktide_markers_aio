@@ -45,11 +45,11 @@ template.unit_node = "ui_interaction_marker"
 template.icon_size = icon_size
 template.ping_size = ping_size
 
-template.check_line_of_sight = mod:get("martyrs_skull_require_line_of_sight") or false
-template.screen_clamp = mod:get("martyrs_skull_keep_on_screen") or false
+template.check_line_of_sight = mod:get("martyrs_skull_require_line_of_sight")
+template.screen_clamp = mod:get("martyrs_skull_keep_on_screen")
 
 template.evolve_distance = 1
-template.max_distance = mod:get("martyrs_skull_max_distance") or 50
+template.max_distance = mod:get("martyrs_skull_max_distance")
 template.data = {}
 
 template.scale = 1

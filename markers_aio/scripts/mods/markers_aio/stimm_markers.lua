@@ -7,19 +7,11 @@ local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 
--- FoundYa Compatibility (Adds relevant marker categories and uses FoundYa distances instead.)
-local FoundYa = get_mod("FoundYa")
-
 local get_max_distance = function()
 	local max_distance = mod:get("stimm_max_distance")
 
-	-- foundya Compatibility
-	if FoundYa ~= nil then
-		-- max_distance = FoundYa:get("max_distance_supply") or mod:get("stimm_max_distance") or 30
-	end
-
 	if max_distance == nil then
-		max_distance = mod:get("stimm_max_distance") or 30
+		max_distance = mod:get("stimm_max_distance")
 	end
 
 	return max_distance
@@ -64,8 +56,6 @@ mod.update_stimm_markers = function(self, marker)
 			local max_spawn_distance_sq = max_distance * max_distance
 			HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
 
-			self.max_distance = max_distance
-
 			if self.fade_settings then
 				self.fade_settings.distance_max = max_distance
 				self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
@@ -73,10 +63,10 @@ mod.update_stimm_markers = function(self, marker)
 
 			marker.template.max_distance = max_distance
 			marker.template.fade_settings.distance_max = max_distance
-			marker.template.fade_settings.distance_min = marker.template.max_distance
-				- marker.template.evolve_distance * 2
+			marker.template.fade_settings.distance_min = max_distance - marker.template.evolve_distance * 2
 
 			self.max_distance = max_distance
+			marker.max_distance = max_distance
 
 			if self.fade_settings then
 				self.fade_settings.distance_max = max_distance

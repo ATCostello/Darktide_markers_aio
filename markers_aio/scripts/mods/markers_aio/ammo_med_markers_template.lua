@@ -9,11 +9,11 @@ local max_size_value = 128
 local size = { max_size_value, max_size_value }
 local ping_size = { max_size_value, max_size_value }
 local arrow_size = { max_size_value, max_size_value }
-local icon_size = { max_size_value / 4, max_size_value / 4 }
+local icon_size = { max_size_value / 2, max_size_value / 2 }
 local background_size = { max_size_value, max_size_value }
 local line_size = { 250, 5 }
 local bar_size = { 210, 10 }
-local scale_fraction = 0.75
+local scale_fraction = 1
 
 template.size = size
 template.name = "med_marker"
@@ -23,12 +23,11 @@ template.unit_node = "ui_interaction_marker"
 template.icon_size = icon_size
 template.ping_size = ping_size
 
-template.check_line_of_sight = mod:get("ammo_med_require_line_of_sight") or false
-template.screen_clamp = mod:get("ammo_med_keep_on_screen") or false
+template.check_line_of_sight = mod:get("ammo_med_require_line_of_sight")
+template.screen_clamp = mod:get("ammo_med_keep_on_screen")
 
 template.evolve_distance = 1
 template.max_distance = 15
-template.min_distance = 0
 
 template.data = { type = "medical_crate_deployable" }
 
@@ -38,12 +37,28 @@ template.line_of_sight_speed = 15
 
 template.min_size = { size[1] * scale_fraction, size[2] * scale_fraction }
 template.max_size = { size[1], size[2] }
-template.icon_min_size = { icon_size[1] * scale_fraction, icon_size[2] * scale_fraction }
+
+template.min_size = { size[1] * scale_fraction, size[2] * scale_fraction }
+template.max_size = { size[1], size[2] }
+
+template.icon_min_size = {
+	icon_size[1] * scale_fraction,
+	icon_size[2] * scale_fraction,
+}
 template.icon_max_size = { icon_size[1], icon_size[2] }
-template.background_min_size = { background_size[1] * scale_fraction, background_size[2] * scale_fraction }
+
+template.background_min_size = {
+	background_size[1] * scale_fraction,
+	background_size[2] * scale_fraction,
+}
 template.background_max_size = { background_size[1], background_size[2] }
-template.ping_min_size = { ping_size[1] * scale_fraction, ping_size[2] * scale_fraction }
+
+template.ping_min_size = {
+	ping_size[1] * scale_fraction,
+	ping_size[2] * scale_fraction,
+}
 template.ping_max_size = { ping_size[1], ping_size[2] }
+
 template.position_offset = { 0, 0, 1 }
 template.screen_margins = { down = 0.23148148148148148, left = 0.234375, right = 0.234375, up = 0.23148148148148148 }
 
@@ -74,6 +89,7 @@ template.create_widget_defintion = function(template, scenegraph_id)
 	title_text_style.size = icon_size
 	title_text_style.color = Color.ui_hud_green_super_light(255, true)
 	title_text_style.font_size = 14
+	title_text_style.default_font_size = 14
 	title_text_style.offset = { 0, 0, 900 }
 	title_text_style.text_color = Color.ui_hud_green_super_light(255, true)
 	title_text_style.text_horizontal_alignment = "center"
@@ -173,6 +189,31 @@ template.create_widget_defintion = function(template, scenegraph_id)
 				style.angle = content.angle
 			end,
 		},
+		{
+			pass_type = "texture",
+			style_id = "field_improv",
+			value = "content/ui/materials/hud/interactions/icons/enemy",
+			value_id = "field_improv",
+			style = {
+				horizontal_alignment = "left",
+				vertical_alignment = "center",
+				size = icon_size,
+				offset = {
+					50,
+					0,
+					0,
+				},
+				color = {
+					255,
+					255,
+					255,
+					255,
+				},
+			},
+			visibility_function = function(content, style)
+				return content.icon ~= nil
+			end,
+		},
 	}, scenegraph_id)
 end
 
@@ -203,7 +244,6 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	end
 
 	marker.ignore_scale = false
-	marker.scale = 1
 	local global_scale = marker.ignore_scale and 1 or marker.scale
 
 	if marker.raycast_initialized then
@@ -223,8 +263,8 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	local max_size = template.max_size
 	local ring_size = style.ring.size
 
-	ring_size[1] = (default_size[1] + (max_size[1] - default_size[1]) * scale_progress) * global_scale
-	ring_size[2] = (default_size[2] + (max_size[2] - default_size[2]) * scale_progress) * global_scale
+	ring_size[1] = (default_size[1] + (max_size[1] - default_size[1])) * marker.scale
+	ring_size[2] = (default_size[2] + (max_size[2] - default_size[2])) * marker.scale
 
 	local ping_min_size = template.ping_min_size
 	local ping_max_size = template.ping_max_size
@@ -234,39 +274,44 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
 	local ping_pulse_size_increase = ping_anim_progress * 15
 
-	ping_size[1] = (
-		ping_min_size[1]
-		+ (ping_max_size[1] - ping_min_size[1]) * scale_progress
-		+ ping_pulse_size_increase
-	) * global_scale
-	ping_size[2] = (
-		ping_min_size[2]
-		+ (ping_max_size[2] - ping_min_size[2]) * scale_progress
-		+ ping_pulse_size_increase
-	) * global_scale
+	ping_size[1] = (ping_min_size[1] + (ping_max_size[1] - ping_min_size[1]) + ping_pulse_size_increase) * marker.scale
+	ping_size[2] = (ping_min_size[2] + (ping_max_size[2] - ping_min_size[2]) + ping_pulse_size_increase) * marker.scale
 
 	local ping_pivot = ping_style.pivot
 
 	ping_pivot[1] = ping_size[1] * 0.5
 	ping_pivot[2] = ping_size[2] * 0.5
 
+	-- icon & background scaling
 	local icon_max_size = template.icon_max_size
 	local icon_min_size = template.icon_min_size
 	local background_max_size = template.background_max_size
 	local background_min_size = template.background_min_size
-	local icon_size = style.icon.size
 
-	icon_size[1] = (icon_min_size[1] + (icon_max_size[1] - icon_min_size[1]) * scale_progress) * global_scale
-	icon_size[2] = (icon_min_size[2] + (icon_max_size[2] - icon_min_size[2]) * scale_progress) * global_scale
+	local icon_style_size = style.icon.size
+	local bg_style_size = style.background.size
+	local field_improv_style_size = style.field_improv.size
+	local field_improv_style_offset = style.field_improv.offset
 
-	local background_size = style.background.size
+	local text_font_size = style.marker_text.font_size
 
-	background_size[1] = (background_min_size[1] + (background_max_size[1] - background_min_size[1]) * scale_progress)
-		* global_scale
-	background_size[2] = (background_min_size[2] + (background_max_size[2] - background_min_size[2]) * scale_progress)
-		* global_scale
+	local i_sx = icon_min_size[1] + (icon_max_size[1] - icon_min_size[1]) * scale_progress
+	local i_sy = icon_min_size[2] + (icon_max_size[2] - icon_min_size[2]) * scale_progress
+	icon_style_size[1] = i_sx * marker.scale
+	icon_style_size[2] = i_sy * marker.scale
+	field_improv_style_size[1] = i_sx * marker.scale
+	field_improv_style_size[2] = i_sy * marker.scale
+	field_improv_style_offset[1] = 45 * marker.scale
 
-	local animating = scale_progress ~= content.scale_progress
+	local b_sx = background_min_size[1] + (background_max_size[1] - background_min_size[1]) * scale_progress
+	local b_sy = background_min_size[2] + (background_max_size[2] - background_min_size[2]) * scale_progress
+	bg_style_size[1] = b_sx * marker.scale
+	bg_style_size[2] = b_sy * marker.scale
+
+	style.marker_text.font_size = 18 * marker.scale
+	style.marker_text.default_font_size = 18 * marker.scale
+
+	local animating = (scale_progress ~= content.scale_progress)
 
 	content.line_of_sight_progress = line_of_sight_progress
 	content.scale_progress = scale_progress

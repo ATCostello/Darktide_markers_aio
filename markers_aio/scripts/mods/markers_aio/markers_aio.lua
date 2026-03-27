@@ -29,26 +29,8 @@ local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIScenegraph = require("scripts/managers/ui/ui_scenegraph")
 local HudElementSmartTagging = require("scripts/ui/hud/elements/smart_tagging/hud_element_smart_tagging")
 
--- Per-frame computed settings (rebuilt once per frame)
+-- Per-frame computed settings
 mod.frame_settings = {}
-
--- Lazy per-marker-type cache (settings snapshot per frame)
-mod.fc_typecache = {}
-
--- Ensure markers start fully transparent until their first transform has applied
-local function ensure_invisible_until_ready(marker)
-	if not marker.widget then
-		return
-	end
-
-	-- Hide until transform + alpha + scale are ready
-	if marker.markers_aio_type then
-		if not marker._aio_transformed or not marker._aio_alpha_ready or not marker._aio_scale_ready then
-			marker.widget.alpha_multiplier = 0
-			marker.draw = false
-		end
-	end
-end
 
 -- Global colour lookup (no per-call table allocs)
 local COLOUR_LOOKUP = {
@@ -93,34 +75,9 @@ mod:hook_safe(CLASS.PropUnitDataExtension, "setup_from_component", function(self
 	end
 end)
 
-local function get_type_cache(mod, marker_type)
-	local cache = mod.fc_typecache
-	local tc = cache[marker_type]
-
-	if marker_type == nil then
-		return
-	end
-
-	if tc then
-		return tc
-	end
-
-	tc = {
-		alpha = mod:get(marker_type .. "_alpha") or 1,
-		scale = (mod:get(marker_type .. "_scale") or 100) / 100,
-		max_distance = mod:get(marker_type .. "_max_distance"),
-		require_los = mod:get(marker_type .. "_require_line_of_sight") == true,
-		keep_on_screen = mod:get(marker_type .. "_keep_on_screen") == true,
-	}
-
-	cache[marker_type] = tc
-	return tc
-end
-
 local function build_frame_settings(mod)
 	local fs = mod.frame_settings
 
-	-- ADS detection ONCE per frame
 	local is_ads = false
 	local player = Managers.player:local_player(1)
 	if player then
@@ -138,11 +95,11 @@ local function build_frame_settings(mod)
 
 	-- LOS global settings
 	fs.los_enabled = mod:get("los_fade_enable") == true
-	fs.los_opacity = (mod:get("los_opacity") or 100) / 100
-	fs.ads_los_opacity = (mod:get("ads_los_opacity") or 100) / 100
+	fs.los_opacity = (mod:get("los_opacity")) / 100
+	fs.ads_los_opacity = (mod:get("ads_los_opacity")) / 100
 	fs.ads_blend = math.lerp(fs.ads_blend or 0, is_ads and 1 or 0, 0.25)
 
-	fs.med_station_max_distance = mod:get("med_station_max_distance") or 20
+	fs.med_station_max_distance = mod:get("med_station_max_distance")
 
 	-- Feature toggles
 	fs.enable = {
@@ -178,6 +135,15 @@ end
 
 mod.lookup_colour = function(colour_string)
 	return COLOUR_LOOKUP[colour_string] or COLOUR_LOOKUP.Default
+end
+
+mod.get_marker_by_id = function(id)
+	local ui_manager = Managers.ui
+	local hud = ui_manager:get_hud()
+	local world_markers = hud and hud:element("HudElementWorldMarkers")
+	local markers_by_id = world_markers and world_markers._markers_by_id
+
+	return markers_by_id[id]
 end
 
 HudElementWorldMarkers._get_scale = function(self, scale_settings, distance)
@@ -315,7 +281,7 @@ local function force_text_full_alpha(marker)
 		return
 	end
 
-	-- Counter BOTH widget + renderer alpha
+	-- Counter widget + renderer alpha
 	local corrected_alpha = math.clamp(255 / widget_alpha, 0, 255)
 
 	text_style.color[1] = corrected_alpha
@@ -334,17 +300,23 @@ local function compute_distance_alpha(marker, max_distance)
 
 	local t = (d - 0.85) / 0.25
 	t = math.clamp(t, 0, 1)
-	t = t * t * (3 - 2 * t) -- smoothstep
+	t = t * t * (3 - 2 * t)
 
 	return 1 - t
 end
 
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
-	-- Build per-frame state
-	build_frame_settings(mod)
+	-- Global throttle for marker updates...
+	--local update_interval = 0.02
+	--update_time = (update_time or 0) + dt
 
-	-- Clear per-type cache each frame
-	table.clear(mod.fc_typecache)
+	--if update_time < update_interval then
+	--	return
+	--end
+	--update_time = 0
+
+	-- Build frame state
+	build_frame_settings(mod)
 
 	local raycasts_allowed = self._raycast_frame_counter == 0
 
@@ -373,21 +345,21 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
+				-- DEFAULT STUFF
 				local marker = markers[i]
 				local id = marker.id
 				local template = marker.template
 				local update = markers_by_id[id] ~= nil
 				local remove = marker.remove
-
-				if not marker.widget then
-					return
-				end
-
 				local widget = marker.widget
 				local content = widget.content
 				local screen_clamp = template.screen_clamp and not marker.block_screen_clamp
 				local screen_margins = template.screen_margins
+
 				local max_distance = template.max_distance
+				if marker.markers_aio_type then
+					max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+				end
 
 				-- Never distance-cull base game objective markers
 				if marker.type == "objective" or (template and template.name == "objective") then
@@ -399,6 +371,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 				end
 
 				local life_time = template.life_time
+				local check_line_of_sight = template.check_line_of_sight
 				local marker_position
 
 				if update then
@@ -438,6 +411,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 				if update then
 					local position_offset = template.position_offset
+
 					if position_offset then
 						marker_position.x = marker_position.x + position_offset[1]
 						marker_position.y = marker_position.y + position_offset[2]
@@ -447,6 +421,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					Vector3Box.store(marker.position, marker_position)
 
 					local distance = Vector3.distance(marker_position, camera_position)
+
 					content.distance = distance
 					marker.distance = distance
 
@@ -455,22 +430,25 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 					if not out_of_reach then
 						local marker_direction = Vector3.normalize(marker_position - camera_position)
+						marker_direction = Vector3.normalize(marker_direction)
+
 						local forward_dot_dir = Vector3.dot(camera_direction, marker_direction)
 						local is_inside_frustum = Camera.inside_frustum(camera, marker_position) > 0
 						local camera_left = Vector3.cross(camera_direction, Vector3.up())
 						local left_dot_dir = Vector3.dot(camera_left, marker_direction)
 						local angle = math.atan2(left_dot_dir, forward_dot_dir)
-						local is_behind = forward_dot_dir < 0
+						local is_behind = forward_dot_dir < 0 and true or false
 						local is_under = marker_position.z < camera_position.z
 						local x, y = self:_convert_world_to_screen_position(camera, marker_position)
-
 						local pixel_offset = template.pixel_offset
+
 						if pixel_offset then
 							x = x + pixel_offset[1]
 							y = y + pixel_offset[2]
 						end
 
 						local screen_x, screen_y = self:_get_screen_offset(scale)
+
 						x = x - screen_x
 						y = y - screen_y
 
@@ -478,7 +456,9 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 							false, false, false, false, false
 
 						if screen_clamp then
-							x, y, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down =
+							local clamped_x, clamped_y
+
+							clamped_x, clamped_y, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down =
 								self:_clamp_to_screen(
 									x,
 									y,
@@ -493,30 +473,74 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 									camera_position_down
 								)
 							is_clamped = is_clamped_left or is_clamped_right or is_clamped_up or is_clamped_down
+							x = clamped_x
+							y = clamped_y
 						end
 
 						if not is_clamped then
 							if is_behind then
 								draw = false
 							elseif not is_inside_frustum then
-								draw = false
+								local vertical_pixel_overlap, horizontal_pixel_overlap
+
+								if x < 0 then
+									horizontal_pixel_overlap = math.abs(x)
+								elseif x > root_size[1] then
+									horizontal_pixel_overlap = x - root_size[1]
+								end
+
+								if y < 0 then
+									vertical_pixel_overlap = math.abs(y)
+								elseif y > root_size[2] then
+									vertical_pixel_overlap = y - root_size[2]
+								end
+
+								if vertical_pixel_overlap or horizontal_pixel_overlap then
+									draw = false
+
+									local check_widget_visible = template.check_widget_visible
+
+									if check_widget_visible then
+										draw = check_widget_visible(
+											widget,
+											vertical_pixel_overlap,
+											horizontal_pixel_overlap
+										)
+									end
+								else
+									draw = false
+								end
 							end
+						elseif is_clamped_left or is_clamped_right then
+							if is_clamped_left then
+								angle = 0
+							elseif is_clamped_right then
+								angle = math.pi
+							end
+						elseif is_clamped_up then
+							angle = math.pi * 0.5
+						elseif is_clamped_down then
+							angle = -math.pi * 0.5
 						end
 
 						content.is_inside_frustum = is_inside_frustum
 						content.is_clamped = is_clamped
 						content.is_under = is_under
+						content.distance = distance
 						content.angle = angle
 						marker.is_inside_frustum = is_inside_frustum
 						marker.is_clamped = is_clamped
 						marker.is_under = is_under
+						marker.distance = distance
 						marker.angle = angle
 
 						local offset = widget.offset
+
 						offset[1] = x * inverse_scale
 						offset[2] = y * inverse_scale
 
 						marker.raycast_frame_count = (marker.raycast_frame_count or 0) + 1
+
 						if raycasts_allowed then
 							temp_marker_raycast_queue[#temp_marker_raycast_queue + 1] = marker
 						end
@@ -535,16 +559,18 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 		dbg_markers = markers_by_type
 
-		for _, markers in pairs(markers_by_type) do
+		-- MARKERS AIO
+
+		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
+
 				if marker and marker.update then
 					marker.markers_aio_type = nil
 
-					ensure_invisible_until_ready(marker)
-
 					local template = marker.template
 					local update_function = template.update_function
+
 					if update_function then
 						update_function(self, ui_renderer, marker.widget, marker, template, dt, t)
 					end
@@ -598,7 +624,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					if marker.widget and marker.distance and not marker.markers_aio_type then
 						local template = marker.template
 						local max_distance = template and template.max_distance
-							or (marker.markers_aio_type and get_type_cache(mod, marker.markers_aio_type).max_distance)
+							or (marker.markers_aio_type and mod:get(marker.markers_aio_type .. "_max_distance"))
 
 						if max_distance then
 							local dist_alpha = compute_distance_alpha(marker, max_distance)
@@ -610,13 +636,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					if marker.markers_aio_type then
 						mod.adjust_los_requirement(marker)
 						mod.adjust_distance_visibility(marker)
-					end
-
-					if marker.widget and marker.widget.offset and marker.distance then
-						marker._aio_transformed = true
-					end
-
-					if marker.markers_aio_type and marker._aio_transformed then
 						mod.fade_icon_not_in_los(marker, ui_renderer)
 					end
 
@@ -628,12 +647,64 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		self._player_camera = self._parent:player_camera()
 	end
 
-	for i = 1, #temp_array_markers_to_remove do
-		self:_unregister_marker(temp_array_markers_to_remove[i])
+	local markers_to_remove = #temp_array_markers_to_remove
+
+	if markers_to_remove > 0 then
+		for i = 1, markers_to_remove do
+			local marker = temp_array_markers_to_remove[i]
+			self:_unregister_marker(marker)
+		end
+
+		table.clear(temp_array_markers_to_remove)
+	end
+end
+
+local HudElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
+local HudElementInteraction = require("scripts/ui/hud/elements/interaction/hud_element_interaction")
+
+HudElementInteraction._update_interactee_data = function(self, interactee_unit, extension)
+	local parent = self._parent
+	local player = parent:player()
+	local player_unit = player.player_unit
+	local camera = parent:player_camera()
+	local camera_position = camera and Camera.local_position(camera)
+	local render_marker = extension:active() and extension:show_marker(player_unit) and interactee_unit ~= player_unit
+	local interaction_units = self._interaction_units
+	local marker = nil
+
+	-- MARKERS AIO OVERRIDE
+	local max_spawn_distance_sq = 10000 -- 100m
+
+	if render_marker and camera_position then
+		local interactee_position = Unit.world_position(interactee_unit, 1)
+		local distance_sq = Vector3.distance_squared(interactee_position, camera_position)
+
+		--render_marker = distance_sq <= HudElementInteractionSettings.max_spawn_distance_sq
+		render_marker = distance_sq <= max_spawn_distance_sq
 	end
 
-	table.clear(temp_array_markers_to_remove)
-	table.clear(temp_marker_raycast_queue)
+	if render_marker then
+		if not interaction_units[interactee_unit] then
+			interaction_units[interactee_unit] = {
+				extension = nil,
+				marker_id = nil,
+				requested = true,
+				extension = extension,
+			}
+
+			local marker_callback = callback(self, "_on_interaction_marker_spawned", interactee_unit)
+			local marker_type = "interaction"
+
+			Managers.event:trigger("add_world_marker_unit", marker_type, interactee_unit, marker_callback, extension)
+		end
+	elseif interaction_units[interactee_unit] then
+		local marker_id = interaction_units[interactee_unit].marker_id
+
+		if marker_id then
+			Managers.event:trigger("remove_world_marker", marker_id)
+			interaction_units[interactee_unit] = nil
+		end
+	end
 end
 
 -- Fade out markers that are behind objects, depending on the set "los_opacity"
@@ -648,26 +719,25 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	end
 
 	local fs = mod.frame_settings
-	local tc = get_type_cache(mod, marker.markers_aio_type)
+	local mod_alpha = mod:get(marker.markers_aio_type .. "_alpha")
+	local mod_max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
 
 	-- Pinged markers are always fully visible
 	if widget.content and widget.content.tagged == true then
-		widget.alpha_multiplier = tc.alpha
-		marker._aio_alpha_ready = true
-		return tc.alpha
+		widget.alpha_multiplier = mod_alpha
+		return widget.alpha_multiplier
 	end
 
 	-- Health station exception
 	if marker.data and marker.data._active_interaction_type == "health_station" then
-		widget.alpha_multiplier = tc.alpha
-		marker._aio_alpha_ready = true
-		return tc.alpha
+		widget.alpha_multiplier = mod_alpha
+		return widget.alpha_multiplier
 	end
 
 	-- No raycast yet = assume blocked LOS
 	local has_raycast = marker.raycast_result ~= nil
 
-	local base_alpha = tc.alpha
+	local base_alpha = mod_alpha
 	local los_alpha
 
 	if fs.is_ads then
@@ -682,8 +752,8 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	------------------------------------------------
 	local distance_factor = 1
 
-	if tc.max_distance and marker.distance then
-		local d = math.clamp(marker.distance / tc.max_distance, 0, 1)
+	if mod_max_distance and marker.distance then
+		local d = math.clamp(marker.distance / mod_max_distance, 0, 1)
 
 		-- Remap [0.75 → 1.0] → [1 → 0]
 		if d >= 0.75 then
@@ -725,12 +795,6 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	------------------------------------------------
 	-- Init + smoothing
 	------------------------------------------------
-	if not marker._aio_alpha_ready then
-		-- Initialize from ZERO to prevent flash
-		widget.alpha_multiplier = 0
-		marker._aio_alpha_ready = true
-		return 0
-	end
 
 	local current = widget.alpha_multiplier or target_alpha
 	widget.alpha_multiplier = math.lerp(current, target_alpha, 0.8)
@@ -739,7 +803,7 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 end
 
 local function can_draw(marker)
-	return marker._aio_transformed == true and marker._aio_scale_ready == true and marker._aio_alpha_ready == true
+	return true
 end
 
 local do_draw = function(marker)
@@ -775,7 +839,8 @@ mod.adjust_los_requirement = function(marker)
 	end
 
 	local fs = mod.frame_settings
-	local tc = get_type_cache(mod, marker.markers_aio_type)
+	local mod_require_los = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
+	local mod_keep_on_screen = mod:get(marker.markers_aio_type .. "_keep_on_screen")
 
 	-- Absolute health station override
 	if marker.data and marker.data._active_interaction_type == "health_station" then
@@ -787,20 +852,20 @@ mod.adjust_los_requirement = function(marker)
 		return
 	end
 
-	if tc.require_los then
+	if mod_require_los then
 		if marker.is_inside_frustum then
 			if marker.raycast_result == false then
 				do_draw(marker)
 			else
 				dont_draw(marker)
 			end
-		elseif marker.raycast_result == false and tc.keep_on_screen then
+		elseif marker.raycast_result == false and mod_keep_on_screen then
 			do_draw(marker)
 		else
 			dont_draw(marker)
 		end
 	else
-		if marker.is_inside_frustum or tc.keep_on_screen then
+		if marker.is_inside_frustum or mod_keep_on_screen then
 			do_draw(marker)
 		else
 			dont_draw(marker)
@@ -821,10 +886,6 @@ end
 mod.adjust_scale = function(self, marker, ui_renderer)
 	marker.scale_original = marker.scale
 
-	--if not marker.markers_aio_type then
-	--	return
-	--end
-
 	local widget = marker.widget
 	local content = widget.content
 	local distance = content.distance
@@ -836,27 +897,20 @@ mod.adjust_scale = function(self, marker, ui_renderer)
 	end
 
 	local scale = 1
-	local tc = get_type_cache(mod, marker.markers_aio_type)
+	local mod_scale = scale
 
-	if tc then
-		scale = tc.scale or 1
+	if marker.markers_aio_type then
+		mod_scale = mod:get(marker.markers_aio_type .. "_scale") / 100
+		scale = mod_scale
 	end
 
 	marker.scale = self:_get_scale(scale_settings, distance)
 	local new_scale = marker.ignore_scale and 1 or marker.scale * scale
 	marker.scale = new_scale
 
-	if not marker._aio_scale_initialized then
-		-- Hard-apply scale instantly before first draw
-		self:_apply_scale(widget, new_scale)
-		marker._aio_scale_initialized = true
-		marker._aio_scale_ready = true
-		return
-	end
-
 	self:_apply_scale(widget, new_scale)
 
-	if marker.data and marker.data.type == "medical_crate_deployable" then
+	--[[if marker.data and marker.data.type == "medical_crate_deployable" then
 		local style = widget.style
 		local lerp_multiplier = 1
 
@@ -880,12 +934,7 @@ mod.adjust_scale = function(self, marker, ui_renderer)
 				marker.widget.style.marker_text.font_size = font_size
 			end
 		end
-	end
-
-	-- Health stations must always be scale-ready
-	if marker.data and marker.data._active_interaction_type == "health_station" then
-		marker._aio_scale_ready = true
-	end
+	end]]
 end
 
 HudElementWorldMarkers._apply_scale = function(self, widget, scale)
@@ -928,9 +977,9 @@ mod.adjust_distance_visibility = function(marker)
 		return
 	end
 
-	local tc = get_type_cache(mod, marker.markers_aio_type)
+	local mod_max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
 
-	if tc.max_distance and marker.distance > tc.max_distance then
+	if mod_max_distance and marker.distance > mod_max_distance then
 		dont_draw(marker)
 	end
 end
@@ -943,22 +992,48 @@ HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit
 		return false
 	end
 
+	-- don't calculate if marker isnt even drawn lol
+	if not marker.draw then
+		return
+	end
+	-- don't allow if alpha is too low
+	if marker.widget and marker.widget.alpha_multiplier < 0.1 then
+		return
+	end
+
 	local marker_unit = marker.unit
 	local smart_tag_extension = marker_unit and ScriptUnit.has_extension(marker_unit, "smart_tag_system")
 
+	local aio_type = marker.markers_aio_type
 	if marker_unit and not smart_tag_extension then
 		return false
 	end
 
-	if smart_tag_extension and not smart_tag_extension:can_tag(player_unit) then
+	local tag_id = template.get_smart_tag_id(marker)
+	local in_line_of_sight = not marker.raycast_result
+
+	--if not tag_id and not in_line_of_sight then
+	--	mod:echo("not tag_id and not in_line_of_sight " .. tostring(aio_type))
+	--	return false
+	--end
+
+	if not marker.is_inside_frustum or marker.is_clamped then
 		return false
 	end
 
-	if marker.draw == true then
-		return true
-	else
-		return false
+	if not tag_id then
+		if smart_tag_extension and not smart_tag_extension:can_tag(player_unit) then
+			return false
+		end
+
+		local max_distance = template.max_distance
+
+		if max_distance and distance and max_distance <= distance then
+			return false
+		end
 	end
+
+	return true
 end
 
 mod.ammo_med_toggle_los = function()

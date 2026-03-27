@@ -1574,7 +1574,7 @@ return {
 								default_value = 50,
 								range = {
 									0,
-									200,
+									100,
 								},
 							},
 							{

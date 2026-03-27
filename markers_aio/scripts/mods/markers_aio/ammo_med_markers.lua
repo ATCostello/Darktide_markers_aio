@@ -9,9 +9,6 @@ local WorldMarkerTemplateInteraction =
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 
--- FoundYa Compatibility (Adds relevant marker categories and uses FoundYa distances instead.)
-local FoundYa = get_mod("FoundYa")
-
 mod.on_all_mods_loaded = function()
 	local is_mod_loading = true
 	mod:hook_require("scripts/extension_systems/unit_templates", function(instance)
@@ -46,8 +43,6 @@ mod.on_all_mods_loaded = function()
 		end
 	end)
 
-	FoundYa = get_mod("FoundYa") -- grab again incase of load order issues
-
 	local load_package = function(path, id)
 		if not Managers.package:has_loaded(path) then
 			Managers.package:load(path, id)
@@ -62,11 +57,6 @@ end
 
 local get_max_distance = function()
 	local max_distance = mod:get("ammo_med_max_distance")
-
-	-- foundya Compatibility
-	if FoundYa ~= nil then
-		-- max_distance = FoundYa:get("max_distance_supply") or mod:get("ammo_med_max_distance")
-	end
 
 	if max_distance == nil then
 		max_distance = mod:get("ammo_med_max_distance")
@@ -104,7 +94,6 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 			if marker.type == "med_marker" then
 				if marker.unit == self._unit then
 					marker_exists = true
-					mod:echo("marker exists " .. tostring(marker_exists))
 				end
 			end
 		end
@@ -117,6 +106,7 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 	-- add proximity circle to medkits, thanks Raindish! (From NumericUI)
 	if mod:get("display_med_ring") == true and unit then
 		local package_path = "content/levels/training_grounds/missions/mission_tg_basic_combat_01"
+
 		if not Managers.package:has_loaded(package_path) then
 			Managers.package:load(package_path, "ammo_med_markers")
 			return
@@ -127,6 +117,7 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 
 		local world = Unit.world(unit)
 		local position = Unit.local_position(unit, 1)
+
 		if world and position then
 			local tx, ty, tz = Vector3.to_elements(position)
 			tx = tonumber(string.format("%.2f", tx))
@@ -137,6 +128,7 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 			if not med_crate_decals[position_string] or med_crate_decals[position_string] == nil then
 				-- Create decal unit
 				local decal_unit = World.spawn_unit_ex(world, decal_unit_name, nil, position + Vector3(0, 0, 0.1))
+
 				if decal_unit then
 					-- Set size of unit
 					local diameter = medical_crate_config.proximity_radius * 2 + 1.5
@@ -148,15 +140,14 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 					local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
 					if field_improv_active and mod:get("display_field_improv_colour") == true then
-						Quaternion.set_xyzw(material_value, 0.6, 0, 0.8, 0.5)
+						Quaternion.set_xyzw(material_value, 1, 0, 0.3, 0.5)
 					else
 						Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
 					end
 
 					Unit.set_vector4_for_material(decal_unit, "projector", "particle_color", material_value, true)
+					Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.07)
 
-					-- Set low opacity
-					Unit.set_scalar_for_material(decal_unit, "projector", "color_multiplier", 0.06)
 					med_crate_decals[position_string] = {
 						decal_unit,
 						unit,
@@ -267,8 +258,6 @@ mod.update_ammo_med_markers = function(self, marker)
 			local max_spawn_distance_sq = max_distance * max_distance
 			HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
 
-			self.max_distance = max_distance
-
 			if self.fade_settings then
 				self.fade_settings.distance_max = max_distance
 				self.fade_settings.distance_min = max_distance - (self.evolve_distance or 0) * 4
@@ -276,8 +265,7 @@ mod.update_ammo_med_markers = function(self, marker)
 
 			marker.template.max_distance = max_distance
 			marker.template.fade_settings.distance_max = max_distance
-			marker.template.fade_settings.distance_min = marker.template.max_distance
-				- (marker.template.evolve_distance or 0) * 8
+			marker.template.fade_settings.distance_min = max_distance - (marker.template.evolve_distance or 0) * 8
 
 			local med_crate_pos = POSITION_LOOKUP[marker.unit]
 
@@ -289,15 +277,15 @@ mod.update_ammo_med_markers = function(self, marker)
 				if
 					marker.widget
 					and marker.widget.style
-					and marker.widget.style.marker_text
+					and marker.widget.style.marker_text_ammo_med
 					and marker.widget.style.icon
 					and marker.widget.style.icon.size[1]
 				then
-					marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
+					--marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
 				end
 
 				if mod:get("display_med_charges") == true then
-					marker.widget.content.marker_text = tostring(remaining_charges)
+					marker.widget.content.marker_text_ammo_med = tostring(remaining_charges)
 				end
 
 				if mod:get("change_colour_for_ammo_charges") == true then
@@ -360,15 +348,17 @@ mod.update_ammo_med_markers = function(self, marker)
 				if
 					marker.widget
 					and marker.widget.style
-					and marker.widget.style.marker_text
+					and marker.widget.style.marker_text_ammo_med
 					and marker.widget.style.icon
 					and marker.widget.style.icon.size[1]
 				then
-					marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
+					--marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
 				end
 
 				if mod:get("display_ammo_charges") == true then
-					marker.widget.content.marker_text = tostring(remaining_charges)
+					if marker.widget.content.marker_text_ammo_med then
+						marker.widget.content.marker_text_ammo_med = tostring(remaining_charges)
+					end
 				end
 
 				if mod:get("change_colour_for_ammo_charges") == true then
@@ -414,6 +404,7 @@ mod.update_ammo_med_markers = function(self, marker)
 			local max_distance = get_max_distance()
 
 			self.max_distance = max_distance
+			marker.max_distance = max_distance
 
 			if self.fade_settings then
 				self.fade_settings.distance_max = max_distance
@@ -469,18 +460,18 @@ mod.update_ammo_med_markers = function(self, marker)
 						marker.widget.style.ring.color = Color.citadel_wild_rider_red(nil, true)
 					end
 					if mod:get("display_field_improv_icon") == true then
-						marker.widget.content.field_improv =
+						marker.widget.content.field_improv_ammo_med =
 							"content/ui/materials/hud/interactions/icons/cosmetics_store"
 					end
 				else
-					marker.widget.content.field_improv = ""
+					marker.widget.content.field_improv_ammo_med = ""
 				end
 
-				if marker.widget.style.field_improv then
-					marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
-					marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+				if marker.widget.style.field_improv_ammo_med then
+					marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
+					marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
 
-					marker.widget.style.field_improv.offset[1] = 35 * marker.scale
+					marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
 				end
 			elseif
 				pickup_type == "ammo_cache_deployable"
@@ -496,18 +487,23 @@ mod.update_ammo_med_markers = function(self, marker)
 						marker.widget.style.ring.color = Color.citadel_wild_rider_red(nil, true)
 					end
 					if mod:get("display_field_improv_icon") == true then
-						marker.widget.content.field_improv =
+						marker.widget.content.field_improv_ammo_med =
 							"content/ui/materials/hud/interactions/icons/cosmetics_store"
 					end
 				else
-					marker.widget.content.field_improv = ""
+					marker.widget.content.field_improv_ammo_med = ""
 				end
 
-				if marker.widget.style.field_improv then
-					marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
-					marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+				if marker.widget.style.marker_text_ammo_med then
+					marker.widget.style.marker_text_ammo_med.font_size = 40 * marker.scale
+					marker.widget.style.marker_text_ammo_med.default_font_size = 40 * marker.scale
+				end
 
-					marker.widget.style.field_improv.offset[1] = 35 * marker.scale
+				if marker.widget.style.field_improv_ammo_med then
+					marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
+					marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
+
+					marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
 				end
 			elseif
 				pickup_type == "medical_crate_pocketable"
@@ -529,18 +525,18 @@ mod.update_ammo_med_markers = function(self, marker)
 						marker.widget.style.ring.color = Color.citadel_wild_rider_red(nil, true)
 					end
 					if mod:get("display_field_improv_icon") == true then
-						marker.widget.content.field_improv =
+						marker.widget.content.field_improv_ammo_med =
 							"content/ui/materials/hud/interactions/icons/cosmetics_store"
 					end
 				else
-					marker.widget.content.field_improv = ""
+					marker.widget.content.field_improv_ammo_med = ""
 				end
 
-				if marker.widget.style.field_improv and marker.widget.style.icon then
-					marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
-					marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+				if marker.widget.style.field_improv_ammo_med and marker.widget.style.icon then
+					marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
+					marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
 
-					marker.widget.style.field_improv.offset[1] = 35 * marker.scale
+					marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
 				end
 			elseif
 				pickup_type == "medical_crate_deployable"
@@ -564,61 +560,29 @@ mod.update_ammo_med_markers = function(self, marker)
 					marker.widget.content.field_improv = ""
 				end
 
-				if marker.widget.style.background then
-					marker.widget.style.background.size[1] = marker.widget.style.background.size[1] * marker.scale
-					marker.widget.style.background.size[2] = marker.widget.style.background.size[2] * marker.scale
-				end
+				if mod:get("display_med_charges") == true then
+					local charges = mod.get_proximityheal_medcrate_charges(unit)
 
-				if marker.widget.style.icon then
-					marker.widget.style.icon.size[1] = marker.widget.style.icon.size[1] * marker.scale
-					marker.widget.style.icon.size[2] = marker.widget.style.icon.size[2] * marker.scale
-				end
+					if charges then
+						if charges == math.huge then
+						-- infinite
+						else
+							-- Show charges (healing left)
+							local percentage = (charges / 500) * 100
 
-				if marker.widget.style.field_improv then
-					marker.widget.style.field_improv.size[1] = marker.widget.style.icon.size[1]
-					marker.widget.style.field_improv.size[2] = marker.widget.style.icon.size[2]
+							marker.widget.content.marker_text = tostring(string.format("%.0f", percentage)) .. "%"
 
-					marker.widget.style.field_improv.offset[1] = 35 * marker.scale
-				end
-
-				if marker.widget.style.ring then
-					marker.widget.style.ring.size[1] = marker.widget.style.ring.size[1] * marker.scale
-					marker.widget.style.ring.size[2] = marker.widget.style.ring.size[2] * marker.scale
-				end
-
-				-- marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1] / 3
-			end
-		end
-
-		if mod:get("display_med_charges") == true then
-			local charges = mod.get_proximityheal_medcrate_charges(unit)
-
-			if charges then
-				if charges == math.huge then
-					-- infinite
-				else
-					-- Show charges (healing left)
-					local percentage = (charges / 500) * 100
-
-					marker.widget.content.marker_text = tostring(string.format("%.0f", percentage)) .. "%"
-
-					if not marker.data then
-						marker.data = {}
-					end
-					marker.data.type = "medical_crate_deployable"
-					marker.widget.style.icon.color = {
-						100,
-						mod:get("med_crate_colour_R"),
-						mod:get("med_crate_colour_G"),
-						mod:get("med_crate_colour_B"),
-					}
-					if
-						marker.widget
-						and marker.widget.style
-						and marker.widget.style.marker_text
-						and marker.widget.style.icon
-					then
-						marker.widget.style.marker_text.font_size = 14 * marker.scale
+							if not marker.data then
+								marker.data = {}
+							end
+							marker.data.type = "medical_crate_deployable"
+							marker.widget.style.icon.color = {
+								100,
+								mod:get("med_crate_colour_R"),
+								mod:get("med_crate_colour_G"),
+								mod:get("med_crate_colour_B"),
+							}
+						end
 					end
 				end
 			end
@@ -636,32 +600,32 @@ mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, na
 		64,
 		64,
 	}
-	marker_text_style.color = Color.ui_hud_green_super_light(255, true)
-	marker_text_style.font_size = 22
+	marker_text_style.color = Color.terminal_text_header(255, true)
+	marker_text_style.font_size = 20
 	marker_text_style.offset = {
 		0,
 		0,
-		0,
+		10,
 	}
-	marker_text_style.text_color = Color.ui_hud_green_super_light(255, true)
+	marker_text_style.text_color = Color.terminal_text_header(255, true)
 	marker_text_style.text_horizontal_alignment = "center"
 	marker_text_style.text_vertical_alignment = "center"
 	marker_text_style.drop_shadow = true
 
 	local marker_text_pass = {
 		pass_type = "text",
-		style_id = "marker_text",
+		style_id = "marker_text_ammo_med",
 		value = "",
-		value_id = "marker_text",
+		value_id = "marker_text_ammo_med",
 		style = marker_text_style,
 		visibility_function = function(content, style)
-			return content.marker_text ~= nil
+			return content.marker_text_ammo_med ~= nil
 		end,
 	}
 
 	definition.passes[#definition.passes + 1] = table.clone(marker_text_pass)
-	definition.style.marker_text = table.clone(marker_text_style)
-	definition.content.marker_text = ""
+	definition.style.marker_text_ammo_med = table.clone(marker_text_style)
+	definition.content.marker_text_ammo_med = ""
 
 	-- add new icon for Field Improv talent
 	local icon_size = {
@@ -687,18 +651,18 @@ mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, na
 
 	local field_improv_pass = {
 		pass_type = "texture",
-		style_id = "field_improv",
+		style_id = "field_improv_ammo_med",
 		value = "",
-		value_id = "field_improv",
+		value_id = "field_improv_ammo_med",
 		style = field_improv_style,
 		visibility_function = function(content, style)
-			return content.field_improv ~= ""
+			return content.field_improv_ammo_med ~= ""
 		end,
 	}
 
 	definition.passes[#definition.passes + 1] = table.clone(field_improv_pass)
-	definition.style.field_improv = table.clone(field_improv_style)
-	definition.content.field_improv = ""
+	definition.style.field_improv_ammo_med = table.clone(field_improv_style)
+	definition.content.field_improv_ammo_med = ""
 
 	return func(self, name, definition)
 end)
