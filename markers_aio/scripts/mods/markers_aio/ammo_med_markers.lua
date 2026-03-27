@@ -284,6 +284,11 @@ mod.update_ammo_med_markers = function(self, marker)
 					--marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
 				end
 
+				if marker.widget.style.marker_text_ammo_med then
+					marker.widget.style.marker_text_ammo_med.font_size = 40 * marker.scale
+					marker.widget.style.marker_text_ammo_med.default_font_size = 40 * marker.scale
+				end
+
 				if mod:get("display_med_charges") == true then
 					marker.widget.content.marker_text_ammo_med = tostring(remaining_charges)
 				end

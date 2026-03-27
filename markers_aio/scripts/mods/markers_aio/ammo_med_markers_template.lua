@@ -211,7 +211,7 @@ template.create_widget_defintion = function(template, scenegraph_id)
 				},
 			},
 			visibility_function = function(content, style)
-				return content.icon ~= nil
+				return content.field_improv ~= nil and content.field_improv ~= ""
 			end,
 		},
 	}, scenegraph_id)
