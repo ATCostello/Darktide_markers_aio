@@ -99,6 +99,10 @@ local function build_frame_settings(mod)
 	fs.ads_los_opacity = (mod:get("ads_los_opacity")) / 100
 	fs.ads_blend = math.lerp(fs.ads_blend or 0, is_ads and 1 or 0, 0.25)
 
+	fs.distance_text_enable = mod:get("distance_text_enable")
+	fs.distance_text_position = mod:get("distance_text_position")
+	fs.distance_text_scale = mod:get("distance_text_scale")
+
 	fs.med_station_max_distance = mod:get("med_station_max_distance")
 
 	-- Feature toggles
@@ -557,10 +561,9 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 			self:_raycast_markers(temp_marker_raycast_queue)
 		end
 
-		dbg_markers = markers_by_type
-
 		-- MARKERS AIO
 
+		--dbg_markers = markers_by_type
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
@@ -640,6 +643,56 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					end
 
 					mod.adjust_scale(self, marker, ui_renderer)
+
+					-- apply marker distance text if enabled
+					local widget = marker.widget
+					if
+						widget.style.marker_distance_text
+						and widget.content.marker_distance_text
+						and marker.distance
+						and widget.style.background
+						and widget.style.icon
+						and fs.distance_text_enable
+					then
+						widget.content.marker_distance_text = tostring(math.floor(marker.distance) .. "m")
+
+						local distance_text_pos = fs.distance_text_position
+						local distance_text_scale = fs.distance_text_scale / 100
+						widget.style.marker_distance_text.font_size = (widget.style.icon.size[2] / 2)
+							* distance_text_scale
+
+						if distance_text_pos == "Top" then
+							widget.style.marker_distance_text.offset[2] = -widget.style.background.size[2]
+								/ 2
+								* distance_text_scale
+							widget.style.marker_distance_text.offset[1] = 0
+						elseif distance_text_pos == "Left" then
+							widget.style.marker_distance_text.offset[1] = -widget.style.background.size[1]
+									/ 2
+									* distance_text_scale
+								- 8
+							widget.style.marker_distance_text.offset[2] = 0
+						elseif distance_text_pos == "Right" then
+							widget.style.marker_distance_text.offset[1] = widget.style.background.size[1]
+									/ 2
+									* distance_text_scale
+								+ 8
+							widget.style.marker_distance_text.offset[2] = 0
+						elseif distance_text_pos == "Center" then
+							widget.style.marker_distance_text.offset[2] = 0
+							widget.style.marker_distance_text.offset[1] = 0
+							widget.style.marker_distance_text.offset[3] = widget.style.ring.offset[3] + 1
+							widget.style.icon.color[1] = 150
+							widget.style.marker_distance_text.font_size = (widget.style.icon.size[2] / 2.4)
+								* distance_text_scale
+						else
+							-- default to  Bottom if errors/nil
+							widget.style.marker_distance_text.offset[2] = widget.style.background.size[2]
+								/ 2
+								* distance_text_scale
+							widget.style.marker_distance_text.offset[1] = 0
+						end
+					end
 				end
 			end
 		end
@@ -1082,6 +1135,82 @@ mod.toggle_los = function(marker_type)
 			mod:set(marker_type .. "_require_line_of_sight", true)
 		else
 			mod:set(marker_type .. "_require_line_of_sight", false)
+		end
+	end
+end
+
+-- UPDATE COLOURS IN SETTINGS PAGE IN REAL TIME (OH YES)
+mod.on_setting_changed = function(setting_id)
+	if not setting_id then
+		return
+	end
+
+	-- Only trigger for color settings
+	if
+		string.find(setting_id, "_colour_R")
+		or string.find(setting_id, "_colour_G")
+		or string.find(setting_id, "_colour_B")
+	then
+		local dmf = get_mod("DMF")
+		local mod_name = mod:get_name()
+
+		-- extract base key (e.g. "marker_colour")
+		local base_key = string.gsub(setting_id, "_R$", "")
+		base_key = string.gsub(base_key, "_G$", "")
+		base_key = string.gsub(base_key, "_B$", "")
+
+		local old_title = mod:localize(base_key)
+		local new_title = nil
+
+		-- Recompute localization table (your function)
+		local updated_localization = mod.apply_colours()
+
+		-- GET CURRENT UPDATED VALUE FROM UPDATED_LOCALIZATION
+		for id, data in pairs(updated_localization) do
+			if id == base_key then
+				local lang = Managers.localization:language()
+				local text = data[lang] or data.en
+
+				new_title = text
+			end
+		end
+
+		if not new_title then
+			return
+		end
+
+		-- OVERRIDE CURRENT DISPLAYED TEXT VALUES ON THE SETTINGS PAGES IN DMF
+		for i, mod_data in ipairs(dmf.options_widgets_data) do
+			if mod_data[1] and mod_data[1].mod_name == mod_name then
+				for j = 1, #mod_data do
+					if mod_data[j].setting_id == base_key then
+						mod_data[j].title = new_title
+						break
+					end
+				end
+			end
+		end
+
+		local view = Managers.ui:view_instance("dmf_options_view")
+
+		if view and view._settings_category_widgets and view._settings_category_widgets[mod:localize("mod_name")] then
+			for _, data in ipairs(view._settings_category_widgets[mod:localize("mod_name")]) do
+				local widget = data.widget
+				if not widget then
+					break
+				end
+
+				local clean = string.gsub(new_title, "{#.-}", "")
+				local clean2 = string.gsub(widget.content.text, "{#.-}", "")
+
+				if clean == clean2 then
+					if widget.content.entry then
+						widget.content.entry.display_name = new_title
+					end
+					widget.content.text = new_title
+					break
+				end
+			end
 		end
 	end
 end

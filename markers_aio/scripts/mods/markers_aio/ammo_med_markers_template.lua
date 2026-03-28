@@ -13,7 +13,7 @@ local icon_size = { max_size_value / 2, max_size_value / 2 }
 local background_size = { max_size_value, max_size_value }
 local line_size = { 250, 5 }
 local bar_size = { 210, 10 }
-local scale_fraction = 1
+local scale_fraction = 0.75
 
 template.size = size
 template.name = "med_marker"
@@ -26,7 +26,7 @@ template.ping_size = ping_size
 template.check_line_of_sight = mod:get("ammo_med_require_line_of_sight")
 template.screen_clamp = mod:get("ammo_med_keep_on_screen")
 
-template.evolve_distance = 1
+template.evolve_distance = 0.5
 template.max_distance = 15
 
 template.data = { type = "medical_crate_deployable" }
@@ -262,10 +262,6 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 
 	local default_size = template.min_size
 	local max_size = template.max_size
-	local ring_size = style.ring.size
-
-	ring_size[1] = (default_size[1] + (max_size[1] - default_size[1])) * marker.scale
-	ring_size[2] = (default_size[2] + (max_size[2] - default_size[2])) * marker.scale
 
 	local ping_min_size = template.ping_min_size
 	local ping_max_size = template.ping_max_size
@@ -274,14 +270,6 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	local ping_speed = 7
 	local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
 	local ping_pulse_size_increase = ping_anim_progress * 15
-
-	ping_size[1] = (ping_min_size[1] + (ping_max_size[1] - ping_min_size[1]) + ping_pulse_size_increase) * marker.scale
-	ping_size[2] = (ping_min_size[2] + (ping_max_size[2] - ping_min_size[2]) + ping_pulse_size_increase) * marker.scale
-
-	local ping_pivot = ping_style.pivot
-
-	ping_pivot[1] = ping_size[1] * 0.5
-	ping_pivot[2] = ping_size[2] * 0.5
 
 	-- icon & background scaling
 	local icon_max_size = template.icon_max_size
@@ -302,15 +290,28 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	icon_style_size[2] = i_sy * marker.scale
 	field_improv_style_size[1] = i_sx * marker.scale
 	field_improv_style_size[2] = i_sy * marker.scale
-	field_improv_style_offset[1] = 45 * marker.scale
+	field_improv_style_offset[1] = 50 * marker.scale
 
 	local b_sx = background_min_size[1] + (background_max_size[1] - background_min_size[1]) * scale_progress
 	local b_sy = background_min_size[2] + (background_max_size[2] - background_min_size[2]) * scale_progress
 	bg_style_size[1] = b_sx * marker.scale
 	bg_style_size[2] = b_sy * marker.scale
 
-	style.marker_text.font_size = 18 * marker.scale
-	style.marker_text.default_font_size = 18 * marker.scale
+	local ring_size = style.ring.size
+
+	ring_size[1] = b_sx * marker.scale
+	ring_size[2] = b_sy * marker.scale
+
+	ping_size[1] = (b_sx + ping_pulse_size_increase) * marker.scale
+	ping_size[2] = (b_sy + ping_pulse_size_increase) * marker.scale
+
+	local ping_pivot = ping_style.pivot
+
+	ping_pivot[1] = ping_size[1] * 0.5
+	ping_pivot[2] = ping_size[2] * 0.5
+
+	style.marker_text.font_size = 16 * marker.scale
+	style.marker_text.default_font_size = 16 * marker.scale
 
 	local animating = (scale_progress ~= content.scale_progress)
 

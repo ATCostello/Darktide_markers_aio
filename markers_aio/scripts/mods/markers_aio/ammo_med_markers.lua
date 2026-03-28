@@ -140,7 +140,10 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 					local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
 					if field_improv_active and mod:get("display_field_improv_colour") == true then
-						Quaternion.set_xyzw(material_value, 1, 0, 0.3, 0.5)
+						local r = mod:get("field_improv_colour_R") / 255
+						local g = mod:get("field_improv_colour_G") / 255
+						local b = mod:get("field_improv_colour_B") / 255
+						Quaternion.set_xyzw(material_value, r, g, b, 0.5)
 					else
 						Quaternion.set_xyzw(material_value, 0, 1, 0, 0.5)
 					end
@@ -670,6 +673,45 @@ mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, na
 	definition.passes[#definition.passes + 1] = table.clone(field_improv_pass)
 	definition.style.field_improv_ammo_med = table.clone(field_improv_style)
 	definition.content.field_improv_ammo_med = ""
+
+	-- ADD NEW MARKER DISTANCE TEXT
+	-- add new marker text widget to definitions
+	local marker_distance_text_style = table.clone(UIFontSettings.header_2)
+
+	marker_distance_text_style.horizontal_alignment = "center"
+	marker_distance_text_style.vertical_alignment = "center"
+	marker_distance_text_style.size = {
+		64,
+		64,
+	}
+	marker_distance_text_style.color = Color.terminal_text_header(255, true)
+	marker_distance_text_style.font_size = 16
+	marker_distance_text_style.offset = {
+		0,
+		marker_distance_text_style.size[1] / 2,
+		1,
+	}
+	marker_distance_text_style.text_color = Color.terminal_text_header(255, true)
+	marker_distance_text_style.text_horizontal_alignment = "center"
+	marker_distance_text_style.text_vertical_alignment = "center"
+	marker_distance_text_style.drop_shadow = true
+
+	marker_distance_text_style.font_type = mod:get("font_type")
+
+	local marker_distance_text_pass = {
+		pass_type = "text",
+		style_id = "marker_distance_text",
+		value = "",
+		value_id = "marker_distance_text",
+		style = marker_distance_text_style,
+		visibility_function = function(content, style)
+			return content.marker_distance_text ~= nil
+		end,
+	}
+
+	definition.passes[#definition.passes + 1] = table.clone(marker_distance_text_pass)
+	definition.style.marker_distance_text = table.clone(marker_distance_text_style)
+	definition.content.marker_distance_text = ""
 
 	return func(self, name, definition)
 end)

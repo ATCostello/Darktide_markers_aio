@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.11.05"
+mod.version = "2.12.0"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -76,6 +76,7 @@ local colours = {
 	title = "200,140,20",
 	subtitle = "226,199,126",
 	text = "169,191,153",
+	faded_text = "84,95,76",
 }
 
 -- rainbow
@@ -122,7 +123,7 @@ local loc = {
 
 	-- General Settings
 	aio_settings = {
-		en = "MARKERS IMPROVED AIO SETTINGS",
+		en = "{#color(" .. colours.title .. ")}" .. "Global Marker Settings" .. "{#reset()}",
 		fr = "MARKERS IMPROVED AIO SETTINGS",
 		ru = "MARKERS IMPROVED AIO SETTINGS",
 		["zh-tw"] = "圖標改善設定",
@@ -154,9 +155,43 @@ local loc = {
 	},
 	font_type = {
 		en = "Choose a font style (Global)",
+		["zh-cn"] = "选择字体样式（全局）",
 	},
 	font_type_tooltip = {
 		en = "The global font style to use. This will apply to all text elements from Markers AIO Improved.",
+		["zh-cn"] = "设置使用的全局字体样式，将应用于「标记整合增强版」的所有文本元素。",
+	},
+
+	distance_text_enable = {
+		en = "Toggle distance indicator",
+	},
+	distance_text_enable_tooltip = {
+		en = "Adds a text-based indicator near the markers that shows their distance from you in meters.",
+	},
+	distance_text_position = {
+		en = "Distance indicator position",
+	},
+	distance_text_position_tooltip = {
+		en = "Pick where to place the distance indicator in relation to the marker.\nNote: Center positioning will make the icon fade a little so you can always read the text.",
+	},
+	distance_text_scale = {
+		en = "Distance indicator text scale",
+	},
+
+	Top = {
+		en = "Top",
+	},
+	Bottom = {
+		en = "Bottom",
+	},
+	Left = {
+		en = "Left",
+	},
+	Right = {
+		en = "Right",
+	},
+	Center = {
+		en = "Center",
 	},
 
 	-- fonts (These are based on the font names themselves...)
@@ -331,6 +366,30 @@ local loc = {
 		ru = "Цвет малой сумки с боеприпасами",
 		["zh-tw"] = "彈藥（小型）顏色",
 		["zh-cn"] = "小型弹药罐颜色",
+	},
+	field_improv_colour = {
+		en = "Field Improvisation Talent Proximity Radius Colour",
+	},
+	field_improv_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	field_improv_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	field_improv_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
 	},
 	ammo_small_colour_R = {
 		en = "R",
@@ -2162,7 +2221,7 @@ local loc = {
 	martyrs_skull_objective_dm_rise_A5 = {
 		en = "Hold the next lever for player two",
 		["zh-tw"] = "為玩家二按住下一個杠杆",
-		["zh-cn"] = "为2号玩家按住下一个杠杆",
+		["zh-cn"] = "为2号玩家按住下���个杠杆",
 	},
 	martyrs_skull_objective_dm_rise_B4 = {
 		en = "Player two, press the elevator button",
@@ -2181,8 +2240,8 @@ local loc = {
 	},
 	martyrs_skull_objective_hm_strain_3A = {
 		en = "Press the button until you see the right hand symbol from step 2 on the door through the window",
-		["zh-tw"] = "按下按鈕，直到你在窗戶上看到步驟2中門上的右手符號",
-		["zh-cn"] = "按按钮，直到透过窗户看到步骤2的右侧符号",
+		["zh-tw"] = "按下按鈕，直到��在窗戶上看到步驟2中門上的右手符號",
+		["zh-cn"] = "按按钮，直到透���窗户看到步骤2的右侧符号",
 	},
 	martyrs_skull_objective_hm_strain_3B = {
 		en = "Press the button until you see the left hand symbol from step 2 on the door through the window",
@@ -2658,6 +2717,89 @@ local loc = {
 		["zh-tw"] = "切換「需要視線範圍」",
 		["zh-cn"] = "切换「仅视野内显示」",
 	},
+
+	-- TOOLTIPS
+	colour_R_tooltip = {
+		en = "Red RGB value.",
+	},
+	colour_G_tooltip = {
+		en = "Green RGB value.",
+	},
+	colour_B_tooltip = {
+		en = "Blue RGB value.",
+	},
+	max_distance_tooltip = {
+		en = "Maximum distance to find, update and draw markers.",
+	},
+	scale_tooltip = {
+		en = "Scale multiplier to apply.\ne.g. 100=1x size, 50=0.5x size, 150=1.5x size.",
+	},
+	los_fade_enable_tooltip = {
+		en = "Fade out markers that are behind a world object/out of line of sight? Only takes effect if 'Require Line of Sight' is disabled.",
+	},
+	los_opacity_tooltip = {
+		en = "Opacity to apply to markers if line of sight fading is enabled.",
+	},
+	ads_los_opacity_tooltip = {
+		en = "Opacity to apply to markers when you aim down sights of your weapon.",
+	},
+	alpha_tooltip = {
+		en = "General opacity to apply to this marker type.",
+	},
+	border_colour_tooltip = {
+		en = "Select a colour to apply to the 'border' or outer decorative ring of this marker type.",
+	},
+	marker_background_colour_tooltip = {
+		en = "Background colour to apply to all markers.",
+	},
+	font_type_tooltip = {
+		en = "Font type to apply to any text elements of markers adjusted by Markers AIO.",
+	},
+	enable_tooltip = {
+		en = "Enable Markers AIO adjustments to this marker type?",
+	},
+	ammo_med_markers_alternate_large_ammo_icon_tooltip = {
+		en = "Use a different icon (Which is more fitting imo) for the large ammo pouches?",
+	},
+	keep_on_screen_tooltip = {
+		en = "Stick the marker to the edges of the screen if you are not directly looking at it?",
+	},
+	require_line_of_sight_tooltip = {
+		en = "Require direct line of sight to this marker type?\nIf enabled, markers behind world objects like walls will be hidden. \nIf disabled, you will be able to see markers through world objects.",
+	},
+	toggle_los_tooltip = {
+		en = "Optional: Enter a keybind to toggle the 'Require Line of Sight' functionality for this marker type.",
+	},
+	display_ammo_charges_tooltip = {
+		en = "Display a text-based numerical counter indicating how many uses an ammo crate has left before it runs out.",
+	},
+	display_med_charges_tooltip = {
+		en = "Display a text-based numerical counter indicating the percentage left on a crate or the charges left on a medical station before it runs out.",
+	},
+	change_colour_for_ammo_charges_tooltip = {
+		en = "Adjust the colour of the background of ammo crate and medical markers to differentiate the amount of uses they have left?",
+	},
+	display_field_improv_colour_tooltip = {
+		en = "Adjust the medical crate radius ring to change colour depending on whether a Veteran with the Field Improvisation talent is present in your party.",
+	},
+	display_field_improv_icon_tooltip = {
+		en = "Add an icon to ammo crates and medical markers depicting whether a Veteran with the Field Improvisation talent is present in your party.",
+	},
+	display_med_ring_tooltip = {
+		en = "Display a radius circle around deployed medcrates to indicate the range of the buff.",
+	},
+	icon_tooltip = {
+		en = "Adjust the icon for this marker type.",
+	},
+	stimm_enable_tooltip = {
+		en = "Enable colour adjustments for the Hive Scum stimms on the UI elements?",
+	},
+	martyrs_skull_guide_enable_tooltip = {
+		en = "Enable an in-mission guide to collecting Martyr's Skulls.\nIncludes written text (Inside the objective window) and in-world markers for positional reference.",
+	},
+	martyrs_skull_guide_disable_if_collected_tooltip = {
+		en = "Disable the Martyr's Skull guide if you have already collected this skull and have the penance unlocked?",
+	},
 }
 
 local apply_color_to_text = function(text, r, g, b)
@@ -2666,6 +2808,7 @@ end
 
 local apply_colours = function()
 	for key, values in pairs(loc) do
+		-- apply rgb colours
 		if
 			string.find(key, "colour")
 			and not string.find(key, "colour_R")
@@ -2678,12 +2821,16 @@ local apply_colours = function()
 
 			if r ~= nil and g ~= nil and b ~= nil then
 				for language, text in pairs(values) do
-					text = apply_color_to_text(text, r, g, b)
+					local clean = string.gsub(text, "{#.-}", "")
+					clean = string.gsub(clean, "{#reset%(%)%}", "")
+					text = apply_color_to_text(clean, r, g, b)
+
 					loc[key][language] = text
 				end
 			end
 		end
 
+		-- apply border colours
 		if key == "Gold" or key == "Silver" or key == "Steel" or key == "Tarnished" then
 			for language, text in pairs(values) do
 				local argb = mod.lookup_border_color(key)
@@ -2700,6 +2847,24 @@ local apply_colours = function()
 				end
 			end
 		end
+
+		-- adjust tooltip text opacity
+		if string.find(key, "_tooltip") then
+			for language, text in pairs(values) do
+				local rgb = { 144, 155, 136 }
+
+				if rgb ~= nil then
+					local text = apply_color_to_text(text, rgb[1], rgb[2], rgb[3])
+
+					if loc[key] == nil then
+						loc[key] = {}
+						loc[key][language] = text
+					else
+						loc[key][language] = text
+					end
+				end
+			end
+		end
 	end
 
 	return loc
@@ -2708,15 +2873,12 @@ end
 apply_colours()
 
 mod.apply_colours = function()
-	loc = apply_colours()
-	dbg_loc = loc
+	apply_colours()
 	return loc
 end
 
 mod.get_loc = function()
 	return loc
 end
-
-dbg_loc = loc
 
 return loc
