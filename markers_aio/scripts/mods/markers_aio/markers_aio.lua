@@ -563,7 +563,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 		-- MARKERS AIO
 
-		--dbg_markers = markers_by_type
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
@@ -647,14 +646,19 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					-- apply marker distance text if enabled
 					local widget = marker.widget
 					if
-						widget.style.marker_distance_text
+						marker.markers_aio_type
+						and widget.style.marker_distance_text
 						and widget.content.marker_distance_text
 						and marker.distance
 						and widget.style.background
 						and widget.style.icon
-						and fs.distance_text_enable
 					then
-						widget.content.marker_distance_text = tostring(math.floor(marker.distance) .. "m")
+						-- adjust based on if the setting is on or not...
+						if fs.distance_text_enable then
+							widget.content.marker_distance_text = tostring(math.floor(marker.distance) .. "m")
+						else
+							widget.content.marker_distance_text = ""
+						end
 
 						local distance_text_pos = fs.distance_text_position
 						local distance_text_scale = fs.distance_text_scale / 100
@@ -1162,7 +1166,7 @@ mod.on_setting_changed = function(setting_id)
 		local old_title = mod:localize(base_key)
 		local new_title = nil
 
-		-- Recompute localization table (your function)
+		-- Recompute localization table
 		local updated_localization = mod.apply_colours()
 
 		-- GET CURRENT UPDATED VALUE FROM UPDATED_LOCALIZATION

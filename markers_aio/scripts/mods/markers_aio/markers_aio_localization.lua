@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.12.0"
+mod.version = "2.12.01"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -30,6 +30,50 @@ mod.lookup_border_color = function(colour_string)
 		},
 	}
 	return border_colours[colour_string]
+end
+
+-- Always use an updated font list.
+-- Thanks to GideonAriphael on Nexusmods for recommendation
+mod._get_font_options = function()
+	local FontDefinitions = require("scripts/managers/ui/ui_fonts_definitions")
+	local fonts = FontDefinitions.fonts or {}
+	local options = {}
+	local i = 1
+
+	for font_name, _ in pairs(fonts) do
+		options[i] = { text = font_name, value = font_name }
+		i = i + 1
+	end
+
+	-- Sort alphabetically by the underlying font name for consistency
+	table.sort(options, function(a, b)
+		return a.value < b.value
+	end)
+
+	return options
+end
+
+-- function to apply font face to localisation text
+local apply_font_to_text = function(text, font_name)
+	return string.format("{#font(%s)}%s{#reset()}", font_name, text)
+end
+
+local insert_fonts = function(localisation_table)
+	local fonts_data = mod._get_font_options()
+
+	for _, data in pairs(fonts_data) do
+		-- Convert snake_case to Title Case for display (e.g. proxima_nova_bold -> Proxima Nova Bold)
+		local readable = data.text:gsub("_", " "):gsub("(%a)([%w]*)", function(first, rest)
+			return first:upper() .. rest
+		end)
+
+		local text = string.format("%s", readable)
+
+		local new_localised_readable_text = {
+			en = apply_font_to_text(text, data.value),
+		}
+		localisation_table[data.value] = new_localised_readable_text
+	end
 end
 
 local function lerp(a, b, t)
@@ -127,7 +171,7 @@ local loc = {
 		fr = "MARKERS IMPROVED AIO SETTINGS",
 		ru = "MARKERS IMPROVED AIO SETTINGS",
 		["zh-tw"] = "圖標改善設定",
-		["zh-cn"] = "全功能标记增强 设置",
+		["zh-cn"] = "全功能标记增强设置",
 	},
 	los_fade_enable = {
 		en = "Fade out icons out of line of sight?",
@@ -164,75 +208,44 @@ local loc = {
 
 	distance_text_enable = {
 		en = "Toggle distance indicator",
+		["zh-cn"] = "开启距离指示器",
 	},
 	distance_text_enable_tooltip = {
 		en = "Adds a text-based indicator near the markers that shows their distance from you in meters.",
+		["zh-cn"] = "在标记旁显示文字指示器，以米为单位显示与你的距离。",
 	},
 	distance_text_position = {
 		en = "Distance indicator position",
+		["zh-cn"] = "距离指示器位置",
 	},
 	distance_text_position_tooltip = {
 		en = "Pick where to place the distance indicator in relation to the marker.\nNote: Center positioning will make the icon fade a little so you can always read the text.",
+		["zh-cn"] = "选择距离指示器相对于标记的显示位置。\n注意：选择居中时图标会略微淡化，确保文字清晰可见。",
 	},
 	distance_text_scale = {
 		en = "Distance indicator text scale",
+		["zh-cn"] = "距离指示器文字大小",
 	},
 
 	Top = {
 		en = "Top",
+		["zh-cn"] = "顶部",
 	},
 	Bottom = {
 		en = "Bottom",
+		["zh-cn"] = "底部",
 	},
 	Left = {
 		en = "Left",
+		["zh-cn"] = "左侧",
 	},
 	Right = {
 		en = "Right",
+		["zh-cn"] = "右侧",
 	},
 	Center = {
 		en = "Center",
-	},
-
-	-- fonts (These are based on the font names themselves...)
-	proxima_nova_medium = {
-		en = "Proxima Nova Medium",
-	},
-
-	proxima_nova_bold = {
-		en = "Proxima Nova Bold",
-	},
-
-	proxima_nova_bold_masked = {
-		en = "Proxima Nova Bold Masked",
-	},
-
-	itc_novarese_medium = {
-		en = "Itc Novarese Medium",
-	},
-
-	itc_novarese_bold = {
-		en = "Itc Novarese Bold",
-	},
-
-	machine_medium = {
-		en = "Machine Medium",
-	},
-
-	arial = {
-		en = "Arial",
-	},
-
-	mono_tide_medium = {
-		en = "Mono Tide Medium",
-	},
-
-	mono_tide_regular = {
-		en = "Mono Tide Regular",
-	},
-
-	mono_tide_bold = {
-		en = "Mono Tide Bold",
+		["zh-cn"] = "居中",
 	},
 
 	-- AMMO MED MARKERS
@@ -333,14 +346,14 @@ local loc = {
 		["zh-cn"] = "显示弹药箱使用次数",
 	},
 	display_field_improv_colour = {
-		en = "Adjust colour of markers if 'Field Improvisation' talent is active?",
+		en = "Adjust colours if 'Field Improvisation' is active?",
 		fr = "Ajuster la couleur pour le talent 'Improvisation sur le terrain' ? ",
 		ru = "Изменять цвет маркеров, если активен талант «Полевая импровизация»?",
 		["zh-tw"] = "如果啟用「現場應變」天賦，調整標記顏色？",
 		["zh-cn"] = "激活「临场应变」天赋时更改标记颜色",
 	},
 	display_field_improv_icon = {
-		en = "Display New 'Field Improvisation' talent Icon",
+		en = "Display 'Field Improvisation' Icon",
 		fr = "Afficher la nouvelle icône du talent 'Improvisation sur le terrain'",
 		ru = "Показывать новый значок таланта «Полевая импровизация»",
 		["zh-tw"] = "顯示新的「現場應變」天賦圖示",
@@ -369,6 +382,7 @@ local loc = {
 	},
 	field_improv_colour = {
 		en = "Field Improvisation Talent Proximity Radius Colour",
+		["zh-cn"] = "如果有老兵装备临场发挥天赋时的邻近范围颜色",
 	},
 	field_improv_colour_R = {
 		en = "R",
@@ -2154,7 +2168,7 @@ local loc = {
 	martyrs_skull_objective_km_station_1 = {
 		en = "Turn first valve",
 		["zh-tw"] = "轉動第一個閥門",
-		["zh-cn"] = "转动第一个阀门",
+		["zh-cn"] = "转动第一个阀��",
 	},
 	martyrs_skull_objective_km_station_2 = {
 		en = "Turn second valve",
@@ -2180,7 +2194,7 @@ local loc = {
 	martyrs_skull_objective_lm_rails_1 = {
 		en = "Follow number sequence",
 		["zh-tw"] = "跟隨數字順序",
-		["zh-cn"] = "按数字顺序操作",
+		["zh-cn"] = "按������������������序操作",
 	},
 
 	martyrs_skull_objective_dm_rise_A1 = {
@@ -2221,7 +2235,7 @@ local loc = {
 	martyrs_skull_objective_dm_rise_A5 = {
 		en = "Hold the next lever for player two",
 		["zh-tw"] = "為玩家二按住下一個杠杆",
-		["zh-cn"] = "为2号玩家按住下���个杠杆",
+		["zh-cn"] = "为2号玩家按住下一个杠杆",
 	},
 	martyrs_skull_objective_dm_rise_B4 = {
 		en = "Player two, press the elevator button",
@@ -2240,13 +2254,13 @@ local loc = {
 	},
 	martyrs_skull_objective_hm_strain_3A = {
 		en = "Press the button until you see the right hand symbol from step 2 on the door through the window",
-		["zh-tw"] = "按下按鈕，直到��在窗戶上看到步驟2中門上的右手符號",
-		["zh-cn"] = "按按钮，直到透���窗户看到步骤2的右侧符号",
+		["zh-tw"] = "按下按鈕，直到你在窗戶上看到步驟2中門上的右手符號",
+		["zh-cn"] = "按下按钮，直到你在窗戶上看到步骤2的右侧符号",
 	},
 	martyrs_skull_objective_hm_strain_3B = {
 		en = "Press the button until you see the left hand symbol from step 2 on the door through the window",
 		["zh-tw"] = "按下按鈕，直到你在窗戶上看到步驟2中門上的左手符號",
-		["zh-cn"] = "按按钮，直到透过窗户看�����步骤2的左侧符号",
+		["zh-cn"] = "按下按钮，直到你在窗戶上看到步骤2的左侧符号",
 	},
 	martyrs_skull_objective_hm_strain_4 = {
 		en = "Once the symbols match, press the final button",
@@ -2717,88 +2731,114 @@ local loc = {
 		["zh-tw"] = "切換「需要視線範圍」",
 		["zh-cn"] = "切换「仅视野内显示」",
 	},
-
 	-- TOOLTIPS
 	colour_R_tooltip = {
 		en = "Red RGB value.",
+		["zh-cn"] = "红色RGB数值。",
 	},
 	colour_G_tooltip = {
 		en = "Green RGB value.",
+		["zh-cn"] = "绿色RGB数值。",
 	},
 	colour_B_tooltip = {
 		en = "Blue RGB value.",
+		["zh-cn"] = "蓝色RGB数值。",
 	},
 	max_distance_tooltip = {
 		en = "Maximum distance to find, update and draw markers.",
+		["zh-cn"] = "搜索、更新与显示标记的最大距离。",
 	},
 	scale_tooltip = {
 		en = "Scale multiplier to apply.\ne.g. 100=1x size, 50=0.5x size, 150=1.5x size.",
+		["zh-cn"] = "标记缩放倍数。\n例如：100=1倍大小，50=0.5倍大小，150=1.5倍大小。",
 	},
 	los_fade_enable_tooltip = {
 		en = "Fade out markers that are behind a world object/out of line of sight? Only takes effect if 'Require Line of Sight' is disabled.",
+		["zh-cn"] = "是否淡化墙体后方/视线外的标记？仅在关闭「需要视线」时生效。",
 	},
 	los_opacity_tooltip = {
 		en = "Opacity to apply to markers if line of sight fading is enabled.",
+		["zh-cn"] = "启用视线淡化后，标记的不透明度。",
 	},
 	ads_los_opacity_tooltip = {
 		en = "Opacity to apply to markers when you aim down sights of your weapon.",
+		["zh-cn"] = "开镜瞄准状态下标记的不透明度。",
 	},
 	alpha_tooltip = {
 		en = "General opacity to apply to this marker type.",
+		["zh-cn"] = "此类标记的整体不透明度。",
 	},
 	border_colour_tooltip = {
 		en = "Select a colour to apply to the 'border' or outer decorative ring of this marker type.",
+		["zh-cn"] = "设置此类标记边框或外侧装饰环的颜色。",
 	},
 	marker_background_colour_tooltip = {
 		en = "Background colour to apply to all markers.",
+		["zh-cn"] = "所有标记的背景颜色。",
 	},
 	font_type_tooltip = {
 		en = "Font type to apply to any text elements of markers adjusted by Markers AIO.",
+		["zh-cn"] = "标记整合模组调整的所有标记文本字体。",
 	},
 	enable_tooltip = {
 		en = "Enable Markers AIO adjustments to this marker type?",
+		["zh-cn"] = "是否对该类标记启用标记整合模组调整？",
 	},
 	ammo_med_markers_alternate_large_ammo_icon_tooltip = {
 		en = "Use a different icon (Which is more fitting imo) for the large ammo pouches?",
+		["zh-cn"] = "为大型弹药包使用更贴合的替代图标。",
 	},
 	keep_on_screen_tooltip = {
 		en = "Stick the marker to the edges of the screen if you are not directly looking at it?",
+		["zh-cn"] = "未直视目标时，将标记固定在屏幕边缘。",
 	},
 	require_line_of_sight_tooltip = {
 		en = "Require direct line of sight to this marker type?\nIf enabled, markers behind world objects like walls will be hidden. \nIf disabled, you will be able to see markers through world objects.",
+		["zh-cn"] = "此类标记是否需要直接视线？\n启用后，墙体等障碍物后的标记会隐藏。\n关闭后可穿墙看到标记。",
 	},
 	toggle_los_tooltip = {
 		en = "Optional: Enter a keybind to toggle the 'Require Line of Sight' functionality for this marker type.",
+		["zh-cn"] = "可选：设置快捷键切换此类标记的「需要视线」功能。",
 	},
 	display_ammo_charges_tooltip = {
 		en = "Display a text-based numerical counter indicating how many uses an ammo crate has left before it runs out.",
+		["zh-cn"] = "以数字显示弹药箱剩余可使用次数。",
 	},
 	display_med_charges_tooltip = {
 		en = "Display a text-based numerical counter indicating the percentage left on a crate or the charges left on a medical station before it runs out.",
+		["zh-cn"] = "以数字显示医疗箱剩余百分比或医疗站剩余使用次数。",
 	},
 	change_colour_for_ammo_charges_tooltip = {
 		en = "Adjust the colour of the background of ammo crate and medical markers to differentiate the amount of uses they have left?",
+		["zh-cn"] = "根据剩余使用次数改变弹药箱与医疗标记的背景颜色。",
 	},
 	display_field_improv_colour_tooltip = {
 		en = "Adjust the medical crate radius ring to change colour depending on whether a Veteran with the Field Improvisation talent is present in your party.",
+		["zh-cn"] = "根据队伍中是否有携带临场发挥天赋的老兵，改变医疗箱范围环颜色。",
 	},
 	display_field_improv_icon_tooltip = {
 		en = "Add an icon to ammo crates and medical markers depicting whether a Veteran with the Field Improvisation talent is present in your party.",
+		["zh-cn"] = "在弹药箱与医疗标记上显示图标，提示队伍中是否有携带临场发挥天赋的老兵。",
 	},
 	display_med_ring_tooltip = {
 		en = "Display a radius circle around deployed medcrates to indicate the range of the buff.",
+		["zh-cn"] = "在放置的医疗箱周围显示范围圈，提示增益生效距离。",
 	},
 	icon_tooltip = {
 		en = "Adjust the icon for this marker type.",
+		["zh-cn"] = "调整此类标记的图标。",
 	},
 	stimm_enable_tooltip = {
 		en = "Enable colour adjustments for the Hive Scum stimms on the UI elements?",
+		["zh-cn"] = "为巢都药剂UI元素启用颜色调整。",
 	},
 	martyrs_skull_guide_enable_tooltip = {
 		en = "Enable an in-mission guide to collecting Martyr's Skulls.\nIncludes written text (Inside the objective window) and in-world markers for positional reference.",
+		["zh-cn"] = "启用任务内殉道者颅骨收集指引。\n包含任务窗口文字提示与场景位置标记。",
 	},
 	martyrs_skull_guide_disable_if_collected_tooltip = {
 		en = "Disable the Martyr's Skull guide if you have already collected this skull and have the penance unlocked?",
+		["zh-cn"] = "已收集颅骨并解锁苦修后，关闭殉道者颅骨指引。",
 	},
 }
 
@@ -2869,6 +2909,9 @@ local apply_colours = function()
 
 	return loc
 end
+
+-- Insert font localisation
+insert_fonts(loc)
 
 apply_colours()
 

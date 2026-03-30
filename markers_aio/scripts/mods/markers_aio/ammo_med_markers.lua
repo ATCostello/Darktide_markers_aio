@@ -470,6 +470,8 @@ mod.update_ammo_med_markers = function(self, marker)
 					if mod:get("display_field_improv_icon") == true then
 						marker.widget.content.field_improv_ammo_med =
 							"content/ui/materials/hud/interactions/icons/cosmetics_store"
+					else
+						marker.widget.content.field_improv_ammo_med = ""
 					end
 				else
 					marker.widget.content.field_improv_ammo_med = ""
@@ -497,6 +499,8 @@ mod.update_ammo_med_markers = function(self, marker)
 					if mod:get("display_field_improv_icon") == true then
 						marker.widget.content.field_improv_ammo_med =
 							"content/ui/materials/hud/interactions/icons/cosmetics_store"
+					else
+						marker.widget.content.field_improv_ammo_med = ""
 					end
 				else
 					marker.widget.content.field_improv_ammo_med = ""
@@ -535,6 +539,8 @@ mod.update_ammo_med_markers = function(self, marker)
 					if mod:get("display_field_improv_icon") == true then
 						marker.widget.content.field_improv_ammo_med =
 							"content/ui/materials/hud/interactions/icons/cosmetics_store"
+					else
+						marker.widget.content.field_improv_ammo_med = ""
 					end
 				else
 					marker.widget.content.field_improv_ammo_med = ""
@@ -563,6 +569,8 @@ mod.update_ammo_med_markers = function(self, marker)
 					if mod:get("display_field_improv_icon") == true then
 						marker.widget.content.field_improv =
 							"content/ui/materials/hud/interactions/icons/cosmetics_store"
+					else
+						marker.widget.content.field_improv = ""
 					end
 				else
 					marker.widget.content.field_improv = ""

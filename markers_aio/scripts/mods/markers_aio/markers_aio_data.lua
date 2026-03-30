@@ -4,45 +4,7 @@ local apply_color_to_text = function(text, r, g, b)
 	return "{#color(" .. r .. "," .. g .. "," .. b .. ")}" .. text .. "{#reset()}"
 end
 
-local fonts = {
-	{
-		text = "proxima_nova_medium",
-		value = "proxima_nova_medium",
-	},
-	{
-		text = "proxima_nova_bold",
-		value = "proxima_nova_bold",
-	},
-	{
-		text = "itc_novarese_medium",
-		value = "itc_novarese_medium",
-	},
-	{
-		text = "itc_novarese_bold",
-		value = "itc_novarese_bold",
-	},
-	{
-		text = "machine_medium",
-		value = "machine_medium",
-	},
-
-	{
-		text = "arial",
-		value = "arial",
-	},
-	{
-		text = "mono_tide_medium",
-		value = "mono_tide_medium",
-	},
-	{
-		text = "mono_tide_regular",
-		value = "mono_tide_regular",
-	},
-	{
-		text = "mono_tide_bold",
-		value = "mono_tide_bold",
-	},
-}
+local fonts = mod._get_font_options()
 
 local Gold = mod.lookup_border_color("Gold")
 local Silver = mod.lookup_border_color("Silver")

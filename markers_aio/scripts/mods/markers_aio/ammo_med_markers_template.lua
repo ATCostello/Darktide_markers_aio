@@ -26,8 +26,8 @@ template.ping_size = ping_size
 template.check_line_of_sight = mod:get("ammo_med_require_line_of_sight")
 template.screen_clamp = mod:get("ammo_med_keep_on_screen")
 
-template.evolve_distance = 0.5
-template.max_distance = 15
+template.evolve_distance = 1
+template.max_distance = 20
 
 template.data = { type = "medical_crate_deployable" }
 
@@ -64,7 +64,7 @@ template.screen_margins = { down = 0.23148148148148148, left = 0.234375, right =
 
 template.scale_settings = {
 	scale_from = 0.4,
-	scale_to = 1,
+	scale_to = 0.9,
 	distance_max = template.max_distance,
 	distance_min = template.evolve_distance,
 	easing_function = math.easeCubic,
