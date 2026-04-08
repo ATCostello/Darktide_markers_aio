@@ -58,6 +58,10 @@ local luggable_icons = {
 		text = "Fist",
 		value = "content/ui/materials/icons/presets/preset_18",
 	},
+	{
+		text = "Luggable",
+		value = "content/ui/materials/icons/player_states/lugged",
+	},
 }
 
 local background_colours = {
@@ -485,7 +489,32 @@ return {
 							percent_slider("material_max_distance", 50),
 							scale_slider("material_scale", 100),
 							alpha_slider("material_alpha", 1),
-
+							{
+								setting_id = "marker_toggles",
+								type = "group",
+								sub_widgets = {
+									{
+										setting_id = "toggle_large_plasteel",
+										type = "checkbox",
+										default_value = true,
+									},
+									{
+										setting_id = "toggle_small_plasteel",
+										type = "checkbox",
+										default_value = true,
+									},
+									{
+										setting_id = "toggle_large_diamantine",
+										type = "checkbox",
+										default_value = true,
+									},
+									{
+										setting_id = "toggle_small_diamantine",
+										type = "checkbox",
+										default_value = true,
+									},
+								},
+							},
 							border_dropdown("material_small_border_colour", "Silver"),
 							border_dropdown("material_large_border_colour", "Gold"),
 						},

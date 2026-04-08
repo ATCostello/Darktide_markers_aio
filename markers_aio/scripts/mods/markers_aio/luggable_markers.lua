@@ -37,7 +37,7 @@ mod.update_luggable_markers = function(self, marker)
 
 			marker.widget.content.icon = mod:get("luggable_icon")
 
-			marker.widget.style.ring.color = mod.lookup_colour(mod:get(marker.markers_aio_type .. "_border_colour"))
+			marker.widget.style.ring.color = mod.lookup_colour(mod:get("luggable_border_colour"))
 
 			marker.widget.style.icon.color = {
 				255,

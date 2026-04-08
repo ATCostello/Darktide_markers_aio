@@ -7,7 +7,7 @@ local WorldMarkerTemplateInteraction =
 local UIWidget = require("scripts/managers/ui/ui_widget")
 
 mod.update_unknown_markers = function(self, marker)
-	if marker and marker.type and marker.type == "interaction" then
+	if marker and marker.type and marker.type == "interaction" and not marker.markers_aio_type then
 		-- filter out unwanted
 		if marker.ui_interaction_type and (marker.ui_interaction_type == "player_interaction") then
 			return

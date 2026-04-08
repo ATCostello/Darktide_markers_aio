@@ -125,7 +125,7 @@ template.create_widget_defintion = function(template, scenegraph_id)
 				vertical_alignment = "center",
 				size = size,
 				offset = { 0, 0, 5 },
-				color = { 255, 226, 199, 126 },
+				color = { 255, 5, 255, 5 },
 			},
 			visibility_function = function(content, style)
 				return content.ring ~= nil
