@@ -199,6 +199,12 @@ return {
 				type = "group",
 				sub_widgets = {
 					{
+						setting_id = "mod_name_pizazz_toggle",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "mod_name_pizazz_tooltip",
+					},
+					{
 						setting_id = "los_fade_enable",
 						type = "checkbox",
 						default_value = true,

@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.12.02"
+mod.version = "2.12.03"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -134,6 +134,12 @@ local colours = {
 -- neon
 -- en = "{#color(255,0,255)}M{#color(200,0,255)}a{#color(150,0,255)}r{#color(100,0,255)}k{#color(50,0,255)}e{#color(0,0,255)}r{#color(0,100,255)}s {#color(0,200,255)}I{#color(0,255,200)}m{#color(0,255,100)}p{#color(0,255,0)}r{#color(100,255,0)}o{#color(200,255,0)}v{#color(255,255,0)}e{#color(255,150,0)}d {#color(255,100,0)}A{#color(255,50,0)}I{#color(255,0,0)}O{#reset()}",
 local loc = {
+	mod_name_pizazz_toggle = {
+		en = "Enable Name Pizazz",
+	},
+	mod_name_pizazz_tooltip = {
+		en = "Toggles the rainbow colours effect on the mod name text. Requires a reload.\nIf enabled, you will get a small euphoric experience everytime you scroll through the mod menu, \nIf disabled - you will be a John Darktide and have no rainbow sprinkles (but I'll love you anyway).",
+	},
 	mod_name = {
 		en = "{#color("
 			.. colours.title
@@ -141,6 +147,17 @@ local loc = {
 		ru = "Улучшенные метки - все в одном",
 		["zh-tw"] = "標記改進整合版",
 		["zh-cn"] = "全功能标记集成",
+	},
+	mod_name_pizazz = {
+		en = "{#color("
+			.. colours.title
+			.. ")} {#color(0,128,255)}M{#color(0,110,255)}a{#color(0,90,255)}r{#color(0,70,255)}k{#color(30,50,255)}e{#color(60,30,255)}r{#color(90,0,255)}s {#color(120,0,255)}I{#color(140,0,255)}m{#color(160,0,255)}p{#color(180,0,255)}r{#color(200,0,255)}o{#color(220,0,255)}v{#color(235,0,255)}e{#color(245,0,255)}d {#color(255,0,255)}A{#color(255,0,200)}I{#color(255,0,150)}O{#reset()}",
+		ru = "Улучшенные метки - все в одном",
+		["zh-tw"] = "標記改進整合版",
+		["zh-cn"] = "全功能标记集成",
+	},
+	mod_name_boring = {
+		en = "Markers Improved AIO",
 	},
 	mod_description = {
 		en = "{#color("
@@ -2914,6 +2931,22 @@ end
 insert_fonts(loc)
 
 apply_colours()
+
+mod.toggle_pizazz = function()
+	for key, values in pairs(loc) do
+		if key == "mod_name" then
+			for language, text in pairs(values) do
+				if mod:get("mod_name_pizazz_toggle") then
+					loc[key][language] = loc["mod_name_pizazz"][language]
+				else
+					loc[key][language] = loc["mod_name_boring"][language]
+				end
+			end
+		end
+	end
+end
+
+mod.toggle_pizazz()
 
 mod.apply_colours = function()
 	apply_colours()
