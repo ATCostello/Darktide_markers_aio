@@ -35,8 +35,7 @@ mod.update_martyrs_skull_markers = function(self, marker)
 
 			marker.markers_aio_type = "martyrs_skull"
 
-			marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
-
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
 			marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
 
 			marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
@@ -45,14 +44,17 @@ mod.update_martyrs_skull_markers = function(self, marker)
 
 			marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
 
-			marker.widget.style.ring.color = mod.lookup_colour(mod:get(marker.markers_aio_type .. "_border_colour"))
-
-			marker.widget.style.icon.color = {
+			mod.set_colour(
+				marker.widget.style.ring.color,
+				mod.lookup_colour(mod:get(marker.markers_aio_type .. "_border_colour"))
+			)
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
 				255,
 				mod:get(marker.markers_aio_type .. "_colour_R"),
 				mod:get(marker.markers_aio_type .. "_colour_G"),
-				mod:get(marker.markers_aio_type .. "_colour_B"),
-			}
+				mod:get(marker.markers_aio_type .. "_colour_B")
+			)
 		end
 	end
 end
@@ -2077,7 +2079,10 @@ mod.setup_walkthrough_markers = function(self)
 							marker.widget.style.field_improv_ammo_med.color = { 255, 210, 175, 0 }
 							marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
 
-							marker.widget.style.ring.color = mod.lookup_colour(mod:get("martyrs_skull_border_colour"))
+							mod.set_colour(
+								marker.widget.style.ring.color,
+								mod.lookup_colour(mod:get("martyrs_skull_border_colour"))
+							)
 						end
 					else
 						marker.widget.content.field_improv_ammo_med =

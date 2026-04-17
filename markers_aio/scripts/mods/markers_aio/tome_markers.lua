@@ -36,17 +36,11 @@ mod.update_tome_markers = function(self, marker)
 					marker.widget.alpha_multiplier = 0
 					marker.draw = false
 
-					marker.widget.style.ring.color = mod.lookup_colour(mod:get("tome_border_colour"))
-
-					marker.widget.style.icon.color = {
-						255,
-						255,
-						255,
-						242,
-						0,
-					}
-					marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
-
+					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("tome_border_colour")))
+					mod.set_colour(
+						marker.widget.style.background.color,
+						mod.lookup_colour(mod:get("marker_background_colour"))
+					)
 					marker.template.screen_clamp = mod:get("tome_keep_on_screen")
 					marker.block_screen_clamp = false
 
@@ -80,19 +74,21 @@ mod.update_tome_markers = function(self, marker)
 
 					-- set colour depending on if grim or scripture
 					if pickup.unit_name == "content/pickups/pocketables/side_mission/grimoire/grimoire_pickup_01" then
-						marker.widget.style.icon.color = {
+						mod.set_colour_argb(
+							marker.widget.style.icon.color,
 							255,
 							mod:get("grim_colour_R"),
 							mod:get("grim_colour_G"),
-							mod:get("grim_colour_B"),
-						}
+							mod:get("grim_colour_B")
+						)
 					else
-						marker.widget.style.icon.color = {
+						mod.set_colour_argb(
+							marker.widget.style.icon.color,
 							255,
 							mod:get("script_colour_R"),
 							mod:get("script_colour_G"),
-							mod:get("script_colour_B"),
-						}
+							mod:get("script_colour_B")
+						)
 					end
 				end
 			end

@@ -33,8 +33,10 @@ mod.update_stolenrations_markers = function(self, marker)
 
 					marker.markers_aio_type = "event"
 
-					marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
-
+					mod.set_colour(
+						marker.widget.style.background.color,
+						mod.lookup_colour(mod:get("marker_background_colour"))
+					)
 					marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
 
 					marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
@@ -43,13 +45,14 @@ mod.update_stolenrations_markers = function(self, marker)
 					marker.block_screen_clamp = false
 
 					marker.widget.content.icon = "content/ui/materials/icons/throwables/hud/rock_grenade"
-					marker.widget.style.ring.color = mod.lookup_colour(mod:get("event_border_colour"))
-					marker.widget.style.icon.color = {
+					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("event_border_colour")))
+					mod.set_colour_argb(
+						marker.widget.style.icon.color,
 						255,
 						mod:get("event_colour_R"),
 						mod:get("event_colour_G"),
-						mod:get("event_colour_B"),
-					}
+						mod:get("event_colour_B")
+					)
 				end
 			end
 		end

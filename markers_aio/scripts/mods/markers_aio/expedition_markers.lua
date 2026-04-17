@@ -70,7 +70,7 @@ mod.update_expedition_markers = function(self, marker)
 
 		marker.markers_aio_type = "expedition"
 
-		marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
+		mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
 
 		marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
 
@@ -90,34 +90,37 @@ mod.update_expedition_markers = function(self, marker)
 			or pickup_type == "expedition_deployable_force_field_pocketable"
 		then
 			-- PICKUPS/CALL INS
-			marker.widget.style.icon.color = {
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
 				255,
 				mod:get("expedition_pickups_colour_R"),
 				mod:get("expedition_pickups_colour_G"),
-				mod:get("expedition_pickups_colour_B"),
-			}
+				mod:get("expedition_pickups_colour_B")
+			)
 		elseif
 			pickup_type == "expedition_currency_small_tier_1" or pickup_type == "expedition_currency_small_tier_2"
 		then
 			-- CURRENCY
-			marker.widget.style.icon.color = {
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
 				255,
 				mod:get("expedition_currency_colour_R"),
 				mod:get("expedition_currency_colour_G"),
-				mod:get("expedition_currency_colour_B"),
-			}
+				mod:get("expedition_currency_colour_B")
+			)
 		elseif
 			pickup_type == "expedition_loot_heavy_tier_1"
 			or pickup_type == "expedition_loot_heavy_tier_2"
 			or pickup_type == "expedition_loot_heavy_tier_3"
 		then
 			-- HEAVY RELIQUARIES
-			marker.widget.style.icon.color = {
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
 				255,
 				mod:get("expedition_reliquary_colour_R"),
 				mod:get("expedition_reliquary_colour_G"),
-				mod:get("expedition_reliquary_colour_B"),
-			}
+				mod:get("expedition_reliquary_colour_B")
+			)
 			marker.widget.content.icon = mod:get("luggable_icon")
 		elseif
 			pickup_type == "expedition_loot_small_tier_1"
@@ -126,43 +129,47 @@ mod.update_expedition_markers = function(self, marker)
 			or pickup_type == "expedition_loot_player_drop"
 		then
 			-- TECH REMNANTS
-			marker.widget.style.icon.color = {
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
 				255,
 				mod:get("expedition_remnants_colour_R"),
 				mod:get("expedition_remnants_colour_G"),
-				mod:get("expedition_remnants_colour_B"),
-			}
+				mod:get("expedition_remnants_colour_B")
+			)
 		elseif
 			pickup_type == "expedition_loot_crate_tier_1"
 			or pickup_type == "expedition_loot_crate_tier_2"
 			or pickup_type == "expedition_loot_crate_tier_3"
 		then
 			-- LOOT CRATES
-			marker.widget.style.icon.color = {
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
 				255,
 				mod:get("expedition_crate_colour_R"),
 				mod:get("expedition_crate_colour_G"),
-				mod:get("expedition_crate_colour_B"),
-			}
+				mod:get("expedition_crate_colour_B")
+			)
+
 			marker.widget.content.icon = mod:get("chest_icon")
 		else
-			marker.widget.style.icon.color = {
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
 				255,
 				mod:get("expedition_colour_R"),
 				mod:get("expedition_colour_G"),
-				mod:get("expedition_colour_B"),
-			}
+				mod:get("expedition_colour_B")
+			)
 		end
 
 		-- set border based on tier
 		if string.find(pickup_type, "tier_1") then
-			marker.widget.style.ring.color = mod.lookup_colour(mod:get("expedition_border_colour_1"))
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("expedition_border_colour_1")))
 		elseif string.find(pickup_type, "tier_2") then
-			marker.widget.style.ring.color = mod.lookup_colour(mod:get("expedition_border_colour_2"))
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("expedition_border_colour_2")))
 		elseif string.find(pickup_type, "tier_3") then
-			marker.widget.style.ring.color = mod.lookup_colour(mod:get("expedition_border_colour_3"))
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("expedition_border_colour_3")))
 		else
-			marker.widget.style.ring.color = mod.lookup_colour(mod:get("expedition_border_colour"))
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("expedition_border_colour")))
 		end
 	end
 end

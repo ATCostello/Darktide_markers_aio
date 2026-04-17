@@ -27,8 +27,7 @@ mod.update_luggable_markers = function(self, marker)
 
 			marker.markers_aio_type = "luggable"
 
-			marker.widget.style.background.color = mod.lookup_colour(mod:get("marker_background_colour"))
-
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
 			marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
 
 			marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
@@ -37,14 +36,14 @@ mod.update_luggable_markers = function(self, marker)
 
 			marker.widget.content.icon = mod:get("luggable_icon")
 
-			marker.widget.style.ring.color = mod.lookup_colour(mod:get("luggable_border_colour"))
-
-			marker.widget.style.icon.color = {
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("luggable_border_colour")))
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
 				255,
 				mod:get(marker.markers_aio_type .. "_colour_R"),
 				mod:get(marker.markers_aio_type .. "_colour_G"),
-				mod:get(marker.markers_aio_type .. "_colour_B"),
-			}
+				mod:get(marker.markers_aio_type .. "_colour_B")
+			)
 		end
 	end
 end

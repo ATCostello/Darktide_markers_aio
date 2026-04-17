@@ -296,7 +296,7 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	ring_size[2] = (default_size[2] + (max_size[2] - default_size[2]) * scale_progress) * global_scale
 
 	if style.ring then
-		style.ring.color = mod.lookup_colour(mod:get("martyrs_skull_border_colour"))
+		mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("martyrs_skull_border_colour")))
 	end
 
 	local ping_min_size = template.ping_min_size

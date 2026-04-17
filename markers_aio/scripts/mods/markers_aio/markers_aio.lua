@@ -125,20 +125,43 @@ mod.get_marker_pickup_type = function(marker)
 	return Unit.get_data(marker.unit, "pickup_type")
 end
 
-mod.lookup_colour = function(colour_string)
-	local color = { 255, 255, 255, 255 }
+mod.set_colour = function(dst, src)
+	if not dst or not src then
+		return
+	end
 
-	-- Global colour lookup
-	local COLOUR_LOOKUP = {
-		Gold = { 255, 232, 188, 109 },
-		Silver = { 255, 187, 198, 201 },
-		Steel = { 255, 161, 166, 169 },
-		Black = { 255, 35, 31, 32 },
-		Brass = { 255, 226, 199, 126 },
-		Terminal = Color.terminal_background(200, true),
-		Default = { 255, 161, 166, 169 },
-		Tarnished = { 255, 130, 115, 102 },
-	}
+	dst[1] = src[1]
+	dst[2] = src[2]
+	dst[3] = src[3]
+	dst[4] = src[4]
+end
+
+mod.set_colour_argb = function(dst, a, r, g, b)
+	if not dst then
+		return
+	end
+
+	dst[1] = a
+	dst[2] = r
+	dst[3] = g
+	dst[4] = b
+end
+
+local LOOKUP_COLOUR_DEFAULT = { 255, 255, 255, 255 }
+
+local COLOUR_LOOKUP = {
+	Gold = { 255, 232, 188, 109 },
+	Silver = { 255, 187, 198, 201 },
+	Steel = { 255, 161, 166, 169 },
+	Black = { 255, 35, 31, 32 },
+	Brass = { 255, 226, 199, 126 },
+	Terminal = Color.terminal_background(200, true),
+	Default = { 255, 161, 166, 169 },
+	Tarnished = { 255, 130, 115, 102 },
+}
+
+mod.lookup_colour = function(colour_string)
+	local color = LOOKUP_COLOUR_DEFAULT
 
 	if colour_string then
 		color = COLOUR_LOOKUP[colour_string]
@@ -316,15 +339,6 @@ local function compute_distance_alpha(marker, max_distance)
 end
 
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
-	-- Global throttle for marker updates...
-	--local update_interval = 0.02
-	--update_time = (update_time or 0) + dt
-
-	--if update_time < update_interval then
-	--	return
-	--end
-	--update_time = 0
-
 	-- Build frame state
 	build_frame_settings(mod)
 
@@ -430,6 +444,11 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 							marker_position.x = marker_position.x + position_offset[1]
 							marker_position.y = marker_position.y + position_offset[2]
 							marker_position.z = marker_position.z + position_offset[3]
+						end
+
+						-- Health station: push marker up so it's not inside the mesh
+						if marker.data and marker.data._active_interaction_type == "health_station" then
+							marker_position.z = marker_position.z
 						end
 
 						Vector3Box.store(marker.position, marker_position)
@@ -796,12 +815,6 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 		return widget.alpha_multiplier
 	end
 
-	-- Health station exception
-	if marker.data and marker.data._active_interaction_type == "health_station" then
-		widget.alpha_multiplier = mod_alpha
-		return widget.alpha_multiplier
-	end
-
 	-- No raycast yet = assume blocked LOS
 	local has_raycast = marker.raycast_result ~= nil
 
@@ -910,16 +923,6 @@ mod.adjust_los_requirement = function(marker)
 	local mod_require_los = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
 	local mod_keep_on_screen = mod:get(marker.markers_aio_type .. "_keep_on_screen")
 
-	-- Absolute health station override
-	if marker.data and marker.data._active_interaction_type == "health_station" then
-		if marker.is_inside_frustum then
-			do_draw(marker)
-		else
-			dont_draw(marker)
-		end
-		return
-	end
-
 	if mod_require_los then
 		if marker.is_inside_frustum then
 			if marker.raycast_result == false then
@@ -934,15 +937,6 @@ mod.adjust_los_requirement = function(marker)
 		end
 	else
 		if marker.is_inside_frustum or mod_keep_on_screen then
-			do_draw(marker)
-		else
-			dont_draw(marker)
-		end
-	end
-
-	-- Health station exception (cached distance)
-	if marker.data and marker.data._active_interaction_type == "health_station" then
-		if marker.is_inside_frustum and marker.distance and marker.distance < (fs.med_station_max_distance or 20) then
 			do_draw(marker)
 		else
 			dont_draw(marker)
