@@ -9,6 +9,18 @@ local WorldMarkerTemplateInteraction =
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIFontSettings = require("scripts/managers/ui/ui_font_settings")
 
+local check_recolorstimms = function()
+	local dmf = get_mod("DMF")
+	local _disabled_mods = dmf:get("disabled_mods_list") or {}
+
+	if _disabled_mods["RecolorStimms"] then
+		mod.RecolorStimms = nil
+		return
+	end
+
+	mod.RecolorStimms = get_mod("RecolorStimms")
+end
+
 mod.on_all_mods_loaded = function()
 	local is_mod_loading = true
 	mod:hook_require("scripts/extension_systems/unit_templates", function(instance)
@@ -53,7 +65,15 @@ mod.on_all_mods_loaded = function()
 	load_package("content/levels/training_grounds/missions/mission_tg_basic_combat_01", "medkit_radius")
 	load_package("packages/ui/views/options_view/options_view", "large_ammo1")
 	load_package("packages/ui/views/inventory_background_view/inventory_background_view", "large_ammo2")
+
+	check_recolorstimms()
 end
+
+mod:hook_safe(CLASS.UIViewHandler, "close_view", function(self, view_name, ...)
+	if view_name == "dmf_options_view" or view_name == "options_view" then
+		check_recolorstimms()
+	end
+end)
 
 local get_max_distance = function()
 	local max_distance = mod:get("ammo_med_max_distance")
@@ -452,7 +472,10 @@ mod.update_ammo_med_markers = function(self, marker)
 				or marker.data and marker.data.type == "ammo_cache_deployable"
 			then
 				if marker.widget.style.ring then
-					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("ammo_crate_border_colour")))
+					mod.set_colour(
+						marker.widget.style.ring.color,
+						mod.lookup_colour(mod:get("ammo_crate_border_colour"))
+					)
 				end
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_ammo"
 
@@ -486,7 +509,10 @@ mod.update_ammo_med_markers = function(self, marker)
 				or marker.data and marker.data.type == "medical_crate_pocketable"
 			then
 				if marker.widget.style.ring then
-					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("med_crate_border_colour")))
+					mod.set_colour(
+						marker.widget.style.ring.color,
+						mod.lookup_colour(mod:get("med_crate_border_colour"))
+					)
 				end
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
 
@@ -523,7 +549,10 @@ mod.update_ammo_med_markers = function(self, marker)
 				or marker.data and marker.data.type == "medical_crate_deployable"
 			then
 				if marker.widget.style.ring then
-					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("med_crate_border_colour")))
+					mod.set_colour(
+						marker.widget.style.ring.color,
+						mod.lookup_colour(mod:get("med_crate_border_colour"))
+					)
 				end
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
 
