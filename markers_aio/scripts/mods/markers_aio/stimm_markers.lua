@@ -35,6 +35,7 @@ mod.update_stimm_markers = function(self, marker)
 			or marker.data and marker.data.type == "syringe_ability_boost_pocketable"
 			or marker.data and marker.data.type == "syringe_corruption_pocketable"
 			or pickup_type and pickup_type == "syringe_broker_pocketable"
+			or marker.data and marker.data.type == "syringe_broker_pocketable"
 		then
 			marker.markers_aio_type = "stimm"
 			-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
@@ -143,11 +144,11 @@ mod.update_stimm_markers = function(self, marker)
 				pickup_type == "syringe_broker_pocketable"
 				or marker.data and marker.data.type == "syringe_broker_pocketable"
 			then
-				if mod.RecolorStimms then
-					local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_broker_pocketable")
-					mod.set_colour_argb(marker.widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
-				else
-					if mod:get("broker_stimm_enable") == true then
+				if mod:get("broker_stimm_enable") == true then
+					if mod.RecolorStimms then
+						local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_broker_pocketable")
+						mod.set_colour_argb(marker.widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
+					else
 						mod.set_colour_argb(
 							marker.widget.style.icon.color,
 							255,
@@ -156,8 +157,11 @@ mod.update_stimm_markers = function(self, marker)
 							mod:get("broker_stimm_icon_colour_B")
 						)
 					end
+					mod.set_colour(
+						marker.widget.style.ring.color,
+						mod.lookup_colour(mod:get("broker_stimm_border_colour"))
+					)
 				end
-				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("broker_stimm_border_colour")))
 			end
 		end
 	end
@@ -223,17 +227,19 @@ mod:hook_safe(CLASS.HudElementPlayerWeapon, "update", function(self, dt, t, ui_r
 			)
 		end
 	elseif weapon_name == "content/items/pocketable/syringe_broker_pocketable" then
-		if mod.RecolorStimms then
-			local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_broker_pocketable")
-			mod.set_colour_argb(widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
-		else
-			mod.set_colour_argb(
-				widget.style.icon.color,
-				255,
-				mod:get("broker_stimm_icon_colour_R"),
-				mod:get("broker_stimm_icon_colour_G"),
-				mod:get("broker_stimm_icon_colour_B")
-			)
+		if mod:get("broker_stimm_enable") == true then
+			if mod.RecolorStimms then
+				local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_broker_pocketable")
+				mod.set_colour_argb(widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
+			else
+				mod.set_colour_argb(
+					widget.style.icon.color,
+					255,
+					mod:get("broker_stimm_icon_colour_R"),
+					mod:get("broker_stimm_icon_colour_G"),
+					mod:get("broker_stimm_icon_colour_B")
+				)
+			end
 		end
 	end
 end)
