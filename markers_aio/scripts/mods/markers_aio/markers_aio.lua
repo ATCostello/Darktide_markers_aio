@@ -367,8 +367,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		local markers_by_type = self._markers_by_type
 		local ALIVE = ALIVE
 
-		dbg_markers = markers_by_type
-
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				-- DEFAULT STUFF
@@ -653,6 +651,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 						mod.update_unknown_markers(self, marker)
 					end
 
+					--[[
 					if marker.widget and marker.distance and not marker.markers_aio_type then
 						local template = marker.template
 						local max_distance = template and template.max_distance
@@ -663,7 +662,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 							marker.widget.alpha_multiplier = (marker.widget.alpha_multiplier or 1) * dist_alpha
 						end
-					end
+					end]]
 
 					if marker.markers_aio_type then
 						mod.adjust_los_requirement(marker)

@@ -42,7 +42,6 @@ mod.update_stimm_markers = function(self, marker)
 			marker.widget.alpha_multiplier = 0
 			marker.draw = false
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
 			marker.template.screen_clamp = mod:get("stimm_keep_on_screen")
 			marker.block_screen_clamp = false
 
@@ -67,6 +66,13 @@ mod.update_stimm_markers = function(self, marker)
 				self.fade_settings.distance_max = max_distance
 				self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
 			end
+
+			-- If user has stimms pickup icon enabled, dont change the colours via markers aio...
+			if mod.StimmsPickupIcon then
+				return
+			end
+
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
 
 			if
 				pickup_type == "syringe_power_boost_pocketable"
@@ -174,6 +180,11 @@ mod:hook_safe(CLASS.HudElementPlayerWeapon, "update", function(self, dt, t, ui_r
 	local weapon_name = self._weapon_name
 	local widget = self._widgets_by_name.icon
 
+	-- If user has stimms pickup icon enabled, dont change the colours via markers aio...
+	if mod.StimmsPickupIcon then
+		return
+	end
+
 	if weapon_name == "content/items/pocketable/syringe_power_boost_pocketable" then
 		if mod.RecolorStimms then
 			local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_power_boost_pocketable")
@@ -254,6 +265,11 @@ mod:hook_safe(
 		local weapon_name = ""
 		local players = Managers.player:players()
 		local player_panels_array = self._player_panels_array
+
+		-- If user has stimms pickup icon enabled, dont change the colours via markers aio...
+		if mod.StimmsPickupIcon then
+			return
+		end
 
 		for _, player in pairs(players) do
 			local player_unit = player.player_unit

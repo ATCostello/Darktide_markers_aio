@@ -18,7 +18,19 @@ local check_recolorstimms = function()
 		return
 	end
 
-	mod.RecolorStimms = get_mod("RecolorStimms")
+	mod.RecolorStimms = get_mod("RecolorStimms") or nil
+end
+
+local check_stimmpickupicon = function()
+	local dmf = get_mod("DMF")
+	local _disabled_mods = dmf:get("disabled_mods_list") or {}
+
+	if _disabled_mods["StimmsPickupIcon"] then
+		mod.StimmsPickupIcon = nil
+		return
+	end
+
+	mod.StimmsPickupIcon = get_mod("StimmsPickupIcon") or nil
 end
 
 mod.on_all_mods_loaded = function()
@@ -67,11 +79,13 @@ mod.on_all_mods_loaded = function()
 	load_package("packages/ui/views/inventory_background_view/inventory_background_view", "large_ammo2")
 
 	check_recolorstimms()
+	check_stimmpickupicon()
 end
 
 mod:hook_safe(CLASS.UIViewHandler, "close_view", function(self, view_name, ...)
 	if view_name == "dmf_options_view" or view_name == "options_view" then
 		check_recolorstimms()
+		check_stimmpickupicon()
 	end
 end)
 
