@@ -554,7 +554,7 @@ return {
 							{
 								setting_id = "toggle_background_colour",
 								type = "checkbox",
-								default_value = true,
+								default_value = false,
 								tooltip = "toggle_background_colour_tooltip",
 							},
 							{
