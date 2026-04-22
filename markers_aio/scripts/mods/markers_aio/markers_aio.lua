@@ -155,7 +155,7 @@ local COLOUR_LOOKUP = {
 	Steel = { 255, 161, 166, 169 },
 	Black = { 255, 35, 31, 32 },
 	Brass = { 255, 226, 199, 126 },
-	Terminal = Color.terminal_background(200, true),
+	Terminal = Color.terminal_background(225, true),
 	Default = { 255, 161, 166, 169 },
 	Tarnished = { 255, 130, 115, 102 },
 }
@@ -1222,3 +1222,47 @@ mod.on_setting_changed = function(setting_id)
 		end
 	end
 end
+
+-- save scroll position
+-- Author: Alfthebigheaded
+local last_scroll_amount = 0
+local last_category = nil
+
+local function is_my_category(self)
+	return self._selected_category == mod:localize("mod_name")
+		or self._selected_category == mod:localize("mod_name_pizazz")
+end
+
+mod:hook_safe(CLASS.BaseView, "on_exit", function(self)
+	last_category = nil
+end)
+
+mod:hook_safe(CLASS.BaseView, "update", function(self)
+	if self.view_name ~= "dmf_options_view" then
+		return
+	end
+
+	local grid = self._navigation_grids
+	if not (grid and grid[2] and grid[2]._scrollbar_widget) then
+		return
+	end
+
+	local scrollbar_widget = grid[2]._scrollbar_widget
+	local current_category = self._selected_category
+	local in_my_category = is_my_category(self)
+
+	--  Detect category switch into my mod
+	if in_my_category and (last_category ~= current_category or last_category == nil) then
+		scrollbar_widget.content.scroll_value = last_scroll_amount
+		scrollbar_widget.content.value = last_scroll_amount
+	end
+
+	--  Always track scroll while inside my mod
+	if in_my_category then
+		if grid[2]._scroll_progress and last_scroll_amount ~= grid[2]._scroll_progress then
+			last_scroll_amount = grid[2]._scroll_progress
+		end
+	end
+
+	last_category = current_category
+end)

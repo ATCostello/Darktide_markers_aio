@@ -546,6 +546,18 @@ return {
 								tooltip = "enable_tooltip",
 							},
 							{
+								setting_id = "recolor_stimm_compat_enable",
+								type = "checkbox",
+								default_value = true,
+								tooltip = "recolor_stimm_compat_enable_tooltip",
+							},
+							{
+								setting_id = "toggle_background_colour",
+								type = "checkbox",
+								default_value = true,
+								tooltip = "toggle_background_colour_tooltip",
+							},
+							{
 								setting_id = "broker_stimm_enable",
 								type = "checkbox",
 								default_value = true,

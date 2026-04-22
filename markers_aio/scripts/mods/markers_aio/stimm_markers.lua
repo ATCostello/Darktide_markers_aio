@@ -17,6 +17,46 @@ local get_max_distance = function()
 	return max_distance
 end
 
+local set_stimm_colours = function(marker, stimm_name, border_setting, r_setting, g_setting, b_setting)
+	local widget_icon_or_background = marker.widget.style.icon.color
+
+	-- if toggle background colour, then set the background as is
+	if mod:get("toggle_background_colour") then
+		if mod.RecolorStimms then
+			local argb = mod.RecolorStimms.get_stimm_argb_255(stimm_name)
+			mod.set_colour_argb(marker.widget.style.background.color, argb[1], argb[2], argb[3], argb[4])
+		else
+			mod.set_colour_argb(
+				marker.widget.style.background.color,
+				255,
+				mod:get(r_setting),
+				mod:get(g_setting),
+				mod:get(b_setting)
+			)
+		end
+	end
+
+	-- if toggle background colour, then set icon to be the inverse...
+	if mod:get("toggle_background_colour") then
+		mod.set_colour(marker.widget.style.icon.color, mod.lookup_colour(mod:get("marker_background_colour")))
+	else
+		if mod.RecolorStimms then
+			local argb = mod.RecolorStimms.get_stimm_argb_255(stimm_name)
+			mod.set_colour_argb(marker.widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
+		else
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
+				255,
+				mod:get(r_setting),
+				mod:get(g_setting),
+				mod:get(b_setting)
+			)
+		end
+	end
+
+	mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get(border_setting)))
+end
+
 mod.update_stimm_markers = function(self, marker)
 	local max_distance = get_max_distance()
 
@@ -67,105 +107,68 @@ mod.update_stimm_markers = function(self, marker)
 				self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
 			end
 
-			-- If user has stimms pickup icon enabled, dont change the colours via markers aio...
-			if mod.StimmsPickupIcon then
-				return
-			end
-
 			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
 
 			if
 				pickup_type == "syringe_power_boost_pocketable"
 				or marker.data and marker.data.type == "syringe_power_boost_pocketable"
 			then
-				if mod.RecolorStimms then
-					local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_power_boost_pocketable")
-					mod.set_colour_argb(marker.widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
-				else
-					mod.set_colour_argb(
-						marker.widget.style.icon.color,
-						255,
-						mod:get("power_stimm_icon_colour_R"),
-						mod:get("power_stimm_icon_colour_G"),
-						mod:get("power_stimm_icon_colour_B")
-					)
-				end
-
-				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("power_stimm_border_colour")))
+				set_stimm_colours(
+					marker,
+					pickup_type,
+					"power_stimm_border_colour",
+					"power_stimm_icon_colour_R",
+					"power_stimm_icon_colour_G",
+					"power_stimm_icon_colour_B"
+				)
 			elseif
 				pickup_type == "syringe_speed_boost_pocketable"
 				or marker.data and marker.data.type == "syringe_speed_boost_pocketable"
 			then
-				if mod.RecolorStimms then
-					local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_speed_boost_pocketable")
-					mod.set_colour_argb(marker.widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
-				else
-					mod.set_colour_argb(
-						marker.widget.style.icon.color,
-						255,
-						mod:get("speed_stimm_icon_colour_R"),
-						mod:get("speed_stimm_icon_colour_G"),
-						mod:get("speed_stimm_icon_colour_B")
-					)
-				end
-				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("speed_stimm_border_colour")))
+				set_stimm_colours(
+					marker,
+					pickup_type,
+					"speed_stimm_border_colour",
+					"speed_stimm_icon_colour_R",
+					"speed_stimm_icon_colour_G",
+					"speed_stimm_icon_colour_B"
+				)
 			elseif
 				pickup_type == "syringe_ability_boost_pocketable"
 				or marker.data and marker.data.type == "syringe_ability_boost_pocketable"
 			then
-				if mod.RecolorStimms then
-					local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_ability_boost_pocketable")
-					mod.set_colour_argb(marker.widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
-				else
-					mod.set_colour_argb(
-						marker.widget.style.icon.color,
-						255,
-						mod:get("boost_stimm_icon_colour_R"),
-						mod:get("boost_stimm_icon_colour_G"),
-						mod:get("boost_stimm_icon_colour_B")
-					)
-				end
-				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("boost_stimm_border_colour")))
+				set_stimm_colours(
+					marker,
+					pickup_type,
+					"boost_stimm_border_colour",
+					"boost_stimm_icon_colour_R",
+					"boost_stimm_icon_colour_G",
+					"boost_stimm_icon_colour_B"
+				)
 			elseif
 				pickup_type == "syringe_corruption_pocketable"
 				or marker.data and marker.data.type == "syringe_corruption_pocketable"
 			then
-				if mod.RecolorStimms then
-					local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_corruption_pocketable")
-					mod.set_colour_argb(marker.widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
-				else
-					mod.set_colour_argb(
-						marker.widget.style.icon.color,
-						255,
-						mod:get("corruption_stimm_icon_colour_R"),
-						mod:get("corruption_stimm_icon_colour_G"),
-						mod:get("corruption_stimm_icon_colour_B")
-					)
-				end
-				mod.set_colour(
-					marker.widget.style.ring.color,
-					mod.lookup_colour(mod:get("corruption_stimm_border_colour"))
+				set_stimm_colours(
+					marker,
+					pickup_type,
+					"corruption_stimm_border_colour",
+					"corruption_stimm_icon_colour_R",
+					"corruption_stimm_icon_colour_G",
+					"corruption_stimm_icon_colour_B"
 				)
 			elseif
 				pickup_type == "syringe_broker_pocketable"
 				or marker.data and marker.data.type == "syringe_broker_pocketable"
 			then
 				if mod:get("broker_stimm_enable") == true then
-					if mod.RecolorStimms then
-						local argb = mod.RecolorStimms.get_stimm_argb_255("syringe_broker_pocketable")
-						mod.set_colour_argb(marker.widget.style.icon.color, argb[1], argb[2], argb[3], argb[4])
-					else
-						mod.set_colour_argb(
-							marker.widget.style.icon.color,
-							255,
-							mod:get("broker_stimm_icon_colour_R"),
-							mod:get("broker_stimm_icon_colour_G"),
-							mod:get("broker_stimm_icon_colour_B")
-						)
-					end
-					mod.set_colour(
-						marker.widget.style.ring.color,
-						mod.lookup_colour(mod:get("broker_stimm_border_colour"))
+					set_stimm_colours(
+						marker,
+						pickup_type,
+						"broker_stimm_border_colour",
+						"broker_stimm_icon_colour_R",
+						"broker_stimm_icon_colour_G",
+						"broker_stimm_icon_colour_B"
 					)
 				end
 			end
@@ -179,11 +182,6 @@ mod:hook_safe(CLASS.HudElementPlayerWeapon, "update", function(self, dt, t, ui_r
 
 	local weapon_name = self._weapon_name
 	local widget = self._widgets_by_name.icon
-
-	-- If user has stimms pickup icon enabled, dont change the colours via markers aio...
-	if mod.StimmsPickupIcon then
-		return
-	end
 
 	if weapon_name == "content/items/pocketable/syringe_power_boost_pocketable" then
 		if mod.RecolorStimms then
@@ -265,11 +263,6 @@ mod:hook_safe(
 		local weapon_name = ""
 		local players = Managers.player:players()
 		local player_panels_array = self._player_panels_array
-
-		-- If user has stimms pickup icon enabled, dont change the colours via markers aio...
-		if mod.StimmsPickupIcon then
-			return
-		end
 
 		for _, player in pairs(players) do
 			local player_unit = player.player_unit

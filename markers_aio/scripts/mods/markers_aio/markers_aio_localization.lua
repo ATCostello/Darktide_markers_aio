@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.12.07"
+mod.version = "2.12.08"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -1027,6 +1027,19 @@ local loc = {
 		["zh-tw"] = "啟用標記",
 		["zh-cn"] = "启用标记",
 	},
+	recolor_stimm_compat_enable = {
+		en = "RecolorStimm mod support?",
+	},
+	recolor_stimm_compat_enable_tooltip = {
+		en = "Toggles recolour stimm mod support, where if enabled - will adjust the colours of the stimms to the colours from RecolorStimms mod - and ignore the markers AIO stimm colours.",
+	},
+	toggle_background_colour = {
+		en = "Colour Background Instead of Icon?",
+	},
+	toggle_background_colour_tooltip = {
+		en = "If enabled, will colour the background instead of the icon. If disabled, will colour the icon instead of the background. Uses the 'Background Colour' setting, as it essentially inverts the colours.",
+	},
+
 	broker_stimm_enable = {
 		en = "Enable Hive Scum Stimm Markers",
 		["zh-tw"] = "啟用巢都敗類興奮劑標記",
