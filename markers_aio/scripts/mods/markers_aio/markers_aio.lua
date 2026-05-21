@@ -130,10 +130,10 @@ mod.set_colour = function(dst, src)
 		return
 	end
 
-	dst[1] = src[1]
-	dst[2] = src[2]
-	dst[3] = src[3]
-	dst[4] = src[4]
+	dst[1] = src[1] or 255
+	dst[2] = src[2] or 255
+	dst[3] = src[3] or 255
+	dst[4] = src[4] or 255
 end
 
 mod.set_colour_argb = function(dst, a, r, g, b)
@@ -141,10 +141,10 @@ mod.set_colour_argb = function(dst, a, r, g, b)
 		return
 	end
 
-	dst[1] = a
-	dst[2] = r
-	dst[3] = g
-	dst[4] = b
+	dst[1] = a or 255
+	dst[2] = r or 255
+	dst[3] = g or 255
+	dst[4] = b or 255
 end
 
 local LOOKUP_COLOUR_DEFAULT = { 255, 255, 255, 255 }
@@ -280,9 +280,13 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 		local widget = marker.widget
 		local offset = widget.offset
 
-		offset[3] = BASE_Z + (i * Z_STRIDE)
+		if offset then
+			offset[3] = BASE_Z + (i * Z_STRIDE)
+		end
 
-		if widget.style.marker_text and widget.content.marker_text and widget.content.marker_text ~= "" then
+		widget.alpha_multiplier = widget.alpha_multiplier or 1
+
+		if offset and widget.style.marker_text and widget.content.marker_text and widget.content.marker_text ~= "" then
 			widget.style.marker_text.offset[3] = offset[3] + 2
 		end
 
