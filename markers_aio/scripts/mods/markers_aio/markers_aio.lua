@@ -961,7 +961,8 @@ mod.adjust_scale = function(self, marker, ui_renderer)
 	local mod_scale = scale
 
 	if marker.markers_aio_type then
-		mod_scale = mod:get(marker.markers_aio_type .. "_scale") / 100
+		local mod_scale = mod:get(marker.markers_aio_type .. "_scale") or 100
+		mod_scale = mod_scale / 100
 		scale = mod_scale
 	end
 

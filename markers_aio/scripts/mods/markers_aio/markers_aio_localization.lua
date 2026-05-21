@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.12.09"
+mod.version = "2.12.10"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -1810,6 +1810,9 @@ local loc = {
 		en = "Fist",
 		["zh-tw"] = "拳頭",
 		["zh-cn"] = "拳头",
+	},
+	Luggable = {
+		en = "Luggable",
 	},
 	Gold = {
 		en = "Gold",
