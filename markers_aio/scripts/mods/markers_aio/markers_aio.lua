@@ -52,16 +52,22 @@ mod:hook_safe(CLASS.MissionObjectiveSystem, "hot_join_sync", function(self, send
 	mod.reset_martyrs_skull_guides()
 end)
 
-local totem_units = {}
-_G.totem_units = totem_units -- expose for other modules without polluting with multiple instances
+mod.totem_units = {}
 -- add a marker to nurgle totems...
 mod:hook_safe(CLASS.PropUnitDataExtension, "setup_from_component", function(self, prop_data_name)
 	if prop_data_name == "nurgle_totem" then
+		mod:echo("spawned a nurgle totem")
 		local totem_unit = self._unit
 		Managers.event:trigger("add_world_marker_unit", "nurgle_totem", totem_unit)
-		table.insert(totem_units, totem_unit)
+		table.insert(mod.totem_units, totem_unit)
 	end
 end)
+
+function _is_live_event_skulls_totem_unit(collectible_type, unit_data_breed_name, prop_data_name)
+	return collectible_type == "nurgle_totem"
+		or unit_data_breed_name == "nurgle_totem"
+		or prop_data_name == "nurgle_totem"
+end
 
 local function build_frame_settings(mod)
 	local fs = mod.frame_settings
@@ -856,7 +862,7 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	------------------------------------------------
 	-- LOS logic
 	------------------------------------------------
-	local target_alpha = base_alpha
+	local target_alpha = base_alpha or 1
 
 	-- Apply ADS opacity globally (both LOS and non-LOS)
 	if fs.is_ads and (marker.raycast_result == false) then
