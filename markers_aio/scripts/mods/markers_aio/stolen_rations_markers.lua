@@ -21,12 +21,7 @@ mod.update_stolenrations_markers = function(self, marker)
 			local pickup = Pickups.by_name[pickup_type]
 
 			if pickup then
-				local is_hack_device = false
-
 				if pickup.name and string.starts(pickup.name, "stolen_rations") then
-					is_hack_device = true
-				end
-				if is_hack_device then
 					-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 					marker.widget.alpha_multiplier = 0
 					marker.draw = false

@@ -70,11 +70,7 @@ DestructibleExtension._add_damage = function(self, damage_amount, attack_directi
 		destruction_info.health = math.max(0, health_after_damage)
 
 		if health_after_damage <= 0 then
-			for i, unit in pairs(mod.totem_units) do
-				if self._unit == unit then
-					table.remove(mod.totem_units, i)
-				end
-			end
+			mod.remove_totem_from_tracking(self._unit)
 
 			if self._collectible_data then
 				if self._collectible_data.unit and self._collectible_data.section_id then
@@ -108,11 +104,7 @@ DestructibleExtension.rpc_destructible_last_destruction = function(self)
 
 	Unit.flow_event(self._unit, "lua_last_destruction")
 
-	for i, unit in pairs(mod.totem_units) do
-		if self._unit == unit then
-			table.remove(mod.totem_units, i)
-		end
-	end
+	mod.remove_totem_from_tracking(self._unit)
 
 	if self._collectible_data then
 		if self._collectible_data.unit and self._collectible_data.section_id then

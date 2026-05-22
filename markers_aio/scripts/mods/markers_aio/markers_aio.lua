@@ -46,28 +46,123 @@ mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
 	mod.current_heretical_idol_markers = {}
 	processed_idols = {}
 	mod.reset_martyrs_skull_guides()
+
+	-- scan for nurgle totems that already exist (covers menu→game transition after mod reload)
+	mod._needs_totem_scan = true
+end)
+
+mod.totem_units = {}
+
+mod.is_totem_unit = function(unit)
+	if not unit or not Unit.alive(unit) then
+		return false
+	end
+	local ude = ScriptUnit.has_extension(unit, "unit_data_system")
+	if not ude then
+		return false
+	end
+	if ude._breed and ude._breed.name == "nurgle_totem" then
+		return true
+	end
+	local armor_name = Unit.get_data(unit, "armor_data_name")
+	if armor_name == "nurgle_totem" then
+		return true
+	end
+	return false
+end
+
+mod.find_totem_marker_by_unit = function(unit)
+	local ui_manager = Managers.ui
+	if not ui_manager then
+		return
+	end
+	local hud = ui_manager:get_hud()
+	if not hud then
+		return
+	end
+	local world_markers = hud:element("HudElementWorldMarkers")
+	if not world_markers then
+		return
+	end
+	local markers = world_markers._markers_by_type and world_markers._markers_by_type["nurgle_totem"]
+	if not markers then
+		return
+	end
+	for i = 1, #markers do
+		local marker = markers[i]
+		if marker.unit == unit then
+			return marker
+		end
+	end
+end
+
+mod.add_totem_marker = function(unit)
+	if not unit or not Unit.alive(unit) then
+		return
+	end
+	if not mod.totem_units then
+		mod.totem_units = {}
+	end
+	if mod.totem_units[unit] then
+		return
+	end
+	local existing = mod.find_totem_marker_by_unit(unit)
+	if existing then
+		mod.totem_units[unit] = existing.id
+		return
+	end
+	local marker_id
+	Managers.event:trigger("add_world_marker_unit", "nurgle_totem", unit, function(id)
+		marker_id = id
+	end)
+	mod.totem_units[unit] = marker_id
+end
+
+mod.remove_totem_from_tracking = function(unit)
+	if not mod.totem_units or not unit then
+		return
+	end
+	local marker_id = mod.totem_units[unit]
+	if marker_id then
+		Managers.event:trigger("remove_world_marker", marker_id)
+	end
+	mod.totem_units[unit] = nil
+end
+
+mod.scan_for_existing_totems = function()
+	if not Managers.world then
+		return
+	end
+	local world = Managers.world:world("level_world")
+	if not world then
+		return
+	end
+	local units = World.units(world)
+	if not units then
+		return
+	end
+	for i = 1, #units do
+		local unit = units[i]
+		if Unit.alive(unit) and mod.is_totem_unit(unit) then
+			mod.add_totem_marker(unit)
+		end
+	end
+end
+
+mod:hook_safe(CLASS.PropUnitDataExtension, "setup_from_component", function(self, prop_data_name)
+	if prop_data_name == "nurgle_totem" then
+		mod.add_totem_marker(self._unit)
+	end
+end)
+
+mod:hook_safe(CLASS.DestructibleExtension, "destroy", function(self)
+	mod.remove_totem_from_tracking(self._unit)
 end)
 
 mod:hook_safe(CLASS.MissionObjectiveSystem, "hot_join_sync", function(self, sender, channel)
 	mod.reset_martyrs_skull_guides()
+	mod.scan_for_existing_totems()
 end)
-
-mod.totem_units = {}
--- add a marker to nurgle totems...
-mod:hook_safe(CLASS.PropUnitDataExtension, "setup_from_component", function(self, prop_data_name)
-	if prop_data_name == "nurgle_totem" then
-		mod:echo("spawned a nurgle totem")
-		local totem_unit = self._unit
-		Managers.event:trigger("add_world_marker_unit", "nurgle_totem", totem_unit)
-		table.insert(mod.totem_units, totem_unit)
-	end
-end)
-
-function _is_live_event_skulls_totem_unit(collectible_type, unit_data_breed_name, prop_data_name)
-	return collectible_type == "nurgle_totem"
-		or unit_data_breed_name == "nurgle_totem"
-		or prop_data_name == "nurgle_totem"
-end
 
 local function build_frame_settings(mod)
 	local fs = mod.frame_settings
@@ -107,12 +202,11 @@ local function build_frame_settings(mod)
 		stimm = mod:get("stimm_enable"),
 		chest = mod:get("chest_enable"),
 		heretical_idol = mod:get("heretical_idol_enable"),
-		tainted = mod:get("tainted_enable"),
-		tainted_skull = mod:get("tainted_skull_enable"),
+		event = mod:get("event_enable"),
 		luggable = mod:get("luggable_enable"),
 		martyrs_skull = mod:get("martyrs_skull_enable"),
-		rations = mod:get("rations_enable"),
-		atonement = mod:get("atonement_enable"),
+		rations = mod:get("event_enable"),
+		atonement = mod:get("event_enable"),
 		expedition = mod:get("expedition_enable"),
 		unknown = mod:get("unknown_enable"),
 	}
@@ -351,6 +445,11 @@ end
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
 	-- Build frame state
 	build_frame_settings(mod)
+
+	if mod._needs_totem_scan then
+		mod._needs_totem_scan = false
+		mod.scan_for_existing_totems()
+	end
 
 	local raycasts_allowed = self._raycast_frame_counter == 0
 
@@ -634,28 +733,21 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					if fs.enable.heretical_idol then
 						mod.update_marker_icon(self, marker)
 					end
-					if fs.enable.tainted then
-						mod.update_TaintedDevices_markers(self, marker)
-					end
-					if fs.enable.tainted_skull then
-						mod.update_tainted_skull_markers(self, marker)
-					end
 					if fs.enable.luggable then
 						mod.update_luggable_markers(self, marker)
 					end
 					if fs.enable.martyrs_skull then
 						mod.update_martyrs_skull_markers(self, marker)
 					end
-					if fs.enable.rations then
-						mod.update_stolenrations_markers(self, marker)
-					end
-					if fs.enable.atonement then
-						mod.update_atonement_markers(self, marker)
-					end
 					if fs.enable.expedition then
 						mod.update_expedition_markers(self, marker)
 					end
-
+					if fs.enable.event then
+						mod.update_tainted_skull_markers(self, marker)
+						mod.update_TaintedDevices_markers(self, marker)
+						mod.update_stolenrations_markers(self, marker)
+						mod.update_atonement_markers(self, marker)
+					end
 					-- Unknown markers will get subtle changes so they work with distance/occlusion and have same background colour
 					if not marker.markers_aio_type and fs.enable.unknown then
 						mod.update_unknown_markers(self, marker)
@@ -815,8 +907,8 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	end
 
 	local fs = mod.frame_settings
-	local mod_alpha = mod:get(marker.markers_aio_type .. "_alpha")
-	local mod_max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+	local mod_alpha = mod:get(marker.markers_aio_type .. "_alpha") or 1
+	local mod_max_distance = mod:get(marker.markers_aio_type .. "_max_distance") or 30
 
 	-- Pinged markers are always fully visible
 	if widget.content and widget.content.tagged == true then
@@ -1132,12 +1224,8 @@ mod.tome_toggle_los = function()
 	mod.toggle_los("tome")
 end
 
-mod.tainted_toggle_los = function()
-	mod.toggle_los("tainted")
-end
-
-mod.tainted_skull_toggle_los = function()
-	mod.toggle_los("tainted_skull")
+mod.event_toggle_los = function()
+	mod.toggle_los("event")
 end
 
 mod.luggable_toggle_los = function()
@@ -1277,3 +1365,5 @@ mod:hook_safe(CLASS.BaseView, "update", function(self)
 
 	last_category = current_category
 end)
+
+mod._needs_totem_scan = true

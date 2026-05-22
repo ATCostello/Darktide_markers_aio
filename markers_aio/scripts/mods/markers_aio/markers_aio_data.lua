@@ -120,20 +120,17 @@ return {
 						setting_id = "mod_name_pizazz_toggle",
 						type = "checkbox",
 						default_value = true,
-						tab = "General",
 						tooltip = "mod_name_pizazz_tooltip",
 					},
 					{
 						setting_id = "los_fade_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "General",
 						tooltip = "los_fade_enable_tooltip",
 					},
 					{
 						setting_id = "los_opacity",
 						type = "numeric",
-						tab = "General",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -142,7 +139,6 @@ return {
 					{
 						setting_id = "ads_los_opacity",
 						type = "numeric",
-						tab = "General",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -153,7 +149,6 @@ return {
 						type = "dropdown",
 						options = background_colours,
 						default_value = "Terminal",
-						tab = "General",
 						tooltip = "marker_background_colour_tooltip",
 					},
 					{
@@ -161,14 +156,12 @@ return {
 						type = "dropdown",
 						options = fonts,
 						default_value = "mono_tide_bold",
-						tab = "General",
 						tooltip = "font_type_tooltip",
 					},
 					{
 						setting_id = "distance_text_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "General",
 						tooltip = "distance_text_enable_tooltip",
 					},
 					{
@@ -176,13 +169,11 @@ return {
 						type = "dropdown",
 						options = distance_text_positions,
 						default_value = "Bottom",
-						tab = "General",
 						tooltip = "distance_text_position_tooltip",
 					},
 					{
 						setting_id = "distance_text_scale",
 						type = "numeric",
-						tab = "General",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -202,28 +193,24 @@ return {
 						setting_id = "ammo_med_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "ammo_med_markers_alternate_large_ammo_icon",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "ammo_med_markers_alternate_large_ammo_icon_tooltip",
 					},
 					{
 						setting_id = "ammo_med_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Ammo & Med",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "ammo_med_require_line_of_sight",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -234,13 +221,11 @@ return {
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
 						function_name = "ammo_med_toggle_los",
-						tab = "Ammo & Med",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
 						setting_id = "ammo_med_max_distance",
 						type = "numeric",
-						tab = "Ammo & Med",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -249,7 +234,6 @@ return {
 					{
 						setting_id = "med_station_max_distance",
 						type = "numeric",
-						tab = "Ammo & Med",
 						default_value = 20,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -258,7 +242,6 @@ return {
 					{
 						setting_id = "ammo_med_scale",
 						type = "numeric",
-						tab = "Ammo & Med",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -267,7 +250,6 @@ return {
 					{
 						setting_id = "ammo_med_alpha",
 						type = "numeric",
-						tab = "Ammo & Med",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -278,49 +260,42 @@ return {
 						setting_id = "display_ammo_charges",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "display_ammo_charges_tooltip",
 					},
 					{
 						setting_id = "display_med_charges",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "display_med_charges_tooltip",
 					},
 					{
 						setting_id = "change_colour_for_ammo_charges",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "change_colour_for_ammo_charges_tooltip",
 					},
 					{
 						setting_id = "display_field_improv_icon",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "display_field_improv_icon_tooltip",
 					},
 					{
 						setting_id = "display_med_ring",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "display_med_ring_tooltip",
 					},
 					{
 						setting_id = "display_field_improv_colour",
 						type = "checkbox",
 						default_value = true,
-						tab = "Ammo & Med",
 						tooltip = "display_field_improv_colour_tooltip",
 					},
 
 					{
 						setting_id = "field_improv_colour",
 						type = "group",
-						tab = "Ammo & Med",
 						sub_widgets = {
 							{
 								setting_id = "field_improv_colour_R",
@@ -352,7 +327,6 @@ return {
 					{
 						setting_id = "ammo_small_colour",
 						type = "group",
-						tab = "Ammo & Med",
 						sub_widgets = {
 							{
 								setting_id = "ammo_small_colour_R",
@@ -384,7 +358,6 @@ return {
 					{
 						setting_id = "ammo_small_border_colour",
 						type = "dropdown",
-						tab = "Ammo & Med",
 						options = border_colours,
 						default_value = "Silver",
 						tooltip = "border_colour_tooltip",
@@ -393,7 +366,6 @@ return {
 					{
 						setting_id = "ammo_large_colour",
 						type = "group",
-						tab = "Ammo & Med",
 						sub_widgets = {
 							{
 								setting_id = "ammo_large_colour_R",
@@ -425,7 +397,6 @@ return {
 					{
 						setting_id = "ammo_large_border_colour",
 						type = "dropdown",
-						tab = "Ammo & Med",
 						options = border_colours,
 						default_value = "Silver",
 						tooltip = "border_colour_tooltip",
@@ -434,7 +405,6 @@ return {
 					{
 						setting_id = "ammo_crate_colour",
 						type = "group",
-						tab = "Ammo & Med",
 						sub_widgets = {
 							{
 								setting_id = "ammo_crate_colour_R",
@@ -466,7 +436,6 @@ return {
 					{
 						setting_id = "ammo_crate_border_colour",
 						type = "dropdown",
-						tab = "Ammo & Med",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -475,7 +444,6 @@ return {
 					{
 						setting_id = "med_crate_colour",
 						type = "group",
-						tab = "Ammo & Med",
 						sub_widgets = {
 							{
 								setting_id = "med_crate_colour_R",
@@ -507,7 +475,6 @@ return {
 					{
 						setting_id = "med_crate_border_colour",
 						type = "dropdown",
-						tab = "Ammo & Med",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -516,7 +483,6 @@ return {
 					{
 						setting_id = "grenade_colour",
 						type = "group",
-						tab = "Ammo & Med",
 						sub_widgets = {
 							{
 								setting_id = "grenade_colour_R",
@@ -548,7 +514,6 @@ return {
 					{
 						setting_id = "grenade_border_colour",
 						type = "dropdown",
-						tab = "Ammo & Med",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -567,7 +532,6 @@ return {
 						setting_id = "chest_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Chests",
 						tooltip = "enable_tooltip",
 					},
 					{
@@ -575,21 +539,18 @@ return {
 						type = "dropdown",
 						options = chest_icons,
 						default_value = "content/ui/materials/icons/system/settings/category_video",
-						tab = "Chests",
 						tooltip = "icon_tooltip",
 					},
 					{
 						setting_id = "chest_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Chests",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "chest_require_line_of_sight",
 						type = "checkbox",
 						default_value = true,
-						tab = "Chests",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -600,13 +561,11 @@ return {
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
 						function_name = "chest_toggle_los",
-						tab = "Chests",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
 						setting_id = "chest_max_distance",
 						type = "numeric",
-						tab = "Chests",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -615,7 +574,6 @@ return {
 					{
 						setting_id = "chest_scale",
 						type = "numeric",
-						tab = "Chests",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -624,7 +582,6 @@ return {
 					{
 						setting_id = "chest_alpha",
 						type = "numeric",
-						tab = "Chests",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -634,7 +591,6 @@ return {
 					{
 						setting_id = "chest_icon_colour",
 						type = "group",
-						tab = "Chests",
 						sub_widgets = {
 							{
 								setting_id = "chest_icon_colour_R",
@@ -665,7 +621,6 @@ return {
 					{
 						setting_id = "chest_border_colour",
 						type = "dropdown",
-						tab = "Chests",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -684,21 +639,18 @@ return {
 						setting_id = "heretical_idol_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Heretical Idol",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "heretical_idol_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Heretical Idol",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "heretical_idol_require_line_of_sight",
 						type = "checkbox",
 						default_value = false,
-						tab = "Heretical Idol",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -709,14 +661,12 @@ return {
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
 						function_name = "heretical_idol_toggle_los",
-						tab = "Heretical Idol",
 						tooltip = "toggle_los_tooltip",
 					},
 
 					{
 						setting_id = "heretical_idol_max_distance",
 						type = "numeric",
-						tab = "Heretical Idol",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -725,7 +675,6 @@ return {
 					{
 						setting_id = "heretical_idol_scale",
 						type = "numeric",
-						tab = "Heretical Idol",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -734,7 +683,6 @@ return {
 					{
 						setting_id = "heretical_idol_alpha",
 						type = "numeric",
-						tab = "Heretical Idol",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -744,7 +692,6 @@ return {
 					{
 						setting_id = "icon_colour",
 						type = "group",
-						tab = "Heretical Idol",
 						sub_widgets = {
 							{
 								setting_id = "icon_colour_R",
@@ -776,7 +723,6 @@ return {
 					{
 						setting_id = "idol_border_colour",
 						type = "dropdown",
-						tab = "Heretical Idol",
 						options = border_colours,
 						default_value = "Tarnished",
 						tooltip = "border_colour_tooltip",
@@ -795,21 +741,18 @@ return {
 						setting_id = "material_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Materials",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "material_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Materials",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "material_require_line_of_sight",
 						type = "checkbox",
 						default_value = true,
-						tab = "Materials",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -820,13 +763,11 @@ return {
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
 						function_name = "material_toggle_los",
-						tab = "Materials",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
 						setting_id = "material_max_distance",
 						type = "numeric",
-						tab = "Materials",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -835,7 +776,6 @@ return {
 					{
 						setting_id = "material_scale",
 						type = "numeric",
-						tab = "Materials",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -844,7 +784,6 @@ return {
 					{
 						setting_id = "material_alpha",
 						type = "numeric",
-						tab = "Materials",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -854,30 +793,25 @@ return {
 					{
 						setting_id = "marker_toggles",
 						type = "group",
-						tab = "Materials",
 						sub_widgets = {
 							{
 								setting_id = "toggle_large_plasteel",
 								type = "checkbox",
-								tab = "Materials",
 								default_value = true,
 							},
 							{
 								setting_id = "toggle_small_plasteel",
 								type = "checkbox",
-								tab = "Materials",
 								default_value = true,
 							},
 							{
 								setting_id = "toggle_large_diamantine",
 								type = "checkbox",
-								tab = "Materials",
 								default_value = true,
 							},
 							{
 								setting_id = "toggle_small_diamantine",
 								type = "checkbox",
-								tab = "Materials",
 								default_value = true,
 							},
 						},
@@ -885,7 +819,6 @@ return {
 					{
 						setting_id = "material_small_border_colour",
 						type = "dropdown",
-						tab = "Materials",
 						options = border_colours,
 						default_value = "Silver",
 						tooltip = "border_colour_tooltip",
@@ -893,7 +826,6 @@ return {
 					{
 						setting_id = "material_large_border_colour",
 						type = "dropdown",
-						tab = "Materials",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -901,7 +833,6 @@ return {
 					{
 						setting_id = "plasteel_icon_colour",
 						type = "group",
-						tab = "Materials",
 						sub_widgets = {
 							{
 								setting_id = "plasteel_icon_colour_R",
@@ -932,7 +863,6 @@ return {
 					{
 						setting_id = "diamantine_icon_colour",
 						type = "group",
-						tab = "Materials",
 						sub_widgets = {
 							{
 								setting_id = "diamantine_icon_colour_R",
@@ -974,42 +904,36 @@ return {
 						setting_id = "stimm_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Stimms",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "recolor_stimm_compat_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Stimms",
 						tooltip = "recolor_stimm_compat_enable_tooltip",
 					},
 					{
 						setting_id = "toggle_background_colour",
 						type = "checkbox",
 						default_value = false,
-						tab = "Stimms",
 						tooltip = "toggle_background_colour_tooltip",
 					},
 					{
 						setting_id = "broker_stimm_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Stimms",
 						tooltip = "stimm_enable_tooltip",
 					},
 					{
 						setting_id = "stimm_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Stimms",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "stimm_require_line_of_sight",
 						type = "checkbox",
 						default_value = true,
-						tab = "Stimms",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -1020,13 +944,11 @@ return {
 						keybind_global = true,
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
-						tab = "Stimms",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
 						setting_id = "stimm_max_distance",
 						type = "numeric",
-						tab = "Stimms",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -1035,7 +957,6 @@ return {
 					{
 						setting_id = "stimm_scale",
 						type = "numeric",
-						tab = "Stimms",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -1044,7 +965,6 @@ return {
 					{
 						setting_id = "stimm_alpha",
 						type = "numeric",
-						tab = "Stimms",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -1054,7 +974,6 @@ return {
 					{
 						setting_id = "boost_stimm_icon_colour",
 						type = "group",
-						tab = "Stimms",
 						sub_widgets = {
 							{
 								setting_id = "boost_stimm_icon_colour_R",
@@ -1085,7 +1004,6 @@ return {
 					{
 						setting_id = "boost_stimm_border_colour",
 						type = "dropdown",
-						tab = "Stimms",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1094,7 +1012,6 @@ return {
 					{
 						setting_id = "corruption_stimm_icon_colour",
 						type = "group",
-						tab = "Stimms",
 						sub_widgets = {
 							{
 								setting_id = "corruption_stimm_icon_colour_R",
@@ -1125,7 +1042,6 @@ return {
 					{
 						setting_id = "corruption_stimm_border_colour",
 						type = "dropdown",
-						tab = "Stimms",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1134,7 +1050,6 @@ return {
 					{
 						setting_id = "power_stimm_icon_colour",
 						type = "group",
-						tab = "Stimms",
 						sub_widgets = {
 							{
 								setting_id = "power_stimm_icon_colour_R",
@@ -1165,7 +1080,6 @@ return {
 					{
 						setting_id = "power_stimm_border_colour",
 						type = "dropdown",
-						tab = "Stimms",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1174,7 +1088,6 @@ return {
 					{
 						setting_id = "speed_stimm_icon_colour",
 						type = "group",
-						tab = "Stimms",
 						sub_widgets = {
 							{
 								setting_id = "speed_stimm_icon_colour_R",
@@ -1205,7 +1118,6 @@ return {
 					{
 						setting_id = "speed_stimm_border_colour",
 						type = "dropdown",
-						tab = "Stimms",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1214,7 +1126,6 @@ return {
 					{
 						setting_id = "broker_stimm_icon_colour",
 						type = "group",
-						tab = "Stimms",
 						sub_widgets = {
 							{
 								setting_id = "broker_stimm_icon_colour_R",
@@ -1245,7 +1156,6 @@ return {
 					{
 						setting_id = "broker_stimm_border_colour",
 						type = "dropdown",
-						tab = "Stimms",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1264,21 +1174,18 @@ return {
 						setting_id = "tome_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Tomes",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "tome_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Tomes",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "tome_require_line_of_sight",
 						type = "checkbox",
 						default_value = true,
-						tab = "Tomes",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -1289,13 +1196,11 @@ return {
 						keybind_global = true,
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
-						tab = "Tomes",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
 						setting_id = "tome_max_distance",
 						type = "numeric",
-						tab = "Tomes",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -1304,7 +1209,6 @@ return {
 					{
 						setting_id = "tome_scale",
 						type = "numeric",
-						tab = "Tomes",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -1313,7 +1217,6 @@ return {
 					{
 						setting_id = "tome_alpha",
 						type = "numeric",
-						tab = "Tomes",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -1323,7 +1226,6 @@ return {
 					{
 						setting_id = "grim_colour",
 						type = "group",
-						tab = "Tomes",
 						sub_widgets = {
 							{
 								setting_id = "grim_colour_R",
@@ -1354,7 +1256,6 @@ return {
 					{
 						setting_id = "script_colour",
 						type = "group",
-						tab = "Tomes",
 						sub_widgets = {
 							{
 								setting_id = "script_colour_R",
@@ -1385,7 +1286,6 @@ return {
 					{
 						setting_id = "tome_border_colour",
 						type = "dropdown",
-						tab = "Tomes",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1404,21 +1304,18 @@ return {
 						setting_id = "luggable_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Luggables",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "luggable_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Luggables",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "luggable_require_line_of_sight",
 						type = "checkbox",
 						default_value = false,
-						tab = "Luggables",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -1429,7 +1326,6 @@ return {
 						keybind_global = true,
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
-						tab = "Luggables",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
@@ -1437,13 +1333,11 @@ return {
 						type = "dropdown",
 						options = luggable_icons,
 						default_value = "content/ui/materials/icons/player_states/lugged",
-						tab = "Luggables",
 						tooltip = "icon_tooltip",
 					},
 					{
 						setting_id = "luggable_max_distance",
 						type = "numeric",
-						tab = "Luggables",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -1452,7 +1346,6 @@ return {
 					{
 						setting_id = "luggable_scale",
 						type = "numeric",
-						tab = "Luggables",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -1461,7 +1354,6 @@ return {
 					{
 						setting_id = "luggable_alpha",
 						type = "numeric",
-						tab = "Luggables",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -1471,7 +1363,6 @@ return {
 					{
 						setting_id = "luggable_colour",
 						type = "group",
-						tab = "Luggables",
 						sub_widgets = {
 							{
 								setting_id = "luggable_colour_R",
@@ -1502,7 +1393,6 @@ return {
 					{
 						setting_id = "luggable_border_colour",
 						type = "dropdown",
-						tab = "Luggables",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1521,35 +1411,30 @@ return {
 						setting_id = "martyrs_skull_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Martyr's Skull",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "martyrs_skull_guide_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Martyr's Skull",
 						tooltip = "martyrs_skull_guide_enable_tooltip",
 					},
 					{
 						setting_id = "martyrs_skull_guide_disable_if_collected",
 						type = "checkbox",
 						default_value = true,
-						tab = "Martyr's Skull",
 						tooltip = "martyrs_skull_guide_disable_if_collected_tooltip",
 					},
 					{
 						setting_id = "martyrs_skull_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Martyr's Skull",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "martyrs_skull_require_line_of_sight",
 						type = "checkbox",
 						default_value = false,
-						tab = "Martyr's Skull",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -1560,13 +1445,11 @@ return {
 						keybind_global = true,
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
-						tab = "Martyr's Skull",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
 						setting_id = "martyrs_skull_max_distance",
 						type = "numeric",
-						tab = "Martyr's Skull",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -1575,7 +1458,6 @@ return {
 					{
 						setting_id = "martyrs_skull_scale",
 						type = "numeric",
-						tab = "Martyr's Skull",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -1584,7 +1466,6 @@ return {
 					{
 						setting_id = "martyrs_skull_alpha",
 						type = "numeric",
-						tab = "Martyr's Skull",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -1594,7 +1475,6 @@ return {
 					{
 						setting_id = "martyrs_skull_colour",
 						type = "group",
-						tab = "Martyr's Skull",
 						sub_widgets = {
 							{
 								setting_id = "martyrs_skull_colour_R",
@@ -1625,7 +1505,6 @@ return {
 					{
 						setting_id = "martyrs_skull_border_colour",
 						type = "dropdown",
-						tab = "Martyr's Skull",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1644,21 +1523,18 @@ return {
 						setting_id = "expedition_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Expedition",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "expedition_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Expedition",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "expedition_require_line_of_sight",
 						type = "checkbox",
 						default_value = true,
-						tab = "Expedition",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -1669,13 +1545,11 @@ return {
 						keybind_global = true,
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
-						tab = "Expedition",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
 						setting_id = "expedition_max_distance",
 						type = "numeric",
-						tab = "Expedition",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -1684,7 +1558,6 @@ return {
 					{
 						setting_id = "expedition_scale",
 						type = "numeric",
-						tab = "Expedition",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -1693,7 +1566,6 @@ return {
 					{
 						setting_id = "expedition_alpha",
 						type = "numeric",
-						tab = "Expedition",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -1704,7 +1576,6 @@ return {
 					{
 						setting_id = "expedition_border_colour",
 						type = "dropdown",
-						tab = "Expedition",
 						options = border_colours,
 						default_value = "Silver",
 						tooltip = "border_colour_tooltip",
@@ -1712,7 +1583,6 @@ return {
 					{
 						setting_id = "expedition_border_colour_1",
 						type = "dropdown",
-						tab = "Expedition",
 						options = border_colours,
 						default_value = "Tarnished",
 						tooltip = "border_colour_tooltip",
@@ -1720,7 +1590,6 @@ return {
 					{
 						setting_id = "expedition_border_colour_2",
 						type = "dropdown",
-						tab = "Expedition",
 						options = border_colours,
 						default_value = "Steel",
 						tooltip = "border_colour_tooltip",
@@ -1728,7 +1597,6 @@ return {
 					{
 						setting_id = "expedition_border_colour_3",
 						type = "dropdown",
-						tab = "Expedition",
 						options = border_colours,
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
@@ -1736,7 +1604,6 @@ return {
 					{
 						setting_id = "expedition_colour",
 						type = "group",
-						tab = "Expedition",
 						sub_widgets = {
 							{
 								setting_id = "expedition_colour_R",
@@ -1767,7 +1634,6 @@ return {
 					{
 						setting_id = "expedition_pickups_colour",
 						type = "group",
-						tab = "Expedition",
 						sub_widgets = {
 							{
 								setting_id = "expedition_pickups_colour_R",
@@ -1798,7 +1664,6 @@ return {
 					{
 						setting_id = "expedition_currency_colour",
 						type = "group",
-						tab = "Expedition",
 						sub_widgets = {
 							{
 								setting_id = "expedition_currency_colour_R",
@@ -1829,7 +1694,6 @@ return {
 					{
 						setting_id = "expedition_reliquary_colour",
 						type = "group",
-						tab = "Expedition",
 						sub_widgets = {
 							{
 								setting_id = "expedition_reliquary_colour_R",
@@ -1860,7 +1724,6 @@ return {
 					{
 						setting_id = "expedition_remnants_colour",
 						type = "group",
-						tab = "Expedition",
 						sub_widgets = {
 							{
 								setting_id = "expedition_remnants_colour_R",
@@ -1891,7 +1754,6 @@ return {
 					{
 						setting_id = "expedition_crate_colour",
 						type = "group",
-						tab = "Expedition",
 						sub_widgets = {
 							{
 								setting_id = "expedition_crate_colour_R",
@@ -1921,7 +1783,105 @@ return {
 					},
 				},
 			},
+			-- EVENT MARKERS
+			{
 
+				setting_id = "event_markers_settings",
+				type = "group",
+				tab = "Event",
+				sub_widgets = {
+					{
+						setting_id = "event_enable",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "enable_tooltip",
+					},
+					{
+						setting_id = "event_keep_on_screen",
+						type = "checkbox",
+						default_value = false,
+						tooltip = "keep_on_screen_tooltip",
+					},
+					{
+						setting_id = "event_require_line_of_sight",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "require_line_of_sight_tooltip",
+					},
+					{
+						setting_id = "event_toggle_los",
+						type = "keybind",
+						function_name = "event_toggle_los",
+						default_value = {},
+						keybind_global = true,
+						keybind_trigger = "pressed",
+						keybind_type = "function_call",
+						tooltip = "toggle_los_tooltip",
+					},
+					{
+						setting_id = "event_max_distance",
+						type = "numeric",
+						default_value = 50,
+						range = { 0, 100 },
+						step_size_value = 1,
+						tooltip = "max_distance_tooltip",
+					},
+					{
+						setting_id = "event_scale",
+						type = "numeric",
+						default_value = 100,
+						range = { 50, 150 },
+						step_size_value = 1,
+						tooltip = "scale_tooltip",
+					},
+					{
+						setting_id = "event_alpha",
+						type = "numeric",
+						default_value = 1,
+						range = { 0.1, 1 },
+						decimals_number = 2,
+						step_size_value = 0.05,
+						tooltip = "alpha_tooltip",
+					},
+					{
+						setting_id = "event_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "event_colour_R",
+								type = "numeric",
+								default_value = 200,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_R_tooltip",
+							},
+							{
+								setting_id = "event_colour_G",
+								type = "numeric",
+								default_value = 255,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_G_tooltip",
+							},
+							{
+								setting_id = "event_colour_B",
+								type = "numeric",
+								default_value = 0,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_B_tooltip",
+							},
+						},
+					},
+					{
+						setting_id = "event_border_colour",
+						type = "dropdown",
+						options = border_colours,
+						default_value = "Gold",
+						tooltip = "border_colour_tooltip",
+					},
+				},
+			},
 			-- UNKNOWN
 			{
 
@@ -1933,21 +1893,18 @@ return {
 						setting_id = "unknown_enable",
 						type = "checkbox",
 						default_value = true,
-						tab = "Unknown",
 						tooltip = "enable_tooltip",
 					},
 					{
 						setting_id = "unknown_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
-						tab = "Unknown",
 						tooltip = "keep_on_screen_tooltip",
 					},
 					{
 						setting_id = "unknown_require_line_of_sight",
 						type = "checkbox",
 						default_value = true,
-						tab = "Unknown",
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
@@ -1958,13 +1915,11 @@ return {
 						keybind_global = true,
 						keybind_trigger = "pressed",
 						keybind_type = "function_call",
-						tab = "Unknown",
 						tooltip = "toggle_los_tooltip",
 					},
 					{
 						setting_id = "unknown_max_distance",
 						type = "numeric",
-						tab = "Unknown",
 						default_value = 50,
 						range = { 0, 100 },
 						step_size_value = 1,
@@ -1973,7 +1928,6 @@ return {
 					{
 						setting_id = "unknown_scale",
 						type = "numeric",
-						tab = "Unknown",
 						default_value = 100,
 						range = { 50, 150 },
 						step_size_value = 1,
@@ -1982,7 +1936,6 @@ return {
 					{
 						setting_id = "unknown_alpha",
 						type = "numeric",
-						tab = "Unknown",
 						default_value = 1,
 						range = { 0.1, 1 },
 						decimals_number = 2,
@@ -1992,7 +1945,6 @@ return {
 					{
 						setting_id = "unknown_colour",
 						type = "group",
-						tab = "Unknown",
 						sub_widgets = {
 							{
 								setting_id = "unknown_colour_R",
@@ -2023,7 +1975,6 @@ return {
 					{
 						setting_id = "unknown_border_colour",
 						type = "dropdown",
-						tab = "Unknown",
 						options = border_colours,
 						default_value = "Silver",
 						tooltip = "border_colour_tooltip",

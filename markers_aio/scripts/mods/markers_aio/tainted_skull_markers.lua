@@ -16,11 +16,7 @@ mod.update_tainted_skull_markers = function(self, marker)
 			local pickup = Pickups.by_name[pickup_type]
 
 			if pickup then
-				local is_tainted_skull = false
 				if pickup.name and pickup.name == "skulls_01_pickup" then
-					is_tainted_skull = true
-				end
-				if is_tainted_skull then
 					marker.draw = false
 					marker.widget.alpha_multiplier = 0
 
@@ -36,7 +32,7 @@ mod.update_tainted_skull_markers = function(self, marker)
 					marker.template.screen_clamp = mod:get("event_keep_on_screen")
 					marker.block_screen_clamp = false
 
-					marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
+					marker.widget.content.icon = "content/ui/materials/icons/difficulty/flat/difficulty_skull_malice"
 
 					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("event_border_colour")))
 					mod.set_colour_argb(
@@ -63,7 +59,7 @@ mod.update_tainted_skull_markers = function(self, marker)
 			marker.template.screen_clamp = true
 			marker.block_screen_clamp = false
 
-			marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
+			marker.widget.content.icon = "content/ui/materials/icons/crafting/extract_trait"
 
 			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("event_border_colour")))
 			mod.set_colour_argb(
