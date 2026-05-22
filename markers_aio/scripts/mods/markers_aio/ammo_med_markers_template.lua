@@ -62,6 +62,22 @@ template.ping_max_size = { ping_size[1], ping_size[2] }
 template.position_offset = { 0, 0, 1 }
 template.screen_margins = { down = 0.23148148148148148, left = 0.234375, right = 0.234375, up = 0.23148148148148148 }
 
+template.using_smart_tag_system = true
+
+template.get_smart_tag_id = function(marker)
+	local marker_unit = marker.unit
+
+	if marker_unit then
+		local extension = ScriptUnit.extension(marker_unit, "smart_tag_system")
+
+		if extension and extension.get_smart_tag_id then
+			return extension:get_smart_tag_id()
+		end
+	end
+
+	return nil
+end
+
 template.scale_settings = {
 	scale_from = 0.4,
 	scale_to = 0.9,
@@ -247,6 +263,11 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	marker.ignore_scale = false
 	local global_scale = marker.ignore_scale and 1 or marker.scale
 
+	local check_los = marker.aio_check_line_of_sight
+	if check_los == nil then
+		check_los = template.check_line_of_sight
+	end
+
 	if marker.raycast_initialized then
 		local raycast_result = marker.raycast_result
 		local line_of_sight_speed = 8
@@ -256,7 +277,7 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 		else
 			line_of_sight_progress = math.min(line_of_sight_progress + dt * line_of_sight_speed, 1)
 		end
-	elseif not template.check_line_of_sight then
+	elseif not check_los then
 		line_of_sight_progress = 1
 	end
 
@@ -323,6 +344,15 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	if data then
 		data.distance = distance
 	end
+
+	local smart_tag_system = Managers.state.extension:system("smart_tag_system")
+	local marker_unit = marker.unit
+	local is_tagged = marker_unit and smart_tag_system:unit_tag_id(marker_unit) ~= nil
+
+	content.tagged = is_tagged
+	marker.block_fade_settings = is_tagged
+	marker.block_max_distance = is_tagged
+	marker.block_screen_clamp = not is_tagged
 
 	return animating
 end

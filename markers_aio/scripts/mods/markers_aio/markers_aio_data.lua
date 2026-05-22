@@ -214,6 +214,12 @@ return {
 						tooltip = "require_line_of_sight_tooltip",
 					},
 					{
+						setting_id = "med_station_require_line_of_sight",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "require_line_of_sight_tooltip",
+					},
+					{
 						setting_id = "ammo_med_toggle_los",
 						type = "keybind",
 						default_value = {},
@@ -935,6 +941,36 @@ return {
 						type = "checkbox",
 						default_value = true,
 						tooltip = "require_line_of_sight_tooltip",
+					},
+					{
+						setting_id = "boost_stimm_require_line_of_sight",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "boost_stimm_require_line_of_sight_tooltip",
+					},
+					{
+						setting_id = "corruption_stimm_require_line_of_sight",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "corruption_stimm_require_line_of_sight_tooltip",
+					},
+					{
+						setting_id = "power_stimm_require_line_of_sight",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "power_stimm_require_line_of_sight_tooltip",
+					},
+					{
+						setting_id = "speed_stimm_require_line_of_sight",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "speed_stimm_require_line_of_sight_tooltip",
+					},
+					{
+						setting_id = "broker_stimm_require_line_of_sight",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "broker_stimm_require_line_of_sight_tooltip",
 					},
 					{
 						setting_id = "stimm_toggle_los",

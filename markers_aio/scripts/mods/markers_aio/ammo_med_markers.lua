@@ -292,6 +292,8 @@ mod.update_ammo_med_markers = function(self, marker)
 			local med_crate_pos = POSITION_LOOKUP[marker.unit]
 
 			if marker.data and marker.data._active_interaction_type == "health_station" then
+				marker.aio_check_line_of_sight = mod:get("med_station_require_line_of_sight")
+
 				local health_station_extension = ScriptUnit.fetch_component_extension(unit, "health_station_system")
 
 				local remaining_charges = health_station_extension._charge_amount

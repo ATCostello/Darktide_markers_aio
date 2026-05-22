@@ -182,6 +182,58 @@ local loc = {
 		["zh-cn"] = "为各类可收集物品添加全新标记，支持距离、颜色、视野显示等设置，内置殉道者颅骨收集攻略等功能。",
 	},
 
+	-- Hover Tag Display Names
+	mod_marker_chest_name = {
+		en = "Chest",
+		["zh-cn"] = "宝箱",
+		["zh-tw"] = "寶箱",
+	},
+	mod_marker_item_name = {
+		en = "Item",
+		["zh-cn"] = "物品",
+		["zh-tw"] = "物品",
+	},
+	mod_marker_heretical_idol_name = {
+		en = "Heretical Idol",
+		["zh-cn"] = "异端雕像",
+		["zh-tw"] = "異端雕像",
+	},
+	mod_marker_medicae_station_name = {
+		en = "Medicae Station",
+		["zh-cn"] = "医疗站",
+		["zh-tw"] = "醫療站",
+	},
+	mod_marker_stimm_name = {
+		en = "Stimm",
+		["zh-cn"] = "兴奋剂",
+		["zh-tw"] = "興奮劑",
+	},
+	mod_marker_power_stimm_name = {
+		en = "Power Stimm",
+		["zh-cn"] = "作战兴奋剂",
+		["zh-tw"] = "戰鬥興奮劑",
+	},
+	mod_marker_speed_stimm_name = {
+		en = "Speed Stimm",
+		["zh-cn"] = "敏捷兴奋剂",
+		["zh-tw"] = "速度興奮劑",
+	},
+	mod_marker_boost_stimm_name = {
+		en = "Boost Stimm",
+		["zh-cn"] = "专注兴奋剂",
+		["zh-tw"] = "增強興奮劑",
+	},
+	mod_marker_medic_stimm_name = {
+		en = "Medic Stimm",
+		["zh-cn"] = "医疗兴奋剂",
+		["zh-tw"] = "治療針",
+	},
+	mod_marker_broker_stimm_name = {
+		en = "Hive Scum Stimm",
+		["zh-cn"] = "巢都兴奋剂",
+		["zh-tw"] = "巢都敗類興奮劑",
+	},
+
 	-- General Settings
 	aio_settings = {
 		en = "{#color(" .. colours.title .. ")}" .. "Global Marker Settings" .. "{#reset()}",
@@ -319,6 +371,13 @@ local loc = {
 		en = "Medicae Station marker max distance",
 		["zh-tw"] = "醫療站標記最大距離",
 		["zh-cn"] = "医疗站标记最大显示距离",
+	},
+	med_station_require_line_of_sight = {
+		en = "Require line of sight (Medicae Station)",
+		fr = "Nécessite une ligne de vue (Station Medicae)",
+		ru = "Должно быть в зоне видимости (Медицинская станция)",
+		["zh-tw"] = "需要視線範圍（醫療站）",
+		["zh-cn"] = "仅视野内显示（医疗站）",
 	},
 	ammo_med_max_size = {
 		en = "Maximum size of marker",
@@ -1265,6 +1324,59 @@ local loc = {
 		en = "Border Colour",
 		["zh-tw"] = "邊框顏色",
 		["zh-cn"] = "边框颜色",
+	},
+
+	boost_stimm_require_line_of_sight = {
+		en = "Require line of sight (Boost Stimm)",
+		["zh-cn"] = "专注兴奋剂仅视野内显示",
+		["zh-tw"] = "增強興奮劑需要視線範圍",
+	},
+	corruption_stimm_require_line_of_sight = {
+		en = "Require line of sight (Medic Stimm)",
+		["zh-cn"] = "医疗兴奋剂仅视野内显示",
+		["zh-tw"] = "醫療興奮劑需要視線範圍",
+	},
+	power_stimm_require_line_of_sight = {
+		en = "Require line of sight (Power Stimm)",
+		["zh-cn"] = "作战兴奋剂仅视野内显示",
+		["zh-tw"] = "戰鬥興奮劑需要視線範圍",
+	},
+	speed_stimm_require_line_of_sight = {
+		en = "Require line of sight (Speed Stimm)",
+		["zh-cn"] = "敏捷兴奋剂仅视野内显示",
+		["zh-tw"] = "速度興奮劑需要視線範圍",
+	},
+	broker_stimm_require_line_of_sight = {
+		en = "Require line of sight (Hive Scum Stimm)",
+		["zh-cn"] = "巢都兴奋剂仅视野内显示",
+		["zh-tw"] = "巢都敗類興奮劑需要視線範圍",
+	},
+
+	-- Per-stimm-type require line of sight tooltips
+	boost_stimm_require_line_of_sight_tooltip = {
+		en = "Require line of sight for Boost Stimm markers?",
+		["zh-cn"] = "专注兴奋剂标记是否需要视野？",
+		["zh-tw"] = "增強興奮劑標記是否需要視線？",
+	},
+	corruption_stimm_require_line_of_sight_tooltip = {
+		en = "Require line of sight for Medic Stimm markers?",
+		["zh-cn"] = "医疗兴奋剂标记是否需要视野？",
+		["zh-tw"] = "醫療興奮劑標記是否需要視線？",
+	},
+	power_stimm_require_line_of_sight_tooltip = {
+		en = "Require line of sight for Power Stimm markers?",
+		["zh-cn"] = "作战兴奋剂标记是否需要视野？",
+		["zh-tw"] = "戰鬥興奮劑標記是否需要視線？",
+	},
+	speed_stimm_require_line_of_sight_tooltip = {
+		en = "Require line of sight for Speed Stimm markers?",
+		["zh-cn"] = "敏捷兴奋剂标记是否需要视野？",
+		["zh-tw"] = "速度興奮劑標記是否需要視線？",
+	},
+	broker_stimm_require_line_of_sight_tooltip = {
+		en = "Require line of sight for Hive Scum Stimm markers?",
+		["zh-cn"] = "巢都兴奋剂标记是否需要视野？",
+		["zh-tw"] = "巢都敗類興奮劑標記是否需要視線？",
 	},
 
 	-- TOME MARKERS

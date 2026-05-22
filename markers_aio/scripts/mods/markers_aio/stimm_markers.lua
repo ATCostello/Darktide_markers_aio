@@ -113,6 +113,7 @@ mod.update_stimm_markers = function(self, marker)
 				pickup_type == "syringe_power_boost_pocketable"
 				or marker.data and marker.data.type == "syringe_power_boost_pocketable"
 			then
+				marker.aio_check_line_of_sight = mod:get("power_stimm_require_line_of_sight")
 				set_stimm_colours(
 					marker,
 					pickup_type,
@@ -125,6 +126,7 @@ mod.update_stimm_markers = function(self, marker)
 				pickup_type == "syringe_speed_boost_pocketable"
 				or marker.data and marker.data.type == "syringe_speed_boost_pocketable"
 			then
+				marker.aio_check_line_of_sight = mod:get("speed_stimm_require_line_of_sight")
 				set_stimm_colours(
 					marker,
 					pickup_type,
@@ -137,6 +139,7 @@ mod.update_stimm_markers = function(self, marker)
 				pickup_type == "syringe_ability_boost_pocketable"
 				or marker.data and marker.data.type == "syringe_ability_boost_pocketable"
 			then
+				marker.aio_check_line_of_sight = mod:get("boost_stimm_require_line_of_sight")
 				set_stimm_colours(
 					marker,
 					pickup_type,
@@ -149,6 +152,7 @@ mod.update_stimm_markers = function(self, marker)
 				pickup_type == "syringe_corruption_pocketable"
 				or marker.data and marker.data.type == "syringe_corruption_pocketable"
 			then
+				marker.aio_check_line_of_sight = mod:get("corruption_stimm_require_line_of_sight")
 				set_stimm_colours(
 					marker,
 					pickup_type,
@@ -162,6 +166,7 @@ mod.update_stimm_markers = function(self, marker)
 				or marker.data and marker.data.type == "syringe_broker_pocketable"
 			then
 				if mod:get("broker_stimm_enable") == true then
+					marker.aio_check_line_of_sight = mod:get("broker_stimm_require_line_of_sight")
 					set_stimm_colours(
 						marker,
 						pickup_type,
