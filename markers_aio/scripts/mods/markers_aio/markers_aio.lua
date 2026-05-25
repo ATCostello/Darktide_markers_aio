@@ -1443,14 +1443,18 @@ end
 -- Override widget text after base game's _update_tag_interaction_information to avoid
 -- "unlocalized" errors. The base game re-localizes display_name through Localize(),
 -- but our AIO marker names are resolved strings that aren't valid localization keys.
+-- Only override when display_name is a mod-resolved string (doesn't start with "loc_");
+-- game localization keys are already properly resolved by Localize() in the base function.
 mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", function(self, data)
 	if data and data.marker then
 		local widget = self._interaction_line_widget
 		if widget and widget.content then
 			if data.marker.guide_step_text then
 				widget.content.description_text = data.marker.guide_step_text
-			elseif data.marker.markers_aio_type then
-				widget.content.description_text = data.display_name
+			elseif data.marker.markers_aio_type and data.display_name then
+				if not string.find(data.display_name, "^loc_") then
+					widget.content.description_text = data.display_name
+				end
 			end
 			-- Set word wrap and max width on description text so long guide text wraps
 			local style = widget.style and widget.style.description_text
