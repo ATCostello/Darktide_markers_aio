@@ -7,16 +7,12 @@ local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local AchievementCategories = require("scripts/settings/achievements/achievement_categories")
-local HudElementMissionObjectiveFeedSettings =
-	require("scripts/ui/hud/elements/mission_objective_feed/hud_element_mission_objective_feed_settings")
-local HudElementMissionObjectiveFeed =
-	require("scripts/ui/hud/elements/mission_objective_feed/hud_element_mission_objective_feed")
 
 local last_walkthrough_update = 0
-local walkthrough_update_interval = 1 -- throttle for walkthrough update in seconds
+local walkthrough_update_interval = 0.1 -- throttle for walkthrough update in seconds
 
 mod.update_martyrs_skull_markers = function(self, marker)
-	if mod:get("martyrs_skull_guide_enable") == true then
+	if mod:get("martyrs_skull_guide_enable") == true or mod:get("martyrs_skull_guide_markers_enable") == true then
 		local now = os.clock()
 		if now - last_walkthrough_update > walkthrough_update_interval then
 			last_walkthrough_update = now
@@ -1918,39 +1914,6 @@ mod.check_guide_marker_exists = function(self, guide_position)
 	return nil
 end
 
-local MissionObjectiveGoal = require("scripts/extension_systems/mission_objective/utilities/mission_objective_goal")
-
-local function _create_objective(objective_name, localization_key, marker_units, is_side_mission, localized_header)
-	local icon = is_side_mission and "content/ui/materials/icons/objectives/bonus"
-		or "content/ui/materials/icons/objectives/main"
-	local objective_data = {
-		locally_added = true,
-		marker_type = "martyrs_skull_guide",
-		name = objective_name,
-		header = localization_key,
-		objective_category = is_side_mission and "side_mission" or "default",
-		icon = icon,
-		localized_header = localized_header,
-	}
-	local objective = MissionObjectiveGoal:new()
-
-	objective:start_objective(objective_data)
-
-	if marker_units then
-		for i = 1, #marker_units do
-			local unit = marker_units[i]
-
-			objective:add_marker(unit)
-		end
-	end
-
-	return objective
-end
-
-local apply_color_to_text = function(text, r, g, b)
-	return "{#color(" .. r .. "," .. g .. "," .. b .. ")}" .. text .. "{#reset()}"
-end
-
 mod.is_player_near_marker = function(self, marker, threshold)
 	if marker then
 		threshold = threshold or 2
@@ -1987,40 +1950,85 @@ mod.is_player_near_marker = function(self, marker, threshold)
 	end
 end
 
-local remove_objective = function(objective)
-	if objective then
-		Managers.event:trigger("event_remove_mission_objective", objective)
+mod.is_player_near_position = function(self, position, threshold)
+	if not position or not position.x or not position.y or not position.z then
+		return false
 	end
+
+	threshold = threshold or 30
+	local player = Managers.player:local_player(1)
+	if not player then
+		return false
+	end
+
+	local player_unit = player.player_unit
+	if not player_unit or not Unit.alive(player_unit) then
+		return false
+	end
+
+	local player_pos = Unit.local_position(player_unit, 1)
+	local dx = player_pos.x - position.x
+	local dy = player_pos.y - position.y
+	local dz = player_pos.z - position.z
+	local distance = math.sqrt(dx * dx + dy * dy + dz * dz)
+
+	return distance <= threshold
 end
 
 local player_near_skull = false
 
-if HudElementMissionObjectiveFeed.marker_objectives == nil then
-	HudElementMissionObjectiveFeed.marker_objectives = {}
-end
-
 mod.setup_walkthrough_markers = function(self)
 	self._level = Managers.state.mission:mission()
+	if not self._level then
+		if mod:get("martyrs_skull_guide_enable") == true then
+			mod.guide_widget_clear()
+		end
+		return
+	end
 	local current_level_name = self._level.name
 	player_near_skull = false
 
 	for level_name, walkthrough_markers in pairs(maryrs_skull_walkthrough_markers) do
 		if current_level_name == level_name then
-			-- First, check if player is near ANY guide marker
+			local markers_enabled = mod:get("martyrs_skull_guide_markers_enable") == true
+			local widget_enabled = mod:get("martyrs_skull_guide_enable") == true
+
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]
-				local marker = mod.check_guide_marker_exists(
-					self,
-					Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
-				)
+				local wpos = Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3])
+				local near = false
 
-				if mod:is_player_near_marker(marker, 30) then
+				if markers_enabled then
+					local marker = mod.check_guide_marker_exists(
+						self,
+						Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
+					)
+					near = mod:is_player_near_marker(marker, 30)
+				end
+
+				if not near and widget_enabled then
+					near = mod:is_player_near_position(self, wpos, 30)
+				end
+
+				if near then
 					player_near_skull = true
-					break -- No need to check further, one is enough
+					break
 				end
 			end
 
-			-- Now, process marker/objective placement logic
+			if
+				mod:get("martyrs_skull_guide_disable_if_collected") == true
+				and mod.does_player_need_skull() == false
+			then
+				if widget_enabled then
+					mod.guide_widget_clear()
+				end
+				return
+			end
+
+			local guide_lines = {}
+			local first_marker_seen = nil
+
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]
 				local marker = mod.check_guide_marker_exists(
@@ -2028,142 +2036,96 @@ mod.setup_walkthrough_markers = function(self)
 					Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
 				)
 
-				if
-					mod:get("martyrs_skull_guide_disable_if_collected") == true
-					and mod.does_player_need_skull() == false
-				then
-					return
-				end
+				if markers_enabled then
+					if wmarker.placed == false and marker == nil then
+						Managers.event:trigger(
+							"add_world_marker_position",
+							"martyrs_skull_guide",
+							Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3])
+						)
+						wmarker.placed = true
+					end
 
-				-- check using the position data if a marker is already placed at the same place
-				if wmarker.placed == false and marker == nil then
-					Managers.event:trigger(
-						"add_world_marker_position",
-						"martyrs_skull_guide",
-						Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3])
-					)
-					wmarker.placed = true
+					if marker then
+						marker.markers_aio_type = "martyrs_skull"
+					end
 				end
 
 				if player_near_skull == true then
-					if wmarker.objective_placed == false and marker ~= nil then
-						marker.markers_aio_type = "martyrs_skull"
-						marker.widget.content.marker_text_ammo_med = wmarker.marker_text
+					if marker then
+						if markers_enabled then
+							marker.widget.content.marker_text_ammo_med = wmarker.marker_text
+							marker.guide_step_text = wmarker.objective_text
+							marker.aio_check_line_of_sight = false
+							if wmarker.objective_text and not wmarker._text_cached then
+								wmarker._text_cached = true
+								local loc = Managers and Managers.localization
+								if loc and loc._string_cache then
+									loc._string_cache[wmarker.objective_text] = wmarker.objective_text
+								end
+							end
+
+							if marker.widget.style.marker_text_ammo_med and marker.widget.style.icon then
+								marker.widget.style.marker_text_ammo_med.font_size = marker.widget.style.icon.size[1]
+									/ 1.7
+							end
+
+							if marker.widget.content.field_improv_ammo_med then
+								marker.widget.content.field_improv_ammo_med =
+									"content/ui/materials/icons/difficulty/flat/difficulty_skull_uprising"
+							end
+
+							if marker.widget.style.field_improv_ammo_med and marker.widget.style.icon then
+								marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
+								marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
+								marker.widget.style.field_improv_ammo_med.color = { 255, 210, 175, 0 }
+								marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
+
+								mod.set_colour(
+									marker.widget.style.ring.color,
+									mod.lookup_colour(mod:get("martyrs_skull_border_colour"))
+								)
+							end
+						end
+
+						if not first_marker_seen then
+							first_marker_seen = marker
+						end
 					end
+				end
 
-					-- set styling for martyrs skull markers ONLY
-					if marker.markers_aio_type == "martyrs_skull" or marker.type == "martyrs_skull_guide" then
-						if
-							marker
-							and marker.widget
-							and marker.widget.style.marker_text_ammo_med
-							and marker.widget.style.icon
-						then
-							marker.widget.style.marker_text_ammo_med.font_size = marker.widget.style.icon.size[1] / 1.7
-						end
-
-						-- use field_improv icon as a marker widget type
-						if marker and marker.widget and marker.widget.content.field_improv_ammo_med then
-							marker.widget.content.field_improv_ammo_med =
-								"content/ui/materials/icons/difficulty/flat/difficulty_skull_uprising"
-						end
-
-						if
-							marker
-							and marker.widget
-							and marker.widget.style.field_improv_ammo_med
-							and marker.widget.style.icon
-						then
-							marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
-							marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
-							marker.widget.style.field_improv_ammo_med.color = { 255, 210, 175, 0 }
-							marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
-
-							mod.set_colour(
-								marker.widget.style.ring.color,
-								mod.lookup_colour(mod:get("martyrs_skull_border_colour"))
-							)
-						end
-					else
-						marker.widget.content.field_improv_ammo_med =
-							"content/ui/materials/hud/interactions/icons/cosmetics_store"
-					end
-
-					-- check if the objective is already placed at the same place
-
-					if wmarker.objective_placed == false then
-						if wmarker.objective_text ~= nil and wmarker.objective_text ~= "" then
-							local objective_name = i
-								.. "_"
-								.. current_level_name
-								.. "_marker_guide_"
-								.. wmarker.marker_text
-							local objective = _create_objective(
-								objective_name,
-								nil,
-								nil,
-								true,
-								apply_color_to_text(wmarker.marker_text .. ": ", 255, 170, 30)
-									.. apply_color_to_text(wmarker.objective_text, 204, 204, 204)
-							)
-
-							objective._icon = "content/ui/materials/hud/communication_wheel/icons/location"
-
-							HudElementMissionObjectiveFeed.marker_objectives[#HudElementMissionObjectiveFeed.marker_objectives + 1] =
-								objective
-
-							Managers.event:trigger("event_add_mission_objective", objective)
-						end
-
-						wmarker.objective_placed = true
-					end
-
-					-- add maryr's skull guide header to objectives
-					if i == 1 and walkthrough_markers.title_placed == false and marker ~= nil then
-						local needed = ""
-						if mod.does_player_need_skull() == true then
-							needed = "\nYou haven't collected this skull before."
-						else
-							needed = "\nYou have already collected this skull."
-						end
-
-						local objective = _create_objective(
-							0 .. "_" .. current_level_name .. "_marker_guide_0",
-							nil,
-							nil,
-							true,
-							apply_color_to_text(
-								Localize(self._level.mission_name) .. "\n" .. walkthrough_markers.title,
-								216,
-								229,
-								207
-							)
-								.. "\n"
-								.. apply_color_to_text(walkthrough_markers.players_required, 169, 191, 153)
-								.. needed
-						)
-						objective._icon = "content/ui/materials/hud/communication_wheel/icons/enemy"
-
-						HudElementMissionObjectiveFeed.marker_objectives[#HudElementMissionObjectiveFeed.marker_objectives + 1] =
-							objective
-
-						Managers.event:trigger("event_add_mission_objective", objective)
-						walkthrough_markers.title_placed = true
+				if widget_enabled then
+					if wmarker.objective_text ~= nil and wmarker.objective_text ~= "" then
+						local step_prefix = wmarker.marker_text ~= ""
+								and "  {#color(232,188,109)}" .. wmarker.marker_text .. "{#reset()}  "
+							or "  "
+						table.insert(guide_lines, 1, step_prefix .. wmarker.objective_text)
 					end
 				end
 			end
 
-			-- If player is not near any guide marker, remove all objectives
-			if player_near_skull == false then
-				for i = 1, #HudElementMissionObjectiveFeed.marker_objectives do
-					remove_objective(HudElementMissionObjectiveFeed.marker_objectives[i])
-				end
+			if widget_enabled then
+				if player_near_skull == true then
+					local needed = ""
+					if mod.does_player_need_skull() == true then
+						needed = "{#color(232,188,109)}" .. mod:localize("martyrs_skull_not_collected") .. "{#reset()}"
+					else
+						needed = "{#color(232,188,109)}" .. mod:localize("martyrs_skull_collected") .. "{#reset()}"
+					end
 
-				for i = #walkthrough_markers.markers, 1, -1 do
-					local wmarker = walkthrough_markers.markers[i]
-					wmarker.objective_placed = false
+					local mission_name = ""
+					if self._level and self._level.mission_name then
+						mission_name = Localize(self._level.mission_name)
+					end
+
+					local header_text = mission_name
+					local body_text = walkthrough_markers.players_required .. "\n" .. needed
+					local steps_text = table.concat(guide_lines, "\n")
+
+					mod.guide_widget_set_content(header_text, body_text, steps_text)
+				else
+					mod.guide_widget_clear()
 				end
-				walkthrough_markers.title_placed = false
 			end
 		end
 	end
@@ -2179,124 +2141,8 @@ mod.reset_martyrs_skull_guides = function()
 	end
 end
 
-HudElementMissionObjectiveFeed._align_objective_widgets = function(self)
-	local ui_renderer = self._parent:ui_renderer()
-	local entry_spacing_by_category = HudElementMissionObjectiveFeedSettings.entry_spacing_by_category
-	local entry_order_by_objective_category = HudElementMissionObjectiveFeedSettings.entry_order_by_objective_category
-	local offset_y = 0
-	local objective_widgets = self._objective_widgets
-	local total_background_height = 0
-	local index_counter = 0
-	local hud_objectives_sorted = self._hud_objectives_sorted
-	local objectives_counter = #hud_objectives_sorted
-
-	local function mission_objective_sort_function(a_objective, b_objective)
-		local a_objective_name = a_objective._objective_name
-		local b_objective_name = b_objective._objective_name
-
-		local a_is_marker_guide = string.find(a_objective_name, "marker_guide") ~= nil
-		local b_is_marker_guide = string.find(b_objective_name, "marker_guide") ~= nil
-
-		-- Helper to extract numeric part from the marker name (e.g., "10_x_marker_guide_10" -> 10)
-		local function extract_number(str)
-			-- Try to find a number at the start or after underscores
-			local num = string.match(str, "^%d+")
-			if not num then
-				num = string.match(str, "_(%d+)_marker_guide")
-			end
-			if not num then
-				num = string.match(str, "(%d+)$")
-			end
-			return num and tonumber(num) or nil
-		end
-
-		if a_is_marker_guide and b_is_marker_guide then
-			local a_num = extract_number(a_objective_name)
-			local b_num = extract_number(b_objective_name)
-			if a_num and b_num then
-				return a_num < b_num
-			else
-				-- Fallback to string comparison if numbers not found
-				return a_objective_name < b_objective_name
-			end
-		elseif a_is_marker_guide then
-			return true
-		elseif b_is_marker_guide then
-			return false
-		else
-			-- Neither is marker_guide, use original priority logic
-			local a_priority = a_objective:sort_order()
-				or entry_order_by_objective_category[a_objective:objective_category()]
-			local b_priority = b_objective:sort_order()
-				or entry_order_by_objective_category[b_objective:objective_category()]
-
-			if a_priority == b_priority then
-				return false
-			elseif b_priority < a_priority then
-				return false
-			end
-
-			return true
-		end
-	end
-
-	-- Deduplicate the array in-place
-	do
-		local seen = {}
-		local new_array = {}
-		for i = 1, #hud_objectives_sorted do
-			local name = hud_objectives_sorted[i]
-			if not seen[name] then
-				seen[name] = true
-				new_array[#new_array + 1] = name
-			end
-		end
-		-- Replace the original array contents
-		for i = 1, #new_array do
-			hud_objectives_sorted[i] = new_array[i]
-		end
-		for i = #new_array + 1, #hud_objectives_sorted do
-			hud_objectives_sorted[i] = nil
-		end
-	end
-
-	if #hud_objectives_sorted > 1 then
-		table.sort(hud_objectives_sorted, mission_objective_sort_function)
-	end
-
-	for i = 1, #hud_objectives_sorted do
-		local hud_objective = hud_objectives_sorted[i]
-		local objective = hud_objective:objective()
-		local widget = objective_widgets[objective]
-
-		if widget then
-			local objective_category = hud_objective:objective_category()
-			local entry_spacing = entry_spacing_by_category[objective_category] or entry_spacing_by_category.default
-
-			index_counter = index_counter + 1
-
-			local widget_offset = widget.offset
-
-			widget_offset[2] = offset_y
-
-			local widget_height = self:_get_objectives_height(widget, ui_renderer)
-
-			offset_y = offset_y + widget_height + entry_spacing
-			total_background_height = total_background_height + widget_height
-
-			if index_counter < objectives_counter then
-				total_background_height = total_background_height + entry_spacing
-			end
-		end
-	end
-
-	local background_scenegraph_id = "background"
-
-	self:_set_scenegraph_size(background_scenegraph_id, nil, total_background_height)
-end
-
 -- Debug teleport command
-mod:command("teleport_marker", "Teleport to a Martyr's Skull marker by index or marker_text", function(args)
+mod:command("tpm", "Teleport to a Martyr's Skull marker by index or marker_text", function(args)
 	local current_level = Managers.state.mission and Managers.state.mission:mission()
 
 	if not current_level then
@@ -2313,7 +2159,7 @@ mod:command("teleport_marker", "Teleport to a Martyr's Skull marker by index or 
 	end
 
 	if not args then
-		mod:echo("Usage: /teleport_marker <index or marker_text>")
+		mod:echo("Usage: /tpm <index or marker_text>")
 		-- return
 	end
 

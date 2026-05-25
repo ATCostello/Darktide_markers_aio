@@ -29,6 +29,60 @@ local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIScenegraph = require("scripts/managers/ui/ui_scenegraph")
 local HudElementSmartTagging = require("scripts/ui/hud/elements/smart_tagging/hud_element_smart_tagging")
 
+-- Guide widget element registration
+local GUIDE_WIDGET_PATH = "markers_aio/scripts/mods/markers_aio/martyrs_skull_guide_widget"
+mod:add_require_path(GUIDE_WIDGET_PATH)
+
+local guide_element_def = {
+	class_name = "MartyrsSkullGuideElement",
+	filename = GUIDE_WIDGET_PATH,
+	visibility_groups = {
+		"dead",
+		"alive",
+		"player_in_danger_zone",
+	},
+}
+
+mod:hook(
+	"UIManager",
+	"create_player_hud",
+	function(original_func, self, peer_id, local_player_id, elements, visibility_groups)
+		table.insert(elements, guide_element_def)
+		return original_func(self, peer_id, local_player_id, elements, visibility_groups)
+	end
+)
+
+mod:hook(
+	"UIManager",
+	"create_spectator_hud",
+	function(original_func, self, world_viewport_name, peer_id, local_player_id, elements, visibility_groups)
+		table.insert(elements, guide_element_def)
+		return original_func(self, world_viewport_name, peer_id, local_player_id, elements, visibility_groups)
+	end
+)
+
+mod.guide_widget_set_content = function(header, body, steps)
+	local hud = Managers.ui and Managers.ui:get_hud()
+	if not hud then
+		return
+	end
+	local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
+	if element then
+		element:set_content(header, body, steps)
+	end
+end
+
+mod.guide_widget_clear = function()
+	local hud = Managers.ui and Managers.ui:get_hud()
+	if not hud then
+		return
+	end
+	local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
+	if element then
+		element:clear()
+	end
+end
+
 -- Per-frame computed settings
 mod.frame_settings = {}
 
@@ -67,6 +121,12 @@ mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
 			"mod_marker_boost_stimm_name",
 			"mod_marker_medic_stimm_name",
 			"mod_marker_broker_stimm_name",
+			"mod_marker_tome_name",
+			"mod_marker_material_name",
+			"mod_marker_luggable_name",
+			"mod_marker_expedition_name",
+			"mod_marker_event_name",
+			"mod_marker_unknown_name",
 		}
 		for _, key in ipairs(mod_names) do
 			local resolved = mod:localize(key)
@@ -725,7 +785,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		end
 
 		-- MARKERS AIO
-
+		dbg_markers = markers_by_type
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
@@ -805,7 +865,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					if
 						marker.markers_aio_type
 						and widget.style.marker_distance_text
-						and widget.content.marker_distance_text
+						and widget.content.marker_distance_text ~= nil
 						and marker.distance
 						and widget.style.background
 						and widget.style.icon
@@ -1187,7 +1247,7 @@ HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit
 
 	local marker_unit = marker.unit
 	local smart_tag_extension = marker_unit and ScriptUnit.has_extension(marker_unit, "smart_tag_system")
-	local tag_id = template.get_smart_tag_id(marker)
+	local tag_id = template.get_smart_tag_id and template.get_smart_tag_id(marker)
 
 	-- Allow AIO custom markers (chest, heretical idol, ammo/med) without smart_tag_extension or tag_id
 	if marker_unit and not smart_tag_extension and not tag_id then
@@ -1248,7 +1308,8 @@ HudElementSmartTagging._handle_interaction_draw = function(self, dt, t, input_se
 		self._interaction_scan_delay_duration = self._interaction_scan_delay_duration - dt
 	else
 		local force_update_targets = false
-		local best_marker, best_unit, _ = self:_find_best_smart_tag_interaction(ui_renderer, render_settings, force_update_targets)
+		local best_marker, best_unit, _ =
+			self:_find_best_smart_tag_interaction(ui_renderer, render_settings, force_update_targets)
 		local parent = self._parent
 		local player = parent:player()
 		local player_unit = player.player_unit
@@ -1284,7 +1345,8 @@ HudElementSmartTagging._handle_interaction_draw = function(self, dt, t, input_se
 
 				if not display_name then
 					local marker_unit = best_marker.unit
-					local smart_tag_extension = marker_unit and ScriptUnit.has_extension(marker_unit, "smart_tag_system")
+					local smart_tag_extension = marker_unit
+						and ScriptUnit.has_extension(marker_unit, "smart_tag_system")
 
 					if smart_tag_extension then
 						tag_template = smart_tag_extension:contextual_tag_template(player_unit)
@@ -1303,7 +1365,8 @@ HudElementSmartTagging._handle_interaction_draw = function(self, dt, t, input_se
 						elseif aio_type == "heretical_idol" then
 							display_name = mod:localize("mod_marker_heretical_idol_name")
 						elseif aio_type == "stimm" then
-							local pickup_type = mod.get_marker_pickup_type(best_marker) or (best_marker.data and best_marker.data.type)
+							local pickup_type = mod.get_marker_pickup_type(best_marker)
+								or (best_marker.data and best_marker.data.type)
 
 							if pickup_type == "syringe_power_boost_pocketable" then
 								display_name = mod:localize("mod_marker_power_stimm_name")
@@ -1318,6 +1381,20 @@ HudElementSmartTagging._handle_interaction_draw = function(self, dt, t, input_se
 							else
 								display_name = mod:localize("mod_marker_stimm_name")
 							end
+						elseif aio_type == "martyrs_skull" then
+							display_name = best_marker.guide_step_text or mod:localize("mod_marker_item_name")
+						elseif aio_type == "tome" then
+							display_name = mod:localize("mod_marker_tome_name")
+						elseif aio_type == "material" then
+							display_name = mod:localize("mod_marker_material_name")
+						elseif aio_type == "luggable" then
+							display_name = mod:localize("mod_marker_luggable_name")
+						elseif aio_type == "expedition" then
+							display_name = mod:localize("mod_marker_expedition_name")
+						elseif aio_type == "event" then
+							display_name = mod:localize("mod_marker_event_name")
+						elseif aio_type == "unknown" then
+							display_name = mod:localize("mod_marker_unknown_name")
 						else
 							display_name = mod:localize("mod_marker_item_name")
 						end
@@ -1367,10 +1444,20 @@ end
 -- "unlocalized" errors. The base game re-localizes display_name through Localize(),
 -- but our AIO marker names are resolved strings that aren't valid localization keys.
 mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", function(self, data)
-	if data and data.marker and data.marker.markers_aio_type then
+	if data and data.marker then
 		local widget = self._interaction_line_widget
 		if widget and widget.content then
-			widget.content.final_description_text = data.display_name
+			if data.marker.guide_step_text then
+				widget.content.description_text = data.marker.guide_step_text
+			elseif data.marker.markers_aio_type then
+				widget.content.description_text = data.display_name
+			end
+			-- Set word wrap and max width on description text so long guide text wraps
+			local style = widget.style and widget.style.description_text
+			if style and not style.word_wrap then
+				style.size = { 500, 100 }
+				style.word_wrap = true
+			end
 		end
 	end
 end)
@@ -1468,6 +1555,16 @@ end
 -- UPDATE COLOURS IN SETTINGS PAGE IN REAL TIME (OH YES)
 mod.on_setting_changed = function(setting_id)
 	if not setting_id then
+		return
+	end
+
+	if setting_id == "martyrs_skull_guide_x_offset" or setting_id == "martyrs_skull_guide_y_offset" then
+		local hud = Managers.ui and Managers.ui:get_hud()
+		if not hud then return end
+		local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
+		if element then
+			element:set_guide_offset(mod:get("martyrs_skull_guide_x_offset") or 0, mod:get("martyrs_skull_guide_y_offset") or 0)
+		end
 		return
 	end
 

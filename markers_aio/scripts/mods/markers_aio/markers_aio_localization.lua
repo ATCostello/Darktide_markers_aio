@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.13.0"
+mod.version = "2.13.1"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -232,6 +232,36 @@ local loc = {
 		en = "Hive Scum Stimm",
 		["zh-cn"] = "巢都兴奋剂",
 		["zh-tw"] = "巢都敗類興奮劑",
+	},
+	mod_marker_tome_name = {
+		en = "Tome",
+		["zh-cn"] = "经文",
+		["zh-tw"] = "經文",
+	},
+	mod_marker_material_name = {
+		en = "Material",
+		["zh-cn"] = "材料",
+		["zh-tw"] = "材料",
+	},
+	mod_marker_luggable_name = {
+		en = "Carry Item",
+		["zh-cn"] = "搬运物品",
+		["zh-tw"] = "搬運物品",
+	},
+	mod_marker_expedition_name = {
+		en = "Expedition",
+		["zh-cn"] = "远征目标",
+		["zh-tw"] = "遠征目標",
+	},
+	mod_marker_event_name = {
+		en = "Event Pickup",
+		["zh-cn"] = "事件物品",
+		["zh-tw"] = "事件物品",
+	},
+	mod_marker_unknown_name = {
+		en = "Unknown",
+		["zh-cn"] = "未知",
+		["zh-tw"] = "未知",
 	},
 
 	-- General Settings
@@ -1824,9 +1854,22 @@ local loc = {
 		["zh-cn"] = "启用标记",
 	},
 	martyrs_skull_guide_enable = {
-		en = "Enable Skull Collection Guide?",
-		["zh-tw"] = "啟用顱骨收集指南？",
-		["zh-cn"] = "启用颅骨收集攻略",
+		en = "Enable Skull Guide Widget?",
+		["zh-tw"] = "啟用顱骨收集指南小工具？",
+		["zh-cn"] = "启用颅骨收集攻略小工具",
+	},
+	martyrs_skull_guide_markers_enable = {
+		en = "Enable Skull Guide Markers?",
+		["zh-tw"] = "啟用顱骨收集指南標記？",
+		["zh-cn"] = "启用颅骨收集攻略标记",
+	},
+	martyrs_skull_guide_x_offset = {
+		en = "Guide Widget X Position",
+		["zh-cn"] = "指南小工具X位置",
+	},
+	martyrs_skull_guide_y_offset = {
+		en = "Guide Widget Y Position",
+		["zh-cn"] = "指南小工具Y位置",
 	},
 	martyrs_skull_guide_disable_if_collected = {
 		en = "Only show guide if not collected?",
@@ -2978,12 +3021,32 @@ local loc = {
 		["zh-cn"] = "为巢都药剂UI元素启用颜色调整。",
 	},
 	martyrs_skull_guide_enable_tooltip = {
-		en = "Enable an in-mission guide to collecting Martyr's Skulls.\nIncludes written text (Inside the objective window) and in-world markers for positional reference.",
-		["zh-cn"] = "启用任务内殉道者颅骨收集指引。\n包含任务窗口文字提示与场景位置标记。",
+		en = "Enable an on-screen guide widget with step-by-step text for collecting Martyr's Skulls.",
+		["zh-cn"] = "启用屏幕上的步骤文字指引，指导收集殉道者颅骨。",
+	},
+	martyrs_skull_guide_markers_enable_tooltip = {
+		en = "Enable in-world positional markers for Martyr's Skull guide steps.",
+		["zh-cn"] = "启用任务内殉道者颅骨收集步骤的场景位置标记。",
 	},
 	martyrs_skull_guide_disable_if_collected_tooltip = {
 		en = "Disable the Martyr's Skull guide if you have already collected this skull and have the penance unlocked?",
 		["zh-cn"] = "已收集颅骨并解锁苦修后，关闭殉道者颅骨指引。",
+	},
+	martyrs_skull_guide_x_offset_tooltip = {
+		en = "Horizontal position of the guide widget (in pixels). 0 = left edge of screen.",
+		["zh-cn"] = "指南小工具的水平位置像素值。0 = 屏幕左边缘。",
+	},
+	martyrs_skull_guide_y_offset_tooltip = {
+		en = "Vertical position of the guide widget (in pixels). 0 = top edge of screen.",
+		["zh-cn"] = "指南小工具的垂直位置像素值。0 = 屏幕顶部边缘。",
+	},
+	martyrs_skull_collected = {
+		en = "You have already collected this skull.",
+		["zh-cn"] = "你已经收集过这个颅骨了。",
+	},
+	martyrs_skull_not_collected = {
+		en = "You haven't collected this skull before.",
+		["zh-cn"] = "你还没有收集过这个颅骨。",
 	},
 }
 

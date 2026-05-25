@@ -1456,10 +1456,32 @@ return {
 						tooltip = "martyrs_skull_guide_enable_tooltip",
 					},
 					{
+						setting_id = "martyrs_skull_guide_markers_enable",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "martyrs_skull_guide_markers_enable_tooltip",
+					},
+					{
 						setting_id = "martyrs_skull_guide_disable_if_collected",
 						type = "checkbox",
 						default_value = true,
 						tooltip = "martyrs_skull_guide_disable_if_collected_tooltip",
+					},
+					{
+						setting_id = "martyrs_skull_guide_x_offset",
+						type = "numeric",
+						default_value = -1400,
+						tooltip = "martyrs_skull_guide_x_offset_tooltip",
+						range = { -2000, 2000 },
+						decimals_number = 0,
+					},
+					{
+						setting_id = "martyrs_skull_guide_y_offset",
+						type = "numeric",
+						default_value = -90,
+						tooltip = "martyrs_skull_guide_y_offset_tooltip",
+						range = { -1200, 1200 },
+						decimals_number = 0,
 					},
 					{
 						setting_id = "martyrs_skull_keep_on_screen",
