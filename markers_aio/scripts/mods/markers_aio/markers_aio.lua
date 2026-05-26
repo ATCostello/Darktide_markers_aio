@@ -475,7 +475,6 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 		if offset and widget.style.marker_text and widget.content.marker_text and widget.content.marker_text ~= "" then
 			widget.style.marker_text.offset[3] = offset[3] + 2
 		end
-
 		UIWidget.draw(widget, ui_renderer)
 	end
 end
@@ -860,6 +859,15 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 					mod.adjust_scale(self, marker, ui_renderer)
 
+					-- Tagged markers are always visible regardless of distance or line of sight
+					if marker.widget and marker.widget.content and marker.widget.content.tagged then
+						marker.draw = true
+						marker.block_max_distance = true
+						marker.block_fade_settings = true
+						marker.block_screen_clamp = false
+						marker.widget.visible = true
+					end
+
 					-- apply marker distance text if enabled
 					local widget = marker.widget
 					if
@@ -1087,14 +1095,8 @@ local dont_draw = function(marker)
 		return
 	end
 
-	-- Tagged markers still must respect transform readiness
-	if
-		marker.is_inside_frustum
-		and marker.widget
-		and marker.widget.content
-		and marker.widget.content.tagged == true
-		and can_draw(marker)
-	then
+	-- Tagged markers are always visible (draw override at end of loop also handles this)
+	if marker.widget and marker.widget.content and marker.widget.content.tagged == true and can_draw(marker) then
 		marker.draw = true
 	else
 		marker.draw = false
@@ -1227,6 +1229,11 @@ end
 -- force hide the markers if the distance is greater than their max. (Helps ensure markers wont be "stuck" on the screen on rare occurances)
 mod.adjust_distance_visibility = function(marker)
 	if not marker.markers_aio_type then
+		return
+	end
+
+	local widget = marker.widget
+	if widget and widget.content and widget.content.tagged then
 		return
 	end
 
@@ -1458,9 +1465,16 @@ mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", fun
 			end
 			-- Set word wrap and max width on description text so long guide text wraps
 			local style = widget.style and widget.style.description_text
+
+			dbg_1 = widget
+			dbg_2 = data
 			if style and not style.word_wrap then
 				style.size = { 500, 100 }
 				style.word_wrap = true
+			end
+
+			if not data.tag_template or data.tag_template == {} or not data.tag_template.name then
+				widget.content.input_text = ""
 			end
 		end
 	end
@@ -1564,10 +1578,15 @@ mod.on_setting_changed = function(setting_id)
 
 	if setting_id == "martyrs_skull_guide_x_offset" or setting_id == "martyrs_skull_guide_y_offset" then
 		local hud = Managers.ui and Managers.ui:get_hud()
-		if not hud then return end
+		if not hud then
+			return
+		end
 		local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
 		if element then
-			element:set_guide_offset(mod:get("martyrs_skull_guide_x_offset") or 0, mod:get("martyrs_skull_guide_y_offset") or 0)
+			element:set_guide_offset(
+				mod:get("martyrs_skull_guide_x_offset") or 0,
+				mod:get("martyrs_skull_guide_y_offset") or 0
+			)
 		end
 		return
 	end

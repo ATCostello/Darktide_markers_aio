@@ -56,10 +56,10 @@ mod.update_tainted_skull_markers = function(self, marker)
 			marker.template.check_line_of_sight = false
 
 			marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-			marker.template.screen_clamp = true
+			marker.template.screen_clamp = mod:get("event_keep_on_screen")
 			marker.block_screen_clamp = false
 
-			marker.widget.content.icon = "content/ui/materials/icons/crafting/extract_trait"
+			marker.widget.content.icon = "content/ui/materials/icons/circumstances/live_event_01"
 
 			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("event_border_colour")))
 			mod.set_colour_argb(
@@ -69,6 +69,13 @@ mod.update_tainted_skull_markers = function(self, marker)
 				mod:get("event_colour_G"),
 				mod:get("event_colour_B")
 			)
+
+			local max_distance = mod:get("event_max_distance")
+
+			marker.template.max_distance = max_distance
+			marker.template.fade_settings.distance_max = max_distance
+			marker.template.fade_settings.distance_min = max_distance - marker.template.evolve_distance * 2
+			marker.template.scale_settings.distance_max = max_distance
 		end
 	end
 end

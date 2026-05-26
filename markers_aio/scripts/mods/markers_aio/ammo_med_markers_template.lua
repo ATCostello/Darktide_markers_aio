@@ -38,9 +38,6 @@ template.line_of_sight_speed = 15
 template.min_size = { size[1] * scale_fraction, size[2] * scale_fraction }
 template.max_size = { size[1], size[2] }
 
-template.min_size = { size[1] * scale_fraction, size[2] * scale_fraction }
-template.max_size = { size[1], size[2] }
-
 template.icon_min_size = {
 	icon_size[1] * scale_fraction,
 	icon_size[2] * scale_fraction,

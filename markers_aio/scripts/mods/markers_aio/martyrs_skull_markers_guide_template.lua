@@ -380,6 +380,15 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 		end
 	end
 
+	local smart_tag_system = Managers.state.extension:system("smart_tag_system")
+	local marker_unit = marker.unit
+	local is_tagged = marker_unit and smart_tag_system:unit_tag_id(marker_unit) ~= nil
+
+	content.tagged = is_tagged
+	marker.block_fade_settings = is_tagged
+	marker.block_max_distance = is_tagged
+	marker.block_screen_clamp = not is_tagged
+
 	if data then
 		data.distance = distance
 	end
