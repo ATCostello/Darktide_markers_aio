@@ -859,15 +859,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 					mod.adjust_scale(self, marker, ui_renderer)
 
-					-- Tagged markers are always visible regardless of distance or line of sight
-					if marker.widget and marker.widget.content and marker.widget.content.tagged then
-						marker.draw = true
-						marker.block_max_distance = true
-						marker.block_fade_settings = true
-						marker.block_screen_clamp = false
-						marker.widget.visible = true
-					end
-
 					-- apply marker distance text if enabled
 					local widget = marker.widget
 					if
@@ -1004,12 +995,6 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	local mod_alpha = mod:get(marker.markers_aio_type .. "_alpha") or 1
 	local mod_max_distance = mod:get(marker.markers_aio_type .. "_max_distance") or 30
 
-	-- Pinged markers are always fully visible
-	if widget.content and widget.content.tagged == true then
-		widget.alpha_multiplier = mod_alpha
-		return widget.alpha_multiplier
-	end
-
 	-- No raycast yet = assume blocked LOS
 	local has_raycast = marker.raycast_result ~= nil
 
@@ -1094,13 +1079,6 @@ local dont_draw = function(marker)
 	if not marker then
 		return
 	end
-
-	-- Tagged markers are always visible (draw override at end of loop also handles this)
-	if marker.widget and marker.widget.content and marker.widget.content.tagged == true and can_draw(marker) then
-		marker.draw = true
-	else
-		marker.draw = false
-	end
 end
 
 mod.adjust_los_requirement = function(marker)
@@ -1114,21 +1092,23 @@ mod.adjust_los_requirement = function(marker)
 		mod_require_los = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
 	end
 	local mod_keep_on_screen = mod:get(marker.markers_aio_type .. "_keep_on_screen")
+	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
+	local is_blocked = not marker.raycast_result
 
 	if mod_require_los then
 		if marker.is_inside_frustum then
-			if marker.raycast_result == false then
+			if is_blocked or is_tagged then
 				do_draw(marker)
 			else
 				dont_draw(marker)
 			end
-		elseif marker.raycast_result == false and mod_keep_on_screen then
+		elseif (is_blocked and mod_keep_on_screen) or (is_tagged and mod_keep_on_screen) then
 			do_draw(marker)
 		else
 			dont_draw(marker)
 		end
 	else
-		if marker.is_inside_frustum or mod_keep_on_screen then
+		if (marker.is_inside_frustum or mod_keep_on_screen) or (marker.is_inside_frustum and is_tagged) then
 			do_draw(marker)
 		else
 			dont_draw(marker)
@@ -1229,11 +1209,6 @@ end
 -- force hide the markers if the distance is greater than their max. (Helps ensure markers wont be "stuck" on the screen on rare occurances)
 mod.adjust_distance_visibility = function(marker)
 	if not marker.markers_aio_type then
-		return
-	end
-
-	local widget = marker.widget
-	if widget and widget.content and widget.content.tagged then
 		return
 	end
 
