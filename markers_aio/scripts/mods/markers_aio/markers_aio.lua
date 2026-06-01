@@ -784,7 +784,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		end
 
 		-- MARKERS AIO
-		dbg_markers = markers_by_type
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
 				local marker = markers[i]
@@ -1079,6 +1078,8 @@ local dont_draw = function(marker)
 	if not marker then
 		return
 	end
+
+	marker.draw = false
 end
 
 mod.adjust_los_requirement = function(marker)
@@ -1441,8 +1442,6 @@ mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", fun
 			-- Set word wrap and max width on description text so long guide text wraps
 			local style = widget.style and widget.style.description_text
 
-			dbg_1 = widget
-			dbg_2 = data
 			if style and not style.word_wrap then
 				style.size = { 500, 100 }
 				style.word_wrap = true
