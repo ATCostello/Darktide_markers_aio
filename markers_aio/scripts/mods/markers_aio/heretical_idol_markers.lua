@@ -8,8 +8,6 @@ local UIWidget = require("scripts/managers/ui/ui_widget")
 
 mod.heretical_idols = {}
 mod._world_markers_list = {}
-local markers_list_to_remove = {}
-local processed_idols = {}
 
 local get_max_distance = function()
 	local max_distance = mod:get("heretical_idol_max_distance")
@@ -148,7 +146,6 @@ mod.remove_heretical_idol_marker = function(self, unit, section_id)
 					marker.draw = false
 					marker.widget.visible = false
 					marker.widget.alpha_multiplier = 0
-					table.insert(markers_list_to_remove, marker)
 					Managers.event:trigger("remove_world_marker", marker.id)
 				end
 			end

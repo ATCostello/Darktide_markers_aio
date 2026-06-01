@@ -74,7 +74,8 @@ mod.update_expedition_markers = function(self, marker)
 
 		marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
 
-		marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+		local max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+		marker.template.max_distance = max_distance
 		marker.max_distance = max_distance
 		self.max_distance = max_distance
 

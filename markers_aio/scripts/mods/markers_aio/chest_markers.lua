@@ -70,10 +70,10 @@ end
 mod.update_chest_markers = function(self, marker)
 	local max_distance = get_max_distance()
 
-	for _, chest in pairs(mod.active_chests) do
+	for chest_unit, chest in pairs(mod.active_chests) do
 		if chest and chest._current_state ~= "closed" then
 			mod.remove_chest_markers(chest._unit, self._markers)
-			mod.active_chests[_] = nil
+			mod.active_chests[chest_unit] = nil
 		end
 	end
 

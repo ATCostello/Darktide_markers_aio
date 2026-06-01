@@ -37,7 +37,8 @@ mod.update_unknown_markers = function(self, marker)
 		mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
 		marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
 
-		marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+		local max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+		marker.template.max_distance = max_distance
 		self.max_distance = max_distance
 
 		marker.template.screen_clamp = mod:get(marker.markers_aio_type .. "_keep_on_screen")

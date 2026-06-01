@@ -98,7 +98,7 @@ mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
 	-- reset runtime state on (re)init to avoid growth across missions/hot-joins
 	mod.active_chests = {}
 	mod.current_heretical_idol_markers = {}
-	processed_idols = {}
+	mod.medical_crate_charges = {}
 	mod.reset_martyrs_skull_guides()
 
 	-- scan for nurgle totems that already exist (covers menu→game transition after mod reload)
@@ -280,22 +280,21 @@ local function build_frame_settings(mod)
 
 	fs.med_station_max_distance = mod:get("med_station_max_distance")
 
-	-- Feature toggles
-	fs.enable = {
-		tome = mod:get("tome_enable"),
-		material = mod:get("material_enable"),
-		ammo_med = mod:get("ammo_med_enable"),
-		stimm = mod:get("stimm_enable"),
-		chest = mod:get("chest_enable"),
-		heretical_idol = mod:get("heretical_idol_enable"),
-		event = mod:get("event_enable"),
-		luggable = mod:get("luggable_enable"),
-		martyrs_skull = mod:get("martyrs_skull_enable"),
-		rations = mod:get("event_enable"),
-		atonement = mod:get("event_enable"),
-		expedition = mod:get("expedition_enable"),
-		unknown = mod:get("unknown_enable"),
-	}
+	-- Feature toggles (reuse table to avoid per-frame GC allocation)
+	fs.enable = fs.enable or {}
+	fs.enable.tome = mod:get("tome_enable")
+	fs.enable.material = mod:get("material_enable")
+	fs.enable.ammo_med = mod:get("ammo_med_enable")
+	fs.enable.stimm = mod:get("stimm_enable")
+	fs.enable.chest = mod:get("chest_enable")
+	fs.enable.heretical_idol = mod:get("heretical_idol_enable")
+	fs.enable.event = mod:get("event_enable")
+	fs.enable.luggable = mod:get("luggable_enable")
+	fs.enable.martyrs_skull = mod:get("martyrs_skull_enable")
+	fs.enable.rations = mod:get("event_enable")
+	fs.enable.atonement = mod:get("event_enable")
+	fs.enable.expedition = mod:get("expedition_enable")
+	fs.enable.unknown = mod:get("unknown_enable")
 end
 
 mod.get_marker_pickup_type = function(marker)

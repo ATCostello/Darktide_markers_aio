@@ -180,11 +180,11 @@ local function make_widget_definitions()
 end
 
 local function apply_element_positions(widget, title_y, header_y, body_y, steps_y, bottom_bar_y, panel_h)
+	widget.style.background.size[2] = panel_h
 	widget.style.guide_title.offset[2] = title_y
 	widget.style.header_text.offset[2] = header_y
 	widget.style.body_text.offset[2] = body_y
 	widget.style.steps_text.offset[2] = steps_y
-	widget.style.background.size[2] = panel_h
 	widget.style.bottom_bar.offset[2] = bottom_bar_y
 	widget.content.size = { PANEL_WIDTH, panel_h }
 end
@@ -234,7 +234,7 @@ function MartyrsSkullGuideElement:_compute_and_apply_layout(widget, ui_renderer)
 	local body_y = header_y + header_h + 4
 	local steps_y = body_y + body_h + 4
 	local bottom_bar_y = steps_y + steps_h + 12
-	local panel_h = bottom_bar_y + 14
+	local panel_h = bottom_bar_y + 4
 	apply_element_positions(widget, title_y, header_y, body_y, steps_y, bottom_bar_y, panel_h)
 	return panel_h
 end
