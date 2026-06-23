@@ -993,6 +993,12 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	local mod_alpha = mod:get(marker.markers_aio_type .. "_alpha") or 1
 	local mod_max_distance = mod:get(marker.markers_aio_type .. "_max_distance") or 30
 
+	-- force increase max distance of marker if tagged
+	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
+	if is_tagged then
+		mod_max_distance = 100
+	end
+
 	-- No raycast yet = assume blocked LOS
 	local has_raycast = marker.raycast_result ~= nil
 
@@ -1061,16 +1067,8 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 	return target_alpha
 end
 
-local function can_draw(marker)
-	return true
-end
-
 local do_draw = function(marker)
-	if can_draw(marker) then
-		marker.draw = true
-	else
-		marker.draw = false
-	end
+	marker.draw = true
 end
 
 local dont_draw = function(marker)
@@ -1078,7 +1076,13 @@ local dont_draw = function(marker)
 		return
 	end
 
-	marker.draw = false
+	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
+
+	if is_tagged then
+		marker.draw = true
+	else
+		marker.draw = false
+	end
 end
 
 mod.adjust_los_requirement = function(marker)
@@ -1213,8 +1217,9 @@ mod.adjust_distance_visibility = function(marker)
 	end
 
 	local mod_max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
 
-	if mod_max_distance and marker.distance > mod_max_distance then
+	if not is_tagged and (mod_max_distance and marker.distance > mod_max_distance) then
 		dont_draw(marker)
 	end
 end

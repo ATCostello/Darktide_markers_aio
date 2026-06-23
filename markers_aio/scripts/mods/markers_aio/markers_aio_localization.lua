@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.13.7"
+mod.version = "2.13.8"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -3047,6 +3047,12 @@ local loc = {
 	martyrs_skull_not_collected = {
 		en = "You haven't collected this skull before.",
 		["zh-cn"] = "你还没有收集过这个颅骨。",
+	},
+	unknown_markers_extra_allowed = {
+		en = "Enable adjustments for buttons & misc markers?",
+	},
+	unknown_markers_extra_allowed_tooltip = {
+		en = "If enabled, allows buttons and a few other misc unknown markers to be effected by the Unknown Marker settings. Including distance, fading, alpha etc. If disabled, these misc markers will only be effected by the colour choices.",
 	},
 }
 

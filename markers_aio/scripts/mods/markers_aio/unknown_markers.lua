@@ -12,21 +12,28 @@ mod.update_unknown_markers = function(self, marker)
 		if marker.ui_interaction_type and (marker.ui_interaction_type == "player_interaction") then
 			return
 		end
-		if
-			marker.ui_interaction_type
-			and (marker.ui_interaction_type == "default" or marker.ui_interaction_type == "point_of_interest")
-		then
-			mod.set_colour_argb(
-				marker.widget.style.icon.color,
-				255,
-				mod:get("unknown_colour_R"),
-				mod:get("unknown_colour_G"),
-				mod:get("unknown_colour_B")
-			)
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
-			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("unknown_border_colour")))
 
-			return
+		-- Toggle to allow unwanted markers to be affected.
+		if not mod:get("unknown_markers_extra_allowed") then
+			if
+				marker.ui_interaction_type
+				and (marker.ui_interaction_type == "default" or marker.ui_interaction_type == "point_of_interest")
+			then
+				mod.set_colour_argb(
+					marker.widget.style.icon.color,
+					255,
+					mod:get("unknown_colour_R"),
+					mod:get("unknown_colour_G"),
+					mod:get("unknown_colour_B")
+				)
+				mod.set_colour(
+					marker.widget.style.background.color,
+					mod.lookup_colour(mod:get("marker_background_colour"))
+				)
+				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("unknown_border_colour")))
+
+				return
+			end
 		end
 
 		marker.draw = false

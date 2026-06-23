@@ -1954,6 +1954,12 @@ return {
 						tooltip = "enable_tooltip",
 					},
 					{
+						setting_id = "unknown_markers_extra_allowed",
+						type = "checkbox",
+						default_value = false,
+						tooltip = "unknown_markers_extra_allowed_tooltip",
+					},
+					{
 						setting_id = "unknown_keep_on_screen",
 						type = "checkbox",
 						default_value = false,
