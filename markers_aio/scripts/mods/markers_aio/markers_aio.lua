@@ -1075,10 +1075,16 @@ local dont_draw = function(marker)
 	if not marker then
 		return
 	end
-
+	local mod_keep_on_screen = mod:get(marker.markers_aio_type .. "_keep_on_screen")
 	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
 
-	if is_tagged then
+	if marker.is_inside_frustum then
+		if is_tagged then
+			marker.draw = true
+		else
+			marker.draw = false
+		end
+	elseif is_tagged and mod_keep_on_screen then
 		marker.draw = true
 	else
 		marker.draw = false
@@ -1217,9 +1223,8 @@ mod.adjust_distance_visibility = function(marker)
 	end
 
 	local mod_max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
 
-	if not is_tagged and (mod_max_distance and marker.distance > mod_max_distance) then
+	if mod_max_distance and marker.distance > mod_max_distance then
 		dont_draw(marker)
 	end
 end
