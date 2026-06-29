@@ -101,6 +101,7 @@ mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
 	-- reset runtime state on (re)init to avoid growth across missions/hot-joins
 	mod.active_chests = {}
 	mod.current_heretical_idol_markers = {}
+	mod.totem_units = {}
 	mod.medical_crate_charges = {}
 	mod.reset_martyrs_skull_guides()
 
@@ -481,6 +482,8 @@ HudElementWorldMarkers._get_fade = function(self, fade_settings, distance)
 	end
 end
 
+local temp_drawable_markers = {}
+
 local HudElementWorldMarkersSettings =
 	require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
 
@@ -491,7 +494,8 @@ HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_r
 	end
 
 	local markers_by_type = self._markers_by_type
-	local drawable_markers = {}
+	local drawable_markers = temp_drawable_markers
+	table.clear(drawable_markers)
 
 	for _, markers in pairs(markers_by_type) do
 		for i = 1, #markers do
@@ -622,6 +626,8 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		local markers_by_id = self._markers_by_id
 		local markers_by_type = self._markers_by_type
 		local ALIVE = ALIVE
+
+		table.clear(temp_marker_raycast_queue)
 
 		for marker_type, markers in pairs(markers_by_type) do
 			for i = 1, #markers do
@@ -843,6 +849,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 		if raycasts_allowed then
 			self:_raycast_markers(temp_marker_raycast_queue)
+			table.clear(temp_marker_raycast_queue)
 		end
 
 		-- MARKERS AIO
@@ -1062,6 +1069,19 @@ HudElementInteraction._update_interactee_data = function(self, interactee_unit, 
 		end
 	end
 end
+mod.auspex_active = false
+mod:hook_safe(CLASS.AuspexEffects, "wield", function(self)
+	if self._is_husk then
+		return
+	end
+	mod.auspex_active = true
+end)
+mod:hook_safe(CLASS.AuspexEffects, "unwield", function(self)
+	if self._is_husk then
+		return
+	end
+	mod.auspex_active = false
+end)
 
 -- Fade out markers that are behind objects, depending on the set "los_opacity"
 mod.fade_icon_not_in_los = function(marker, ui_renderer)
@@ -1140,6 +1160,10 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 			-- In LOS → distance-shaped opacity
 			target_alpha = target_alpha * distance_factor
 		end
+	end
+
+	if mod.auspex_active then
+		target_alpha = 0.05
 	end
 
 	------------------------------------------------

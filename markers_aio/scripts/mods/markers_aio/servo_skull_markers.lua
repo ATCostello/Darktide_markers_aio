@@ -59,8 +59,9 @@ mod.update_servo_skull_markers = function(self, marker)
 		local is_assisted = false
 		local skull_is_injecting = false
 
+		local unit_data_extension = ScriptUnit.has_extension(unit, "unit_data_system")
+
 		if not is_decoding_terminal then
-			local unit_data_extension = ScriptUnit.has_extension(unit, "unit_data_system")
 			if unit_data_extension and Managers.player:player_by_unit(unit) then
 				needs_help = _player_needs_help(unit_data_extension)
 				is_assisted = _player_is_assisted(unit_data_extension)
@@ -100,7 +101,11 @@ mod.update_servo_skull_markers = function(self, marker)
 		marker.template.screen_clamp = mod:get(marker.markers_aio_type .. "_keep_on_screen")
 		marker.block_screen_clamp = false
 
-		if fs and fs.servo_skull_equipped then
+		local character_state_component = unit_data_extension and unit_data_extension:read_component("character_state")
+			or nil
+		if character_state_component and PlayerUnitStatus.is_ledge_hanging(character_state_component) then
+			--
+		elseif not is_decoding_terminal and fs and fs.servo_skull_equipped then
 			widget.content.icon = mod:get("servo_skull_icon")
 		elseif is_decoding_terminal then
 			widget.content.icon = mod:get("decoding_icon")
@@ -123,6 +128,9 @@ mod.update_servo_skull_markers = function(self, marker)
 					colour_type = "servo_skull_stalled"
 					border_key = "servo_skull_stalled_border_colour"
 					marker.servo_skull_pulse = mod:get("servo_skull_pulse_when_stalled")
+					if fs and fs.servo_skull_equipped then
+						widget.content.icon = mod:get("servo_skull_icon")
+					end
 				elseif
 					decoder_extension:started_decode()
 					and not decoder_extension:is_finished()
@@ -131,6 +139,9 @@ mod.update_servo_skull_markers = function(self, marker)
 					colour_type = "servo_skull_active"
 					border_key = "servo_skull_active_border_colour"
 					marker.servo_skull_pulse = false
+					if fs and fs.servo_skull_equipped then
+						widget.content.icon = mod:get("servo_skull_icon")
+					end
 				end
 			else
 				local player = Managers.player:local_player(1)
