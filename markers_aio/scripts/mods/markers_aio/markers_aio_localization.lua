@@ -2820,8 +2820,11 @@ local loc = {
 	},
 	-- Servo Skull Markers
 	servo_skull_settings = {
-		en = "SERVO SKULL MARKERS",
+		en = "ASSISTANCE & SERVO SKULL MARKERS",
 		["zh-cn"] = "伺服颅骨标记（可破解终端）",
+	},
+	Investigation = {
+		en = "Investigation",
 	},
 	servo_skull_enable = {
 		en = "Enable Markers",
@@ -2830,9 +2833,18 @@ local loc = {
 		["zh-tw"] = "啟用標記",
 		["zh-cn"] = "启用标记",
 	},
+	servo_skull_enable_assistance_module = {
+		en = "Enable Assistance Module",
+	},
+	servo_skull_enable_assistance_module_tooltip = {
+		en = "Toggle the 'assistance' features, including recolouring downed players' markers and showing their downed states.",
+	},
 	servo_skull_icon = {
-		en = "Icon",
+		en = "Servo Skull Icon",
 		["zh-cn"] = "图标",
+	},
+	decoding_icon = {
+		en = "Decoding Icon (No Servo Skull Equipped)",
 	},
 	servo_skull_keep_on_screen = {
 		en = "Keep on screen",
@@ -2895,7 +2907,7 @@ local loc = {
 		["zh-cn"] = "蓝",
 	},
 	servo_skull_stalled_colour = {
-		en = "Stalled (Can Deploy) Colour",
+		en = "Stalled (Can Deploy/Alert) Colour",
 		["zh-cn"] = "待命（可部署）颜色",
 	},
 	servo_skull_stalled_colour_R = {
@@ -2920,7 +2932,7 @@ local loc = {
 		["zh-cn"] = "蓝",
 	},
 	servo_skull_active_colour = {
-		en = "Active (Decoding) Colour",
+		en = "Active (Decoding/Helping) Colour",
 		["zh-cn"] = "激活（破解中）颜色",
 	},
 	servo_skull_active_colour_R = {

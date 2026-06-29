@@ -94,6 +94,26 @@ local servo_skull_icons = {
 	},
 }
 
+local decoding_icons = {
+	{
+		text = "Terminal",
+		value = "content/ui/materials/hud/interactions/icons/objective_side",
+		icon = "content/ui/materials/hud/interactions/icons/objective_side",
+	},
+
+	{
+		text = "Scanner",
+		value = "content/ui/materials/icons/pocketables/hud/corrupted_auspex_scanner",
+		icon = "content/ui/materials/icons/pocketables/hud/corrupted_auspex_scanner",
+	},
+
+	{
+		text = "Investigation",
+		value = "content/ui/materials/icons/mission_types/mission_type_03",
+		icon = "content/ui/materials/icons/mission_types/mission_type_03",
+	},
+}
+
 local background_colours = {
 	{
 		text = "Black",
@@ -1967,7 +1987,7 @@ return {
 			{
 				setting_id = "servo_skull_settings",
 				type = "group",
-				tab = "Servo Skull",
+				tab = "Servo Skull/Assistance",
 				sub_widgets = {
 					{
 						setting_id = "servo_skull_enable",
@@ -1980,6 +2000,13 @@ return {
 						type = "dropdown",
 						options = servo_skull_icons,
 						default_value = "content/ui/materials/backgrounds/scanner/scanner_decoration_skull",
+						tooltip = "icon_tooltip",
+					},
+					{
+						setting_id = "decoding_icon",
+						type = "dropdown",
+						options = decoding_icons,
+						default_value = "content/ui/materials/icons/mission_types/mission_type_03",
 						tooltip = "icon_tooltip",
 					},
 					{
@@ -2034,6 +2061,12 @@ return {
 						type = "checkbox",
 						default_value = true,
 						tooltip = "pulse_when_stalled_tooltip",
+					},
+					{
+						setting_id = "servo_skull_enable_assistance_module",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "servo_skull_enable_assistance_module_tooltip",
 					},
 					{
 						setting_id = "servo_skull_default_colour",
@@ -2146,7 +2179,6 @@ return {
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
 					},
-					
 				},
 			},
 			-- UNKNOWN

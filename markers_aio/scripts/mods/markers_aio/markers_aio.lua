@@ -284,7 +284,7 @@ local function build_frame_settings(mod)
 
 	fs.med_station_max_distance = mod:get("med_station_max_distance")
 
-	-- Feature toggles (reuse table to avoid per-frame GC allocation)
+	-- Feature toggles
 	fs.enable = fs.enable or {}
 	fs.enable.tome = mod:get("tome_enable")
 	fs.enable.material = mod:get("material_enable")
@@ -300,7 +300,7 @@ local function build_frame_settings(mod)
 	fs.enable.expedition = mod:get("expedition_enable")
 	fs.enable.servo_skull = mod:get("servo_skull_enable")
 	fs.enable.unknown = mod:get("unknown_enable")
-
+	fs.enable.servo_skull_enable_assistance_module = mod:get("servo_skull_enable_assistance_module")
 	-- Check if local player has the Cryptic servo skull blitz equipped
 	fs.servo_skull_equipped = false
 	local p_check = Managers.player:local_player(1)
@@ -314,7 +314,7 @@ local function build_frame_settings(mod)
 		end
 	end
 
-	-- Inject ally servo skull state (cached per frame)
+	-- Inject ally servo skull state
 	fs.inject_ally = nil
 	local p = Managers.player:local_player(1)
 	if p and p.player_unit and Unit.alive(p.player_unit) then
@@ -344,7 +344,6 @@ local function build_frame_settings(mod)
 	end
 
 	-- Check if the inject_ally skull is actively performing an injection
-	-- (state == "inject_ally" on the companion game object)
 	fs.servo_skull_injecting = false
 	if fs.inject_ally then
 		local comp_unit = fs.inject_ally.companion_unit
@@ -900,7 +899,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					if fs.enable.expedition then
 						mod.update_expedition_markers(self, marker)
 					end
-					if fs.enable.servo_skull and marker.type ~= "objective" then
+					if fs.enable.servo_skull and marker.type ~= "objective" and marker.type ~= "player_assistance" then
 						mod.update_servo_skull_markers(self, marker)
 					end
 					if fs.enable.event then
