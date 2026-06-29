@@ -89,9 +89,8 @@ local get_max_distance = function()
 	return max_distance
 end
 
-mod.medical_crate_charges = {}
-
 local med_crate_decals = mod:persistent_table("med_crate_decals")
+local med_crate_units = mod:persistent_table("med_crate_units")
 
 local ProximityHeal = require("scripts/extension_systems/proximity/side_relation_gameplay_logic/proximity_heal")
 
@@ -101,12 +100,7 @@ end
 
 mod:hook_safe(ProximityHeal, "update", function(self, dt, t)
 	if self and self._unit then
-		local med_crate_pos = POSITION_LOOKUP[self._unit]
-
-		if not table.contains(mod.medical_crate_charges, tostring(med_crate_pos)) then
-			local percentage = ((self._heal_reserve - self._amount_of_damage_healed) / self._heal_reserve) * 100
-			mod.medical_crate_charges[tostring(med_crate_pos)] = tostring(string.format("%.0f", percentage)) .. "%"
-		end
+		med_crate_units[self._unit] = true
 	end
 end)
 
@@ -586,6 +580,41 @@ mod.update_ammo_med_markers = function(self, marker)
 								mod:get("med_crate_colour_B")
 							)
 						end
+					end
+				end
+
+				marker.draw = true
+				if widget and not widget.removed then
+					widget.alpha_multiplier = 1
+				end
+			end
+		end
+	end
+
+	-- Periodic scan for deployed medcrate units that lack markers
+	mod._med_scan_counter = (mod._med_scan_counter or 0) + 1
+	if mod._med_scan_counter >= 60 then
+		mod._med_scan_counter = 0
+
+		for unit, _ in pairs(med_crate_units) do
+			if not Unit.alive(unit) then
+				med_crate_units[unit] = nil
+			end
+		end
+
+		local markers_by_id = self and self._markers_by_id
+		if markers_by_id then
+			for unit, _ in pairs(med_crate_units) do
+				if Unit.alive(unit) then
+					local has_marker = false
+					for _, marker in pairs(markers_by_id) do
+						if marker.unit == unit then
+							has_marker = true
+							break
+						end
+					end
+					if not has_marker then
+						Managers.event:trigger("add_world_marker_unit", MarkerTemplate.name, unit)
 					end
 				end
 			end

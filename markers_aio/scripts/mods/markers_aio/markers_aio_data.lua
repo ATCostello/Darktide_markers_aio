@@ -71,6 +71,29 @@ local luggable_icons = {
 	},
 }
 
+local servo_skull_icons = {
+	{
+		text = "Terminal",
+		value = "content/ui/materials/hud/interactions/icons/objective_side",
+		icon = "content/ui/materials/hud/interactions/icons/objective_side",
+	},
+	{
+		text = "Skull",
+		value = "content/ui/materials/icons/difficulty/flat/difficulty_skull_malice",
+		icon = "content/ui/materials/icons/difficulty/flat/difficulty_skull_malice",
+	},
+	{
+		text = "Scanner",
+		value = "content/ui/materials/icons/pocketables/hud/corrupted_auspex_scanner",
+		icon = "content/ui/materials/icons/pocketables/hud/corrupted_auspex_scanner",
+	},
+	{
+		text = "ScannerSkull",
+		value = "content/ui/materials/backgrounds/scanner/scanner_decoration_skull",
+		icon = "content/ui/materials/backgrounds/scanner/scanner_decoration_skull",
+	},
+}
+
 local background_colours = {
 	{
 		text = "Black",
@@ -1938,6 +1961,192 @@ return {
 						default_value = "Gold",
 						tooltip = "border_colour_tooltip",
 					},
+				},
+			},
+			-- SERVO SKULL MARKERS
+			{
+				setting_id = "servo_skull_settings",
+				type = "group",
+				tab = "Servo Skull",
+				sub_widgets = {
+					{
+						setting_id = "servo_skull_enable",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "enable_tooltip",
+					},
+					{
+						setting_id = "servo_skull_icon",
+						type = "dropdown",
+						options = servo_skull_icons,
+						default_value = "content/ui/materials/backgrounds/scanner/scanner_decoration_skull",
+						tooltip = "icon_tooltip",
+					},
+					{
+						setting_id = "servo_skull_keep_on_screen",
+						type = "checkbox",
+						default_value = false,
+						tooltip = "keep_on_screen_tooltip",
+					},
+					{
+						setting_id = "servo_skull_require_line_of_sight",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "require_line_of_sight_tooltip",
+					},
+					{
+						setting_id = "servo_skull_toggle_los",
+						type = "keybind",
+						function_name = "servo_skull_toggle_los",
+						default_value = {},
+						keybind_global = true,
+						keybind_trigger = "pressed",
+						keybind_type = "function_call",
+						tooltip = "toggle_los_tooltip",
+					},
+					{
+						setting_id = "servo_skull_max_distance",
+						type = "numeric",
+						default_value = 50,
+						range = { 0, 100 },
+						step_size_value = 1,
+						tooltip = "max_distance_tooltip",
+					},
+					{
+						setting_id = "servo_skull_scale",
+						type = "numeric",
+						default_value = 100,
+						range = { 50, 150 },
+						step_size_value = 1,
+						tooltip = "scale_tooltip",
+					},
+					{
+						setting_id = "servo_skull_alpha",
+						type = "numeric",
+						default_value = 1,
+						range = { 0.1, 1 },
+						decimals_number = 2,
+						step_size_value = 0.05,
+						tooltip = "alpha_tooltip",
+					},
+					{
+						setting_id = "servo_skull_pulse_when_stalled",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "pulse_when_stalled_tooltip",
+					},
+					{
+						setting_id = "servo_skull_default_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "servo_skull_default_colour_R",
+								type = "numeric",
+								default_value = 255,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_R_tooltip",
+							},
+							{
+								setting_id = "servo_skull_default_colour_G",
+								type = "numeric",
+								default_value = 255,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_G_tooltip",
+							},
+							{
+								setting_id = "servo_skull_default_colour_B",
+								type = "numeric",
+								default_value = 255,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_B_tooltip",
+							},
+						},
+					},
+					{
+						setting_id = "servo_skull_stalled_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "servo_skull_stalled_colour_R",
+								type = "numeric",
+								default_value = 255,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_R_tooltip",
+							},
+							{
+								setting_id = "servo_skull_stalled_colour_G",
+								type = "numeric",
+								default_value = 200,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_G_tooltip",
+							},
+							{
+								setting_id = "servo_skull_stalled_colour_B",
+								type = "numeric",
+								default_value = 0,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_B_tooltip",
+							},
+						},
+					},
+					{
+						setting_id = "servo_skull_active_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "servo_skull_active_colour_R",
+								type = "numeric",
+								default_value = 0,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_R_tooltip",
+							},
+							{
+								setting_id = "servo_skull_active_colour_G",
+								type = "numeric",
+								default_value = 255,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_G_tooltip",
+							},
+							{
+								setting_id = "servo_skull_active_colour_B",
+								type = "numeric",
+								default_value = 50,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_B_tooltip",
+							},
+						},
+					},
+					{
+						setting_id = "servo_skull_border_colour",
+						type = "dropdown",
+						options = border_colours,
+						default_value = "Steel",
+						tooltip = "border_colour_tooltip",
+					},
+					{
+						setting_id = "servo_skull_stalled_border_colour",
+						type = "dropdown",
+						options = border_colours,
+						default_value = "Tarnished",
+						tooltip = "border_colour_tooltip",
+					},
+					{
+						setting_id = "servo_skull_active_border_colour",
+						type = "dropdown",
+						options = border_colours,
+						default_value = "Gold",
+						tooltip = "border_colour_tooltip",
+					},
+					
 				},
 			},
 			-- UNKNOWN

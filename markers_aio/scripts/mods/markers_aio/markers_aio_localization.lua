@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.13.9"
+mod.version = "2.14.0"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -2814,6 +2814,159 @@ local loc = {
 		["zh-cn"] = "切换「仅视野内显示」",
 	},
 
+	mod_marker_servo_skull_name = {
+		en = "Hackable Terminal",
+		["zh-cn"] = "可破解终端",
+	},
+	-- Servo Skull Markers
+	servo_skull_settings = {
+		en = "SERVO SKULL MARKERS",
+		["zh-cn"] = "伺服颅骨标记（可破解终端）",
+	},
+	servo_skull_enable = {
+		en = "Enable Markers",
+		fr = "Activer les marqueurs",
+		ru = "Включить метки",
+		["zh-tw"] = "啟用標記",
+		["zh-cn"] = "启用标记",
+	},
+	servo_skull_icon = {
+		en = "Icon",
+		["zh-cn"] = "图标",
+	},
+	servo_skull_keep_on_screen = {
+		en = "Keep on screen",
+		ru = "Держать на экране",
+		fr = "Rester à l'écran",
+		["zh-tw"] = "保持顯示於螢幕",
+		["zh-cn"] = "在画面中持续显示",
+	},
+	servo_skull_require_line_of_sight = {
+		en = "Require line of sight",
+		fr = "Nécessite une ligne de vue",
+		ru = "Должно быть в зоне видимости",
+		["zh-tw"] = "需要視線範圍",
+		["zh-cn"] = "仅视野内显示",
+	},
+	servo_skull_max_distance = {
+		en = "Max distance",
+		fr = "Distance maximale",
+		ru = "Максимальное расстояние",
+		["zh-tw"] = "最遠距離",
+		["zh-cn"] = "最大显示距离",
+	},
+	servo_skull_scale = {
+		en = "Scale",
+		fr = "Scale",
+		ru = "Scale",
+		["zh-tw"] = "圖標縮放大小",
+		["zh-cn"] = "标记缩放比例",
+	},
+	servo_skull_alpha = {
+		en = "Alpha Multiplier",
+		fr = "Multiplicateur d'alpha",
+		ru = "Прозрачность",
+		["zh-tw"] = "透明度倍增器",
+		["zh-cn"] = "透明度系数",
+	},
+	servo_skull_default_colour = {
+		en = "Inactive Colour",
+		["zh-cn"] = "未激活颜色",
+	},
+	servo_skull_default_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	servo_skull_default_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	servo_skull_default_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	servo_skull_stalled_colour = {
+		en = "Stalled (Can Deploy) Colour",
+		["zh-cn"] = "待命（可部署）颜色",
+	},
+	servo_skull_stalled_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	servo_skull_stalled_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	servo_skull_stalled_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	servo_skull_active_colour = {
+		en = "Active (Decoding) Colour",
+		["zh-cn"] = "激活（破解中）颜色",
+	},
+	servo_skull_active_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	servo_skull_active_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	servo_skull_active_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	servo_skull_border_colour = {
+		en = "Inactive Border Colour",
+		["zh-cn"] = "未激活边框颜色",
+	},
+	servo_skull_stalled_border_colour = {
+		en = "Stalled Border Colour",
+		["zh-cn"] = "待命边框颜色",
+	},
+	servo_skull_active_border_colour = {
+		en = "Active Border Colour",
+		["zh-cn"] = "激活边框颜色",
+	},
+	servo_skull_toggle_los = {
+		en = "Toggle 'Require Line of Sight'",
+		["zh-tw"] = "切換「需要視線範圍」",
+		["zh-cn"] = "切换「仅视野内显示」",
+	},
+	servo_skull_pulse_when_stalled = {
+		en = "Pulse When Stalled",
+	},
+	pulse_when_stalled_tooltip = {
+		en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
+	},
 	-- Unknown Markers
 	unknown_markers_settings = {
 		en = "UNKNOWN MARKERS (Those not covered elsewhere!)",
@@ -3053,6 +3206,15 @@ local loc = {
 	},
 	unknown_markers_extra_allowed_tooltip = {
 		en = "If enabled, allows buttons and a few other misc unknown markers to be effected by the Unknown Marker settings. Including distance, fading, alpha etc. If disabled, these misc markers will only be effected by the colour choices.",
+	},
+	Skull = {
+		en = "Skull",
+	},
+	ScannerSkull = {
+		en = "Scanner Skull",
+	},
+	Scanner = {
+		en = "Scanner",
 	},
 }
 
