@@ -366,6 +366,7 @@ mod.get_marker_pickup_type = function(marker)
 		marker.type ~= "interaction"
 		or not marker.unit
 		or not Unit
+		or type(marker.unit) ~= "userdata"
 		or not Unit.alive(marker.unit)
 		or not Unit.has_data(marker.unit, "pickup_type")
 	then
@@ -870,7 +871,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					-- Hide distance text on objective markers for decoder devices
 					if marker.type == "objective" and marker.widget then
 						local unit = marker.unit
-						if unit and Unit.alive(unit) then
+						if unit and type(unit) == "userdata" and Unit.alive(unit) then
 							local decoder_ext = ScriptUnit.has_extension(unit, "decoder_device_system")
 							if decoder_ext and decoder_ext:unit_is_enabled() and not decoder_ext:is_finished() then
 								marker.widget.content.text = ""
@@ -1356,7 +1357,7 @@ HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit
 
 	if not template.using_smart_tag_system then
 		local unit = marker.unit
-		if unit and Unit.alive(unit) then
+		if unit and type(unit) == "userdata" and Unit.alive(unit) then
 			local ie = ScriptUnit.has_extension(unit, "interactee_system")
 			if not (ie and ie:interaction_type() == "decoding") then
 				return false

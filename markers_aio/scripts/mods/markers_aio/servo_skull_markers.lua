@@ -46,7 +46,7 @@ mod.update_servo_skull_markers = function(self, marker)
 	if marker and self then
 		local fs = mod.frame_settings
 		local unit = marker.unit
-		if not unit or not Unit.alive(unit) then
+		if not unit or type(unit) ~= "userdata" or not Unit.alive(unit) then
 			return
 		end
 
