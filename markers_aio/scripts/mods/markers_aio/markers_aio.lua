@@ -1708,6 +1708,11 @@ mod.toggle_los = function(marker_type)
 	end
 end
 
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/icon_package_loader")
+mod.on_all_mods_loaded = function()
+	mod._ensure_icon_packages_loaded()
+end
+
 -- UPDATE COLOURS IN SETTINGS PAGE IN REAL TIME (OH YES)
 mod.on_setting_changed = function(setting_id)
 	if not setting_id then
