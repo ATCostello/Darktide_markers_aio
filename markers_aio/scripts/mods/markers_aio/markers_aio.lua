@@ -15,6 +15,7 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/atonement_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/unknown_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/expedition_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/servo_skull_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/player_assistance_markers")
 
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
 
@@ -302,6 +303,8 @@ local function build_frame_settings(mod)
 	fs.enable.servo_skull = mod:get("servo_skull_enable")
 	fs.enable.unknown = mod:get("unknown_enable")
 	fs.enable.servo_skull_enable_assistance_module = mod:get("servo_skull_enable_assistance_module")
+	fs.enable.player_assistance = mod:get("player_assistance_enable")
+
 	-- Check if local player has the Cryptic servo skull blitz equipped
 	fs.servo_skull_equipped = false
 	local p_check = Managers.player:local_player(1)
@@ -909,6 +912,13 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					end
 					if fs.enable.servo_skull and marker.type ~= "objective" and marker.type ~= "player_assistance" then
 						mod.update_servo_skull_markers(self, marker)
+					end
+					if
+						fs.enable.player_assistance
+						and marker.type ~= "objective"
+						and marker.type ~= "player_assistance"
+					then
+						mod.update_player_assistance_markers(self, marker)
 					end
 					if fs.enable.event then
 						mod.update_tainted_skull_markers(self, marker)

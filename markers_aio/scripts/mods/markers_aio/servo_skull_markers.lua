@@ -1,40 +1,6 @@
 local mod = get_mod("markers_aio")
 local PlayerUnitStatus = require("scripts/utilities/attack/player_unit_status")
 
-local function _player_needs_help(unit_data_extension)
-	if not unit_data_extension then
-		return false
-	end
-
-	local character_state_component = unit_data_extension:read_component("character_state")
-	if not character_state_component then
-		return false
-	end
-
-	if not PlayerUnitStatus.requires_allied_interaction_help(character_state_component) then
-		return false
-	end
-
-	--if PlayerUnitStatus.is_ledge_hanging(character_state_component) then
-	--	return false
-	--end
-
-	return true
-end
-
-local function _player_is_assisted(unit_data_extension)
-	if not unit_data_extension then
-		return false
-	end
-
-	local assisted_state_input_component = unit_data_extension:read_component("assisted_state_input")
-	if not assisted_state_input_component then
-		return false
-	end
-
-	return PlayerUnitStatus.is_assisted(assisted_state_input_component)
-end
-
 local function _is_decoder_active(minigame_extension)
 	if not minigame_extension then
 		return false
@@ -55,32 +21,11 @@ mod.update_servo_skull_markers = function(self, marker)
 		local decoder_ext = ScriptUnit.has_extension(unit, "decoder_device_system")
 		local is_decoding_terminal = decoder_ext and decoder_ext:unit_is_enabled() and not decoder_ext:is_finished()
 
-		local needs_help = false
-		local is_assisted = false
 		local skull_is_injecting = false
 
 		local unit_data_extension = ScriptUnit.has_extension(unit, "unit_data_system")
 
 		if not is_decoding_terminal then
-			if unit_data_extension and Managers.player:player_by_unit(unit) then
-				needs_help = _player_needs_help(unit_data_extension)
-				is_assisted = _player_is_assisted(unit_data_extension)
-			end
-
-			if fs and fs.servo_skull_equipped and fs.inject_ally and fs.servo_skull_injecting then
-				skull_is_injecting = true
-			end
-		end
-
-		if not is_decoding_terminal and not needs_help and not skull_is_injecting then
-			return
-		end
-
-		if
-			not is_decoding_terminal
-			and (needs_help or is_assisted)
-			and (fs and not fs.enable.servo_skull_enable_assistance_module)
-		then
 			return
 		end
 
@@ -157,14 +102,6 @@ mod.update_servo_skull_markers = function(self, marker)
 					marker.servo_skull_pulse = mod:get("servo_skull_pulse_when_stalled")
 				end
 			end
-		elseif skull_is_injecting or is_assisted then
-			colour_type = "servo_skull_active"
-			border_key = "servo_skull_active_border_colour"
-			marker.servo_skull_pulse = false
-		elseif needs_help then
-			colour_type = "servo_skull_stalled"
-			border_key = "servo_skull_stalled_border_colour"
-			marker.servo_skull_pulse = mod:get("servo_skull_pulse_when_stalled")
 		end
 
 		if widget.style.ring then

@@ -2820,7 +2820,7 @@ local loc = {
 	},
 	-- Servo Skull Markers
 	servo_skull_settings = {
-		en = "ASSISTANCE & SERVO SKULL MARKERS",
+		en = "DECODING MARKERS",
 		["zh-cn"] = "伺服颅骨标记（可破解终端）",
 	},
 	Investigation = {
@@ -2907,7 +2907,7 @@ local loc = {
 		["zh-cn"] = "蓝",
 	},
 	servo_skull_stalled_colour = {
-		en = "Stalled (Can Deploy/Alert) Colour",
+		en = "Stalled (Can Deploy) Colour",
 		["zh-cn"] = "待命（可部署）颜色",
 	},
 	servo_skull_stalled_colour_R = {
@@ -2932,7 +2932,7 @@ local loc = {
 		["zh-cn"] = "蓝",
 	},
 	servo_skull_active_colour = {
-		en = "Active (Decoding/Helping) Colour",
+		en = "Active (Decoding) Colour",
 		["zh-cn"] = "激活（破解中）颜色",
 	},
 	servo_skull_active_colour_R = {
@@ -2979,10 +2979,183 @@ local loc = {
 	pulse_when_stalled_tooltip = {
 		en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
 	},
+	-- Player Assistance Markers
+	player_assistance_settings = {
+		en = "PLAYER ASSISTANCE MARKERS",
+		["zh-cn"] = "伺服颅骨标记（可破解终端）",
+	},
+	Investigation = {
+		en = "Investigation",
+	},
+	player_assistance_enable = {
+		en = "Enable Markers",
+		fr = "Activer les marqueurs",
+		ru = "Включить метки",
+		["zh-tw"] = "啟用標記",
+		["zh-cn"] = "启用标记",
+	},
+	player_assistance_enable_assistance_module = {
+		en = "Enable Assistance Module",
+	},
+	player_assistance_enable_assistance_module_tooltip = {
+		en = "Toggle the 'assistance' features, including recolouring downed players' markers and showing their downed states.",
+	},
+	player_assistance_servo_skull_icon = {
+		en = "Servo Skull Icon",
+		["zh-cn"] = "图标",
+	},
+	player_assistance_icon = {
+		en = "Assistance Icon (No Servo Skull Equipped)",
+	},
+	player_assistance_keep_on_screen = {
+		en = "Keep on screen",
+		ru = "Держать на экране",
+		fr = "Rester à l'écran",
+		["zh-tw"] = "保持顯示於螢幕",
+		["zh-cn"] = "在画面中持续显示",
+	},
+	player_assistance_require_line_of_sight = {
+		en = "Require line of sight",
+		fr = "Nécessite une ligne de vue",
+		ru = "Должно быть в зоне видимости",
+		["zh-tw"] = "需要視線範圍",
+		["zh-cn"] = "仅视野内显示",
+	},
+	player_assistance_max_distance = {
+		en = "Max distance",
+		fr = "Distance maximale",
+		ru = "Максимальное расстояние",
+		["zh-tw"] = "最遠距離",
+		["zh-cn"] = "最大显示距离",
+	},
+	player_assistance_scale = {
+		en = "Scale",
+		fr = "Scale",
+		ru = "Scale",
+		["zh-tw"] = "圖標縮放大小",
+		["zh-cn"] = "标记缩放比例",
+	},
+	player_assistance_alpha = {
+		en = "Alpha Multiplier",
+		fr = "Multiplicateur d'alpha",
+		ru = "Прозрачность",
+		["zh-tw"] = "透明度倍增器",
+		["zh-cn"] = "透明度系数",
+	},
+	player_assistance_default_colour = {
+		en = "Inactive Colour",
+		["zh-cn"] = "未激活颜色",
+	},
+	player_assistance_default_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	player_assistance_default_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	player_assistance_default_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	player_assistance_stalled_colour = {
+		en = "Stalled (Alert) Colour",
+		["zh-cn"] = "待命（可部署）颜色",
+	},
+	player_assistance_stalled_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	player_assistance_stalled_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	player_assistance_stalled_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	player_assistance_active_colour = {
+		en = "Active (Helping) Colour",
+		["zh-cn"] = "激活（破解中）颜色",
+	},
+	player_assistance_active_colour_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	player_assistance_active_colour_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	player_assistance_active_colour_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	player_assistance_border_colour = {
+		en = "Inactive Border Colour",
+		["zh-cn"] = "未激活边框颜色",
+	},
+	player_assistance_stalled_border_colour = {
+		en = "Stalled Border Colour",
+		["zh-cn"] = "待命边框颜色",
+	},
+	player_assistance_active_border_colour = {
+		en = "Active Border Colour",
+		["zh-cn"] = "激活边框颜色",
+	},
+	player_assistance_toggle_los = {
+		en = "Toggle 'Require Line of Sight'",
+		["zh-tw"] = "切換「需要視線範圍」",
+		["zh-cn"] = "切换「仅视野内显示」",
+	},
+	player_assistance_pulse_when_stalled = {
+		en = "Pulse When Stalled",
+	},
+	pulse_when_stalled_tooltip = {
+		en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
+	},
 	-- Unknown Markers
 	unknown_markers_settings = {
 		en = "UNKNOWN MARKERS (Those not covered elsewhere!)",
 		["zh-cn"] = "未知物品标记（未归类物品）",
+	},
+	Help = {
+		en = "Help",
+	},
+	Medkit = {
+		en = "Medkit",
+	},
+	Respawn = {
+		en = "Respawn",
+	},
+	Stimm = {
+		en = "Stimm",
 	},
 	unknown_enable = {
 		en = "Enable Markers",
