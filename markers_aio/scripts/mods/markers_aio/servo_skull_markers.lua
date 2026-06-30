@@ -1,5 +1,6 @@
 local mod = get_mod("markers_aio")
 local PlayerUnitStatus = require("scripts/utilities/attack/player_unit_status")
+local fs = mod.frame_settings
 
 local function _is_decoder_active(minigame_extension)
 	if not minigame_extension then
@@ -10,7 +11,6 @@ end
 
 mod.update_servo_skull_markers = function(self, marker)
 	if marker and self then
-		local fs = mod.frame_settings
 		local unit = marker.unit
 		if not unit or type(unit) ~= "userdata" or not Unit.alive(unit) then
 			return
@@ -40,10 +40,10 @@ mod.update_servo_skull_markers = function(self, marker)
 
 		marker.markers_aio_type = "servo_skull"
 
-		mod.set_colour(widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
-		marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
-		marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-		marker.template.screen_clamp = mod:get(marker.markers_aio_type .. "_keep_on_screen")
+		mod.set_colour(widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+		marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+		marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
+		marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
 		marker.block_screen_clamp = false
 
 		local character_state_component = unit_data_extension and unit_data_extension:read_component("character_state")
@@ -51,9 +51,9 @@ mod.update_servo_skull_markers = function(self, marker)
 		if character_state_component and PlayerUnitStatus.is_ledge_hanging(character_state_component) then
 			--
 		elseif not is_decoding_terminal and fs and fs.servo_skull_equipped then
-			widget.content.icon = mod:get("servo_skull_icon")
+			widget.content.icon = fs.servo_skull_icon
 		elseif is_decoding_terminal then
-			widget.content.icon = mod:get("decoding_icon")
+			widget.content.icon = fs.decoding_icon
 		end
 
 		marker.template.icon_min_size[1] = 36
@@ -72,9 +72,9 @@ mod.update_servo_skull_markers = function(self, marker)
 				if decoder_extension:wait_for_restart() then
 					colour_type = "servo_skull_stalled"
 					border_key = "servo_skull_stalled_border_colour"
-					marker.servo_skull_pulse = mod:get("servo_skull_pulse_when_stalled")
+					marker.servo_skull_pulse = fs.servo_skull_pulse_when_stalled
 					if fs and fs.servo_skull_equipped then
-						widget.content.icon = mod:get("servo_skull_icon")
+						widget.content.icon = fs.servo_skull_icon
 					end
 				elseif
 					decoder_extension:started_decode()
@@ -85,7 +85,7 @@ mod.update_servo_skull_markers = function(self, marker)
 					border_key = "servo_skull_active_border_colour"
 					marker.servo_skull_pulse = false
 					if fs and fs.servo_skull_equipped then
-						widget.content.icon = mod:get("servo_skull_icon")
+						widget.content.icon = fs.servo_skull_icon
 					end
 				end
 			else
@@ -99,21 +99,21 @@ mod.update_servo_skull_markers = function(self, marker)
 				elseif player_unit and interactee_extension and interactee_extension:show_marker(player_unit) then
 					colour_type = "servo_skull_stalled"
 					border_key = "servo_skull_stalled_border_colour"
-					marker.servo_skull_pulse = mod:get("servo_skull_pulse_when_stalled")
+					marker.servo_skull_pulse = fs.servo_skull_pulse_when_stalled
 				end
 			end
 		end
 
 		if widget.style.ring then
-			mod.set_colour(widget.style.ring.color, mod.lookup_colour(mod:get(border_key)))
+			mod.set_colour(widget.style.ring.color, mod.lookup_colour(fs[border_key]))
 		end
 
 		mod.set_colour_argb(
 			widget.style.icon.color,
 			255,
-			mod:get(colour_type .. "_colour_R"),
-			mod:get(colour_type .. "_colour_G"),
-			mod:get(colour_type .. "_colour_B")
+			fs[colour_type .. "_colour_R"],
+			fs[colour_type .. "_colour_G"],
+			fs[colour_type .. "_colour_B"]
 		)
 
 		marker.draw = true

@@ -6,14 +6,16 @@ local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interacti
 local DestructibleExtension = require("scripts/extension_systems/destructible/destructible_extension")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 
+local fs = mod.frame_settings
+
 mod.heretical_idols = {}
 mod._world_markers_list = {}
 
 local get_max_distance = function()
-	local max_distance = mod:get("heretical_idol_max_distance")
+	local max_distance = fs.heretical_idol_max_distance
 
 	if max_distance == nil then
-		max_distance = mod:get("heretical_idol_max_distance")
+		max_distance = fs.heretical_idol_max_distance
 	end
 
 	return max_distance
@@ -121,7 +123,7 @@ end
 mod.current_heretical_idol_markers = {}
 
 mod.add_heretical_idol_marker = function(self, unit, section_id)
-	if mod:get("heretical_idol_enable") then
+	if fs.heretical_idol_enable then
 		HereticalIdolTemplate.section_id = section_id
 		local marker_type = HereticalIdolTemplate.name
 
@@ -168,14 +170,14 @@ mod.update_marker_icon = function(self, marker)
 			mod.set_colour_argb(
 				marker.widget.style.icon.color,
 				255,
-				mod:get("icon_colour_R"),
-				mod:get("icon_colour_G"),
-				mod:get("icon_colour_B")
+				fs.icon_colour_R,
+				fs.icon_colour_G,
+				fs.icon_colour_B
 			)
-			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("idol_border_colour")))
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.idol_border_colour))
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
-			marker.template.screen_clamp = mod:get("heretical_idol_keep_on_screen")
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.screen_clamp = fs.heretical_idol_keep_on_screen
 			marker.block_screen_clamp = false
 
 			local max_spawn_distance_sq = max_distance * max_distance

@@ -5,7 +5,7 @@ local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interacti
 local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
-
+local fs = mod.frame_settings
 mod.update_atonement_markers = function(self, marker)
 	if marker and self then
 		local unit = marker.unit
@@ -29,19 +29,16 @@ mod.update_atonement_markers = function(self, marker)
 
 					marker.markers_aio_type = "event"
 
-					mod.set_colour(
-						marker.widget.style.background.color,
-						mod.lookup_colour(mod:get("marker_background_colour"))
-					)
-					marker.template.check_line_of_sight = mod:get("event_require_line_of_sight")
+					mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+					marker.template.check_line_of_sight = fs.event_require_line_of_sight
 
-					marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-					marker.template.screen_clamp = mod:get("event_keep_on_screen")
+					marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
+					marker.template.screen_clamp = fs.event_keep_on_screen
 					marker.block_screen_clamp = false
 
 					marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/objective_side"
 
-					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("event_border_colour")))
+					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.event_border_colour))
 
 					marker.widget.style.icon.size[1] = 32
 					marker.widget.style.icon.size[2] = 32
@@ -49,9 +46,9 @@ mod.update_atonement_markers = function(self, marker)
 					mod.set_colour_argb(
 						marker.widget.style.icon.color,
 						255,
-						mod:get("event_colour_R"),
-						mod:get("event_colour_G"),
-						mod:get("event_colour_B")
+						fs.event_colour_R,
+						fs.event_colour_G,
+						fs.event_colour_B
 					)
 				end
 			end
@@ -70,24 +67,24 @@ mod.update_atonement_markers = function(self, marker)
 
 			marker.markers_aio_type = "event"
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
 
-			marker.template.check_line_of_sight = mod:get("event_require_line_of_sight")
+			marker.template.check_line_of_sight = fs.event_require_line_of_sight
 
-			marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
+			marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
 			marker.template.screen_clamp = false
 			marker.block_screen_clamp = false
 
 			marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
 
-			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("event_border_colour")))
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.event_border_colour))
 
 			mod.set_colour_argb(
 				marker.widget.style.icon.color,
 				100,
-				mod:get("event_colour_R"),
-				mod:get("event_colour_G"),
-				mod:get("event_colour_B")
+				fs.event_colour_R,
+				fs.event_colour_G,
+				fs.event_colour_B
 			)
 		end
 	end

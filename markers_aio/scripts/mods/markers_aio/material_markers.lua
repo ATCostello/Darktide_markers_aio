@@ -7,11 +7,13 @@ local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 
+local fs = mod.frame_settings
+
 local get_max_distance = function()
-	local max_distance = mod:get("material_max_distance")
+	local max_distance = fs.material_max_distance
 
 	if max_distance == nil then
-		max_distance = mod:get("material_max_distance")
+		max_distance = fs.material_max_distance
 	end
 
 	return max_distance
@@ -47,13 +49,13 @@ mod.update_material_markers = function(self, marker)
 				or marker.data and marker.data.type == "small_metal"
 				or marker.data and marker.data.type == "small_platinum"
 			then
-				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("material_small_border_colour")))
+				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.material_small_border_colour))
 			else
-				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("material_large_border_colour")))
+				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.material_large_border_colour))
 			end
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
-			marker.template.screen_clamp = mod:get("material_keep_on_screen")
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.screen_clamp = fs.material_keep_on_screen
 			marker.block_screen_clamp = false
 
 			local max_spawn_distance_sq = max_distance * max_distance
@@ -83,11 +85,11 @@ mod.update_material_markers = function(self, marker)
 				mod.set_colour_argb(
 					marker.widget.style.icon.color,
 					255,
-					mod:get("plasteel_icon_colour_R"),
-					mod:get("plasteel_icon_colour_G"),
-					mod:get("plasteel_icon_colour_B")
+					fs.plasteel_icon_colour_R,
+					fs.plasteel_icon_colour_G,
+					fs.plasteel_icon_colour_B
 				)
-				if mod:get("toggle_large_plasteel") == false then
+				if fs.toggle_large_plasteel == false then
 					marker.widget.visible = false
 				else
 					if marker.widget.content.line_of_sight_progress == 1 then
@@ -100,11 +102,11 @@ mod.update_material_markers = function(self, marker)
 				mod.set_colour_argb(
 					marker.widget.style.icon.color,
 					255,
-					mod:get("plasteel_icon_colour_R"),
-					mod:get("plasteel_icon_colour_G"),
-					mod:get("plasteel_icon_colour_B")
+					fs.plasteel_icon_colour_R,
+					fs.plasteel_icon_colour_G,
+					fs.plasteel_icon_colour_B
 				)
-				if mod:get("toggle_small_plasteel") == false then
+				if fs.toggle_small_plasteel == false then
 					marker.widget.visible = false
 				else
 					if marker.widget.content.line_of_sight_progress == 1 then
@@ -118,11 +120,11 @@ mod.update_material_markers = function(self, marker)
 				mod.set_colour_argb(
 					marker.widget.style.icon.color,
 					255,
-					mod:get("diamantine_icon_colour_R"),
-					mod:get("diamantine_icon_colour_G"),
-					mod:get("diamantine_icon_colour_B")
+					fs.diamantine_icon_colour_R,
+					fs.diamantine_icon_colour_G,
+					fs.diamantine_icon_colour_B
 				)
-				if mod:get("toggle_small_diamantine") == false then
+				if fs.toggle_small_diamantine == false then
 					marker.widget.visible = false
 				else
 					if marker.widget.content.line_of_sight_progress == 1 then
@@ -134,11 +136,11 @@ mod.update_material_markers = function(self, marker)
 				mod.set_colour_argb(
 					marker.widget.style.icon.color,
 					255,
-					mod:get("diamantine_icon_colour_R"),
-					mod:get("diamantine_icon_colour_G"),
-					mod:get("diamantine_icon_colour_B")
+					fs.diamantine_icon_colour_R,
+					fs.diamantine_icon_colour_G,
+					fs.diamantine_icon_colour_B
 				)
-				if mod:get("toggle_large_diamantine") == false then
+				if fs.toggle_large_diamantine == false then
 					marker.widget.visible = false
 				else
 					if marker.widget.content.line_of_sight_progress == 1 then

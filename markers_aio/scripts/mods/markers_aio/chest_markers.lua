@@ -9,11 +9,13 @@ local WorldMarkerTemplateInteraction =
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local ChestExtension = require("scripts/extension_systems/chest/chest_extension")
 
+local fs = mod.frame_settings
+
 local get_max_distance = function()
-	local max_distance = mod:get("chest_max_distance")
+	local max_distance = fs.chest_max_distance
 
 	if max_distance == nil then
-		max_distance = mod:get("chest_max_distance")
+		max_distance = fs.chest_max_distance
 	end
 
 	return max_distance
@@ -201,9 +203,9 @@ mod.update_chest_markers = function(self, marker)
 
 			marker.markers_aio_type = "chest"
 
-			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("chest_border_colour")))
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
-			marker.template.screen_clamp = mod:get("chest_keep_on_screen")
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.chest_border_colour))
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.screen_clamp = fs.chest_keep_on_screen
 			marker.block_screen_clamp = false
 
 			-- marker.widget.content.is_clamped = false
@@ -231,12 +233,12 @@ mod.update_chest_markers = function(self, marker)
 			mod.set_colour_argb(
 				marker.widget.style.icon.color,
 				255,
-				mod:get("chest_icon_colour_R"),
-				mod:get("chest_icon_colour_G"),
-				mod:get("chest_icon_colour_B")
+				fs.chest_icon_colour_R,
+				fs.chest_icon_colour_G,
+				fs.chest_icon_colour_B
 			)
 
-			marker.widget.content.icon = mod:get("chest_icon")
+			marker.widget.content.icon = fs.chest_icon
 		end
 	end
 end

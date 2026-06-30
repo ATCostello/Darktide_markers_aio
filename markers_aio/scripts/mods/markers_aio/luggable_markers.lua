@@ -6,6 +6,8 @@ local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 
+local fs = mod.frame_settings
+
 mod.update_luggable_markers = function(self, marker)
 	if marker and self then
 		local unit = marker.unit
@@ -27,22 +29,22 @@ mod.update_luggable_markers = function(self, marker)
 
 			marker.markers_aio_type = "luggable"
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
-			marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
 
-			marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-			marker.template.screen_clamp = mod:get(marker.markers_aio_type .. "_keep_on_screen")
+			marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
+			marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
 			marker.block_screen_clamp = false
 
-			marker.widget.content.icon = mod:get("luggable_icon")
+			marker.widget.content.icon = fs.luggable_icon
 
-			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("luggable_border_colour")))
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.luggable_border_colour))
 			mod.set_colour_argb(
 				marker.widget.style.icon.color,
 				255,
-				mod:get(marker.markers_aio_type .. "_colour_R"),
-				mod:get(marker.markers_aio_type .. "_colour_G"),
-				mod:get(marker.markers_aio_type .. "_colour_B")
+				fs.per_type[marker.markers_aio_type].colour_R,
+				fs.per_type[marker.markers_aio_type].colour_G,
+				fs.per_type[marker.markers_aio_type].colour_B
 			)
 		end
 	end

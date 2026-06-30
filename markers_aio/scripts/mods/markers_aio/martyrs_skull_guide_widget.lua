@@ -71,7 +71,7 @@ local function make_widget_definitions()
 				horizontal_alignment = "left",
 				vertical_alignment = "top",
 				color = Color.terminal_text_header(255, true),
-				offset = { ((PANEL_WIDTH - SKULL_WIDTH) / 2) -3, -9, 4 },
+				offset = { ((PANEL_WIDTH - SKULL_WIDTH) / 2) - 3, -9, 4 },
 				size = { SKULL_WIDTH, 22 },
 			},
 		},

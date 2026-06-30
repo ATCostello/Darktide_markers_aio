@@ -1,6 +1,6 @@
 local mod = get_mod("markers_aio")
 local PlayerUnitStatus = require("scripts/utilities/attack/player_unit_status")
-
+local fs = mod.frame_settings
 local function _player_needs_help(unit_data_extension)
 	if not unit_data_extension then
 		return false
@@ -37,7 +37,6 @@ end
 
 mod.update_player_assistance_markers = function(self, marker)
 	if marker and self then
-		local fs = mod.frame_settings
 		local unit = marker.unit
 		if not unit or type(unit) ~= "userdata" or not Unit.alive(unit) then
 			return
@@ -73,20 +72,20 @@ mod.update_player_assistance_markers = function(self, marker)
 
 		marker.markers_aio_type = "player_assistance"
 
-		mod.set_colour(widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
-		marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
-		marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-		marker.template.screen_clamp = mod:get(marker.markers_aio_type .. "_keep_on_screen")
+		mod.set_colour(widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+		marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+		marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
+		marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
 		marker.block_screen_clamp = false
 
-		widget.content.icon = mod:get("player_assistance_icon")
+		widget.content.icon = fs.player_assistance_icon
 
 		local character_state_component = unit_data_extension and unit_data_extension:read_component("character_state")
 			or nil
 		if character_state_component and PlayerUnitStatus.is_ledge_hanging(character_state_component) then
 			--
 		elseif fs and fs.servo_skull_equipped then
-			widget.content.icon = mod:get("player_assistance_servo_skull_icon")
+			widget.content.icon = fs.player_assistance_servo_skull_icon
 		end
 
 		marker.template.icon_min_size[1] = 36
@@ -105,19 +104,19 @@ mod.update_player_assistance_markers = function(self, marker)
 		elseif needs_help then
 			colour_type = "player_assistance_stalled"
 			border_key = "player_assistance_stalled_border_colour"
-			marker.player_assistance_pulse = mod:get("player_assistance_pulse_when_stalled")
+			marker.player_assistance_pulse = fs.player_assistance_pulse_when_stalled
 		end
 
 		if widget.style.ring then
-			mod.set_colour(widget.style.ring.color, mod.lookup_colour(mod:get(border_key)))
+			mod.set_colour(widget.style.ring.color, mod.lookup_colour(fs[border_key]))
 		end
 
 		mod.set_colour_argb(
 			widget.style.icon.color,
 			255,
-			mod:get(colour_type .. "_colour_R"),
-			mod:get(colour_type .. "_colour_G"),
-			mod:get(colour_type .. "_colour_B")
+			fs[colour_type .. "_colour_R"],
+			fs[colour_type .. "_colour_G"],
+			fs[colour_type .. "_colour_B"]
 		)
 
 		marker.draw = true

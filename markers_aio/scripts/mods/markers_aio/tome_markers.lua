@@ -7,11 +7,13 @@ local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 
+local fs = mod.frame_settings
+
 local get_max_distance = function()
-	local max_distance = mod:get("tome_max_distance")
+	local max_distance = fs.tome_max_distance
 
 	if max_distance == nil then
-		max_distance = mod:get("tome_max_distance")
+		max_distance = fs.tome_max_distance
 	end
 
 	return max_distance
@@ -36,12 +38,9 @@ mod.update_tome_markers = function(self, marker)
 					marker.widget.alpha_multiplier = 0
 					marker.draw = false
 
-					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(mod:get("tome_border_colour")))
-					mod.set_colour(
-						marker.widget.style.background.color,
-						mod.lookup_colour(mod:get("marker_background_colour"))
-					)
-					marker.template.screen_clamp = mod:get("tome_keep_on_screen")
+					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.tome_border_colour))
+					mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+					marker.template.screen_clamp = fs.tome_keep_on_screen
 					marker.block_screen_clamp = false
 
 					-- marker.widget.content.is_clamped = false
@@ -77,17 +76,17 @@ mod.update_tome_markers = function(self, marker)
 						mod.set_colour_argb(
 							marker.widget.style.icon.color,
 							255,
-							mod:get("grim_colour_R"),
-							mod:get("grim_colour_G"),
-							mod:get("grim_colour_B")
+							fs.grim_colour_R,
+							fs.grim_colour_G,
+							fs.grim_colour_B
 						)
 					else
 						mod.set_colour_argb(
 							marker.widget.style.icon.color,
 							255,
-							mod:get("script_colour_R"),
-							mod:get("script_colour_G"),
-							mod:get("script_colour_B")
+							fs.script_colour_R,
+							fs.script_colour_G,
+							fs.script_colour_B
 						)
 					end
 				end

@@ -11,8 +11,11 @@ local AchievementCategories = require("scripts/settings/achievements/achievement
 local last_walkthrough_update = 0
 local walkthrough_update_interval = 0.1 -- throttle for walkthrough update in seconds
 
+local fs = mod.frame_settings
+
 mod.update_martyrs_skull_markers = function(self, marker)
-	if mod:get("martyrs_skull_guide_enable") == true or mod:get("martyrs_skull_guide_markers_enable") == true then
+	local fs = mod.frame_settings
+	if fs.martyrs_skull_guide_enable == true or fs.martyrs_skull_guide_markers_enable == true then
 		local now = os.clock()
 		if now - last_walkthrough_update > walkthrough_update_interval then
 			last_walkthrough_update = now
@@ -31,25 +34,25 @@ mod.update_martyrs_skull_markers = function(self, marker)
 
 			marker.markers_aio_type = "martyrs_skull"
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(mod:get("marker_background_colour")))
-			marker.template.check_line_of_sight = mod:get(marker.markers_aio_type .. "_require_line_of_sight")
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
 
-			marker.template.max_distance = mod:get(marker.markers_aio_type .. "_max_distance")
-			marker.template.screen_clamp = mod:get(marker.markers_aio_type .. "_keep_on_screen")
+			marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
+			marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
 			marker.block_screen_clamp = false
 
 			marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
 
 			mod.set_colour(
 				marker.widget.style.ring.color,
-				mod.lookup_colour(mod:get(marker.markers_aio_type .. "_border_colour"))
+				mod.lookup_colour(fs.per_type[marker.markers_aio_type].border_colour)
 			)
 			mod.set_colour_argb(
 				marker.widget.style.icon.color,
 				255,
-				mod:get(marker.markers_aio_type .. "_colour_R"),
-				mod:get(marker.markers_aio_type .. "_colour_G"),
-				mod:get(marker.markers_aio_type .. "_colour_B")
+				fs.per_type[marker.markers_aio_type].colour_R,
+				fs.per_type[marker.markers_aio_type].colour_G,
+				fs.per_type[marker.markers_aio_type].colour_B
 			)
 		end
 	end
@@ -1980,7 +1983,7 @@ local player_near_skull = false
 mod.setup_walkthrough_markers = function(self)
 	self._level = Managers.state.mission:mission()
 	if not self._level then
-		if mod:get("martyrs_skull_guide_enable") == true then
+		if fs.martyrs_skull_guide_enable == true then
 			mod.guide_widget_clear()
 		end
 		return
@@ -1990,8 +1993,8 @@ mod.setup_walkthrough_markers = function(self)
 
 	for level_name, walkthrough_markers in pairs(maryrs_skull_walkthrough_markers) do
 		if current_level_name == level_name then
-			local markers_enabled = mod:get("martyrs_skull_guide_markers_enable") == true
-			local widget_enabled = mod:get("martyrs_skull_guide_enable") == true
+			local markers_enabled = fs.martyrs_skull_guide_markers_enable == true
+			local widget_enabled = fs.martyrs_skull_guide_enable == true
 
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]
@@ -2016,10 +2019,7 @@ mod.setup_walkthrough_markers = function(self)
 				end
 			end
 
-			if
-				mod:get("martyrs_skull_guide_disable_if_collected") == true
-				and mod.does_player_need_skull() == false
-			then
+			if fs.martyrs_skull_guide_disable_if_collected == true and mod.does_player_need_skull() == false then
 				if widget_enabled then
 					mod.guide_widget_clear()
 				end
@@ -2083,7 +2083,7 @@ mod.setup_walkthrough_markers = function(self)
 
 								mod.set_colour(
 									marker.widget.style.ring.color,
-									mod.lookup_colour(mod:get("martyrs_skull_border_colour"))
+									mod.lookup_colour(fs.martyrs_skull_border_colour)
 								)
 							end
 						end
