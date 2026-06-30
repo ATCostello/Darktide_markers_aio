@@ -180,7 +180,7 @@ return {
 			{
 				setting_id = "aio_settings",
 				type = "group",
-				tab = "General",
+				tab = mod:localize("tab_general"),
 				sub_widgets = {
 					{
 						setting_id = "mod_name_pizazz_toggle",
@@ -253,7 +253,7 @@ return {
 
 				setting_id = "ammo_med_markers_settings",
 				type = "group",
-				tab = "Ammo & Med",
+				tab = mod:localize("tab_ammo_med"),
 				sub_widgets = {
 					{
 						setting_id = "ammo_med_enable",
@@ -598,7 +598,7 @@ return {
 
 				setting_id = "chest_markers_settings",
 				type = "group",
-				tab = "Chests",
+				tab = mod:localize("tab_chests"),
 				sub_widgets = {
 					{
 						setting_id = "chest_enable",
@@ -705,7 +705,7 @@ return {
 
 				setting_id = "heretical_idol_markers_settings",
 				type = "group",
-				tab = "Heretical Idol",
+				tab = mod:localize("tab_heretical_idol"),
 				sub_widgets = {
 					{
 						setting_id = "heretical_idol_enable",
@@ -807,7 +807,7 @@ return {
 
 				setting_id = "material_markers_settings",
 				type = "group",
-				tab = "Materials",
+				tab = mod:localize("tab_materials"),
 				sub_widgets = {
 					{
 						setting_id = "material_enable",
@@ -970,7 +970,7 @@ return {
 
 				setting_id = "stimm_markers_settings",
 				type = "group",
-				tab = "Stimms",
+				tab = mod:localize("tab_stimms"),
 				sub_widgets = {
 					{
 						setting_id = "stimm_enable",
@@ -1270,7 +1270,7 @@ return {
 
 				setting_id = "tome_markers_settings",
 				type = "group",
-				tab = "Tomes",
+				tab = mod:localize("tab_tomes"),
 				sub_widgets = {
 					{
 						setting_id = "tome_enable",
@@ -1400,7 +1400,7 @@ return {
 
 				setting_id = "luggable_markers_settings",
 				type = "group",
-				tab = "Luggables",
+				tab = mod:localize("tab_luggables"),
 				sub_widgets = {
 					{
 						setting_id = "luggable_enable",
@@ -1507,7 +1507,7 @@ return {
 
 				setting_id = "martyrs_skull_markers_settings",
 				type = "group",
-				tab = "Martyr's Skull",
+				tab = mod:localize("tab_martyrs_skull"),
 				sub_widgets = {
 					{
 						setting_id = "martyrs_skull_enable",
@@ -1641,7 +1641,7 @@ return {
 
 				setting_id = "expedition_markers_settings",
 				type = "group",
-				tab = "Expedition",
+				tab = mod:localize("tab_expedition"),
 				sub_widgets = {
 					{
 						setting_id = "expedition_enable",
@@ -1912,7 +1912,7 @@ return {
 
 				setting_id = "event_markers_settings",
 				type = "group",
-				tab = "Event",
+				tab = mod:localize("tab_event"),
 				sub_widgets = {
 					{
 						setting_id = "event_enable",
@@ -2010,7 +2010,7 @@ return {
 			{
 				setting_id = "servo_skull_settings",
 				type = "group",
-				tab = "Decoding",
+				tab = mod:localize("tab_decoding"),
 				sub_widgets = {
 					{
 						setting_id = "servo_skull_enable",
@@ -2203,7 +2203,7 @@ return {
 			{
 				setting_id = "player_assistance_settings",
 				type = "group",
-				tab = "Player Assistance",
+				tab = mod:localize("tab_player_assistance"),
 				sub_widgets = {
 					{
 						setting_id = "player_assistance_enable",
@@ -2397,7 +2397,7 @@ return {
 
 				setting_id = "unknown_markers_settings",
 				type = "group",
-				tab = "Unknown",
+				tab = mod:localize("tab_unknown"),
 				sub_widgets = {
 					{
 						setting_id = "unknown_enable",
