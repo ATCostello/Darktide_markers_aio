@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.14.3"
+mod.version = "2.14.4"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -86,14 +86,20 @@ local function lerp(a, b, t)
 	return a + (b - a) * t
 end
 
+local function utf8_chars(s)
+	local chars = {}
+	for char in string.gmatch(s, "[%z\1-\127\194-\244][\128-\191]*") do
+		table.insert(chars, char)
+	end
+	return chars
+end
+
 mod.gradientText = function(text, startColor, endColor, colorSpaces)
 	local result = ""
-	local length = #text
+	local chars = utf8_chars(text)
 	local visibleIndex = 0
 
-	-- Count visible characters
-	for i = 1, length do
-		local char = text:sub(i, i)
+	for _, char in ipairs(chars) do
 		if colorSpaces or char ~= " " then
 			visibleIndex = visibleIndex + 1
 		end
@@ -101,9 +107,7 @@ mod.gradientText = function(text, startColor, endColor, colorSpaces)
 
 	local currentIndex = 0
 
-	for i = 1, length do
-		local char = text:sub(i, i)
-
+	for _, char in ipairs(chars) do
 		if not colorSpaces and char == " " then
 			result = result .. char
 		else
@@ -118,7 +122,7 @@ mod.gradientText = function(text, startColor, endColor, colorSpaces)
 		end
 	end
 
-	result = "{#color(" .. colours.title .. ")} " .. result .. "{#reset()}"
+	result = "{#color(" .. colours.title .. ")}" .. result .. "{#reset()}"
 	return result
 end
 
