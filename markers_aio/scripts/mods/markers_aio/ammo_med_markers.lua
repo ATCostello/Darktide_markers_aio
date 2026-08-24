@@ -79,6 +79,7 @@ end
 mod:hook_safe(CLASS.UIViewHandler, "close_view", function(self, view_name, ...)
 	if view_name == "dmf_options_view" or view_name == "options_view" then
 		check_recolorstimms()
+		mod.build_frame_settings()
 	end
 end)
 
@@ -301,13 +302,37 @@ mod.update_ammo_med_markers = function(self, marker)
 
 				if fs.change_colour_for_ammo_charges == true then
 					if remaining_charges == 4 then
-						mod.set_colour_argb(marker.widget.style.background.color, 255, 0, 150, 0)
+						mod.set_colour_argb(
+							marker.widget.style.background.color,
+							255,
+							fs.charges_4_colour_R,
+							fs.charges_4_colour_G,
+							fs.charges_4_colour_B
+						)
 					elseif remaining_charges == 3 then
-						mod.set_colour_argb(marker.widget.style.background.color, 255, 150, 150, 0)
+						mod.set_colour_argb(
+							marker.widget.style.background.color,
+							255,
+							fs.charges_3_colour_R,
+							fs.charges_3_colour_G,
+							fs.charges_3_colour_B
+						)
 					elseif remaining_charges == 2 then
-						mod.set_colour_argb(marker.widget.style.background.color, 255, 150, 100, 0)
+						mod.set_colour_argb(
+							marker.widget.style.background.color,
+							255,
+							fs.charges_2_colour_R,
+							fs.charges_2_colour_G,
+							fs.charges_2_colour_B
+						)
 					elseif remaining_charges == 1 then
-						mod.set_colour_argb(marker.widget.style.background.color, 255, 150, 0, 0)
+						mod.set_colour_argb(
+							marker.widget.style.background.color,
+							255,
+							fs.charges_1_colour_R,
+							fs.charges_1_colour_G,
+							fs.charges_1_colour_B
+						)
 					end
 				end
 
@@ -355,13 +380,37 @@ mod.update_ammo_med_markers = function(self, marker)
 
 				if fs.change_colour_for_ammo_charges == true then
 					if remaining_charges == 4 then
-						mod.set_colour_argb(marker.widget.style.background.color, 255, 0, 150, 0)
+						mod.set_colour_argb(
+							marker.widget.style.background.color,
+							255,
+							fs.charges_4_colour_R,
+							fs.charges_4_colour_G,
+							fs.charges_4_colour_B
+						)
 					elseif remaining_charges == 3 then
-						mod.set_colour_argb(marker.widget.style.background.color, 255, 150, 150, 0)
+						mod.set_colour_argb(
+							marker.widget.style.background.color,
+							255,
+							fs.charges_3_colour_R,
+							fs.charges_3_colour_G,
+							fs.charges_3_colour_B
+						)
 					elseif remaining_charges == 2 then
-						mod.set_colour_argb(marker.widget.style.background.color, 255, 150, 100, 0)
+						mod.set_colour_argb(
+							marker.widget.style.background.color,
+							255,
+							fs.charges_2_colour_R,
+							fs.charges_2_colour_G,
+							fs.charges_2_colour_B
+						)
 					elseif remaining_charges == 1 then
-						mod.set_colour_argb(marker.widget.style.background.color, 255, 150, 0, 0)
+						mod.set_colour_argb(
+							marker.widget.style.background.color,
+							255,
+							fs.charges_1_colour_R,
+							fs.charges_1_colour_G,
+							fs.charges_1_colour_B
+						)
 					end
 				end
 

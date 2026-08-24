@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.14.4"
+mod.version = "2.14.5"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -122,7 +122,7 @@ mod.gradientText = function(text, startColor, endColor, colorSpaces)
 		end
 	end
 
-	result = "{#color(" .. colours.title .. ")}" .. result .. "{#reset()}"
+	result = "{#color(" .. colours.title .. ")} " .. result .. "{#reset()}"
 	return result
 end
 
@@ -3842,6 +3842,102 @@ local loc = {
 		en = "Adjust the colour of the background of ammo crate and medical markers to differentiate the amount of uses they have left?",
 		ru = "Изменить цвет фона меток ящиков с боеприпасами и аптечек, чтобы различать количество оставшихся использований?",
 		["zh-cn"] = "根据剩余使用次数改变弹药箱与医疗标记的背景颜色。",
+	},
+	change_colour_for_ammo_charges_4 = {
+		en = "4 Charges Left Colour"
+	},
+	change_colour_for_ammo_charges_3 = {
+		en = "3 Charges Left Colour"
+	},
+	change_colour_for_ammo_charges_2 = {
+		en = "2 Charges Left Colour"
+	},
+	change_colour_for_ammo_charges_1 = {
+		en = "1 Charges Left Colour"
+	},
+	change_colour_for_ammo_charges_4_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	change_colour_for_ammo_charges_4_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	change_colour_for_ammo_charges_4_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	change_colour_for_ammo_charges_3_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	change_colour_for_ammo_charges_3_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	change_colour_for_ammo_charges_3_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	change_colour_for_ammo_charges_2_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	change_colour_for_ammo_charges_2_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	change_colour_for_ammo_charges_2_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
+	},
+	change_colour_for_ammo_charges_1_R = {
+		en = "R",
+		fr = "R",
+		ru = "К",
+		["zh-tw"] = "紅",
+		["zh-cn"] = "红",
+	},
+	change_colour_for_ammo_charges_1_G = {
+		en = "G",
+		fr = "V",
+		ru = "З",
+		["zh-tw"] = "綠",
+		["zh-cn"] = "绿",
+	},
+	change_colour_for_ammo_charges_1_B = {
+		en = "B",
+		fr = "B",
+		ru = "С",
+		["zh-tw"] = "藍",
+		["zh-cn"] = "蓝",
 	},
 	display_field_improv_colour_tooltip = {
 		en = "Adjust the medical crate radius ring to change colour depending on whether a Veteran with the Field Improvisation talent is present in your party.",

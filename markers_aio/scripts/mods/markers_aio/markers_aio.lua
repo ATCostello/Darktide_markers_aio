@@ -9,7 +9,7 @@ local SpecialRulesSettings = require("scripts/settings/ability/special_rules_set
 local CompanionServoSkullSettings = require("scripts/settings/companion/companion_servo_skull_settings")
 
 mod.frame_settings = {}
-local function build_frame_settings()
+mod.build_frame_settings = function()
 	local fs = mod.frame_settings
 
 	local is_ads = false
@@ -218,6 +218,23 @@ local function build_frame_settings()
 	fs.display_med_charges = mod:get("display_med_charges")
 	fs.display_ammo_charges = mod:get("display_ammo_charges")
 	fs.change_colour_for_ammo_charges = mod:get("change_colour_for_ammo_charges")
+
+	fs.charges_4_colour_R = mod:get("change_colour_for_ammo_charges_4_R")
+	fs.charges_4_colour_G = mod:get("change_colour_for_ammo_charges_4_G")
+	fs.charges_4_colour_B = mod:get("change_colour_for_ammo_charges_4_B")
+
+	fs.charges_3_colour_R = mod:get("change_colour_for_ammo_charges_3_R")
+	fs.charges_3_colour_G = mod:get("change_colour_for_ammo_charges_3_G")
+	fs.charges_3_colour_B = mod:get("change_colour_for_ammo_charges_3_B")
+
+	fs.charges_2_colour_R = mod:get("change_colour_for_ammo_charges_2_R")
+	fs.charges_2_colour_G = mod:get("change_colour_for_ammo_charges_2_G")
+	fs.charges_2_colour_B = mod:get("change_colour_for_ammo_charges_2_B")
+
+	fs.charges_1_colour_R = mod:get("change_colour_for_ammo_charges_1_R")
+	fs.charges_1_colour_G = mod:get("change_colour_for_ammo_charges_1_G")
+	fs.charges_1_colour_B = mod:get("change_colour_for_ammo_charges_1_B")
+
 	fs.display_field_improv_colour = mod:get("display_field_improv_colour")
 	fs.display_field_improv_icon = mod:get("display_field_improv_icon")
 	fs.ammo_med_markers_alternate_large_ammo_icon = mod:get("ammo_med_markers_alternate_large_ammo_icon")
@@ -378,7 +395,7 @@ local function build_frame_settings()
 	end
 end
 
-build_frame_settings()
+mod.build_frame_settings()
 
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/chest_markers")
@@ -462,7 +479,7 @@ mod.guide_widget_clear = function()
 end
 
 mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
-	build_frame_settings()
+	mod.build_frame_settings()
 
 	-- add new marker templates to templates table
 	self._marker_templates[HereticalIdolTemplate.name] = HereticalIdolTemplate
@@ -871,7 +888,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 	if self._update_time > update_interval then
 		self._update_time = 0
-		build_frame_settings()
+		mod.build_frame_settings()
 	end
 
 	local fs = mod.frame_settings
