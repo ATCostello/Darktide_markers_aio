@@ -1,0 +1,96 @@
+local mod = get_mod("markers_aio")
+
+local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
+local Pickups = require("scripts/settings/pickup/pickups")
+local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
+local WorldMarkerTemplateInteraction =
+    require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
+local UIWidget = require("scripts/managers/ui/ui_widget")
+
+local fs = mod.frame_settings
+
+local get_max_distance = function()
+    local max_distance = fs.tome_max_distance
+
+    if max_distance == nil then
+        max_distance = fs.tome_max_distance
+    end
+
+    return max_distance
+end
+
+mod.update_tome_markers = function(self, marker)
+    local max_distance = get_max_distance()
+
+    if marker and self then
+        local unit = marker.unit
+
+        local pickup_type = mod.get_marker_pickup_type(marker)
+
+        if pickup_type then
+            local pickup = Pickups.by_name[pickup_type]
+
+            if pickup then
+                local is_tome = pickup.is_side_mission_pickup
+                if is_tome then
+                    marker.markers_aio_type = "tome"
+                    -- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
+                    marker.widget.alpha_multiplier = 0
+                    marker.draw = false
+
+                    mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.tome_border_colour))
+                    mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+                    marker.template.screen_clamp = fs.tome_keep_on_screen
+                    marker.block_screen_clamp = false
+
+                    -- marker.widget.content.is_clamped = false
+
+                    local max_spawn_distance_sq = max_distance * max_distance
+                    HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
+
+                    if self.fade_settings then
+                        self.fade_settings.distance_max = max_distance
+                        self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+                    end
+
+                    marker.template.max_distance = max_distance
+                    marker.template.fade_settings.distance_max = max_distance
+                    marker.template.fade_settings.distance_min = max_distance - marker.template.evolve_distance * 2
+
+                    local pickup_name = Unit.has_data(unit, "pickup_type") and Unit.get_data(unit, "pickup_type")
+
+                    local max_distance = get_max_distance()
+
+                    self.max_distance = max_distance
+                    marker.max_distance = max_distance
+
+                    if self.fade_settings then
+                        self.fade_settings.distance_max = max_distance
+                        self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+                    end
+
+                    marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_default"
+
+                    -- set colour depending on if grim or scripture
+                    if pickup.unit_name == "content/pickups/pocketables/side_mission/grimoire/grimoire_pickup_01" then
+                        mod.set_colour_argb(
+                            marker.widget.style.icon.color,
+                            255,
+                            fs.grim_colour_R,
+                            fs.grim_colour_G,
+                            fs.grim_colour_B
+                        )
+                    else
+                        mod.set_colour_argb(
+                            marker.widget.style.icon.color,
+                            255,
+                            fs.script_colour_R,
+                            fs.script_colour_G,
+                            fs.script_colour_B
+                        )
+                    end
+                end
+            end
+        end
+    end
+end

@@ -1,136 +1,136 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.14.5"
+mod.version = "2.15.0"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
-	local border_colours = {
-		["Gold"] = {
-			255,
-			232,
-			188,
-			109,
-		},
-		["Silver"] = {
-			255,
-			187,
-			198,
-			201,
-		},
-		["Steel"] = {
-			255,
-			161,
-			166,
-			169,
-		},
-		["Tarnished"] = {
-			255,
-			120,
-			57,
-			0,
-		},
-	}
-	return border_colours[colour_string]
+    local border_colours = {
+        ["Gold"] = {
+            255,
+            232,
+            188,
+            109,
+        },
+        ["Silver"] = {
+            255,
+            187,
+            198,
+            201,
+        },
+        ["Steel"] = {
+            255,
+            161,
+            166,
+            169,
+        },
+        ["Tarnished"] = {
+            255,
+            120,
+            57,
+            0,
+        },
+    }
+    return border_colours[colour_string]
 end
 
 local colours = {
-	title = "200,140,20",
-	subtitle = "226,199,126",
-	text = "169,191,153",
+    title = "200,140,20",
+    subtitle = "226,199,126",
+    text = "169,191,153",
 }
 
 -- Always use an updated font list.
 -- Thanks to GideonAriphael on Nexusmods for recommendation
 mod._get_font_options = function()
-	local FontDefinitions = require("scripts/managers/ui/ui_fonts_definitions")
-	local fonts = FontDefinitions.fonts or {}
-	local options = {}
-	local i = 1
+    local FontDefinitions = require("scripts/managers/ui/ui_fonts_definitions")
+    local fonts = FontDefinitions.fonts or {}
+    local options = {}
+    local i = 1
 
-	for font_name, _ in pairs(fonts) do
-		options[i] = { text = font_name, value = font_name }
-		i = i + 1
-	end
+    for font_name, _ in pairs(fonts) do
+        options[i] = { text = font_name, value = font_name }
+        i = i + 1
+    end
 
-	-- Sort alphabetically by the underlying font name for consistency
-	table.sort(options, function(a, b)
-		return a.value < b.value
-	end)
+    -- Sort alphabetically by the underlying font name for consistency
+    table.sort(options, function(a, b)
+        return a.value < b.value
+    end)
 
-	return options
+    return options
 end
 
 -- function to apply font face to localisation text
 local apply_font_to_text = function(text, font_name)
-	return string.format("{#font(%s)}%s{#reset()}", font_name, text)
+    return string.format("{#font(%s)}%s{#reset()}", font_name, text)
 end
 
 local insert_fonts = function(localisation_table)
-	local fonts_data = mod._get_font_options()
+    local fonts_data = mod._get_font_options()
 
-	for _, data in pairs(fonts_data) do
-		-- Convert snake_case to Title Case for display (e.g. proxima_nova_bold -> Proxima Nova Bold)
-		local readable = data.text:gsub("_", " "):gsub("(%a)([%w]*)", function(first, rest)
-			return first:upper() .. rest
-		end)
+    for _, data in pairs(fonts_data) do
+        -- Convert snake_case to Title Case for display (e.g. proxima_nova_bold -> Proxima Nova Bold)
+        local readable = data.text:gsub("_", " "):gsub("(%a)([%w]*)", function(first, rest)
+            return first:upper() .. rest
+        end)
 
-		local text = string.format("%s", readable)
+        local text = string.format("%s", readable)
 
-		local new_localised_readable_text = {
-			en = apply_font_to_text(text, data.value),
-		}
-		localisation_table[data.value] = new_localised_readable_text
-	end
+        local new_localised_readable_text = {
+            en = apply_font_to_text(text, data.value),
+        }
+        localisation_table[data.value] = new_localised_readable_text
+    end
 end
 
 local function lerp(a, b, t)
-	return a + (b - a) * t
+    return a + (b - a) * t
 end
 
 local function utf8_chars(s)
-	local chars = {}
-	for char in string.gmatch(s, "[%z\1-\127\194-\244][\128-\191]*") do
-		table.insert(chars, char)
-	end
-	return chars
+    local chars = {}
+    for char in string.gmatch(s, "[%z\1-\127\194-\244][\128-\191]*") do
+        table.insert(chars, char)
+    end
+    return chars
 end
 
 mod.gradientText = function(text, startColor, endColor, colorSpaces)
-	local result = ""
-	local chars = utf8_chars(text)
-	local visibleIndex = 0
+    local result = ""
+    local chars = utf8_chars(text)
+    local visibleIndex = 0
 
-	for _, char in ipairs(chars) do
-		if colorSpaces or char ~= " " then
-			visibleIndex = visibleIndex + 1
-		end
-	end
+    for _, char in ipairs(chars) do
+        if colorSpaces or char ~= " " then
+            visibleIndex = visibleIndex + 1
+        end
+    end
 
-	local currentIndex = 0
+    local currentIndex = 0
 
-	for _, char in ipairs(chars) do
-		if not colorSpaces and char == " " then
-			result = result .. char
-		else
-			currentIndex = currentIndex + 1
-			local t = (visibleIndex <= 1) and 0 or (currentIndex - 1) / (visibleIndex - 1)
+    for _, char in ipairs(chars) do
+        if not colorSpaces and char == " " then
+            result = result .. char
+        else
+            currentIndex = currentIndex + 1
+            local t = (visibleIndex <= 1) and 0 or (currentIndex - 1) / (visibleIndex - 1)
 
-			local r = math.floor(lerp(startColor[1], endColor[1], t))
-			local g = math.floor(lerp(startColor[2], endColor[2], t))
-			local b = math.floor(lerp(startColor[3], endColor[3], t))
+            local r = math.floor(lerp(startColor[1], endColor[1], t))
+            local g = math.floor(lerp(startColor[2], endColor[2], t))
+            local b = math.floor(lerp(startColor[3], endColor[3], t))
 
-			result = result .. string.format("{#color(%d,%d,%d)}%s", r, g, b, char)
-		end
-	end
+            result = result .. string.format("{#color(%d,%d,%d)}%s", r, g, b, char)
+        end
+    end
 
-	result = "{#color(" .. colours.title .. ")} " .. result .. "{#reset()}"
-	return result
+    result = "{#color(" .. colours.title .. ")} " .. result .. "{#reset()}"
+    return result
 end
 
 local colours = {
-	title = "200,140,20",
-	subtitle = "226,199,126",
-	text = "169,191,153",
-	faded_text = "84,95,76",
+    title = "200,140,20",
+    subtitle = "226,199,126",
+    text = "169,191,153",
+    faded_text = "84,95,76",
 }
 
 -- rainbow
@@ -145,3963 +145,4456 @@ local colours = {
 -- en = "{#color(255,0,255)}M{#color(200,0,255)}a{#color(150,0,255)}r{#color(100,0,255)}k{#color(50,0,255)}e{#color(0,0,255)}r{#color(0,100,255)}s {#color(0,200,255)}I{#color(0,255,200)}m{#color(0,255,100)}p{#color(0,255,0)}r{#color(100,255,0)}o{#color(200,255,0)}v{#color(255,255,0)}e{#color(255,150,0)}d {#color(255,100,0)}A{#color(255,50,0)}I{#color(255,0,0)}O{#reset()}",
 
 local mod_name = {
-	en = "Markers Improved AIO",
-	fr = "Marqueurs Améliorés AIO",
-	ru = "Улучшенные метки - все в одном",
-	["zh-tw"] = "標記改進整合版",
-	["zh-cn"] = "全功能标记集成",
+    en = "Markers Improved AIO",
+    fr = "Marqueurs Améliorés AIO",
+    ru = "Улучшенные метки - все в одном",
+    ["zh-tw"] = "標記改進整合版",
+    ["zh-cn"] = "全功能标记集成",
 }
 
 local loc = {
-	mod_name_pizazz_toggle = {
-		en = "Enable Name Pizazz",
-		fr = "Activer le nom stylisé",
-		ru = "Включить красочное название",
-		["zh-tw"] = "啟用名稱特效",
-		["zh-cn"] = "启用名称特效",
-	},
-	mod_name_pizazz_tooltip = {
-		en = "Toggles the rainbow colours effect on the mod name text. Requires a reload.\nIf enabled, you will get a small euphoric experience everytime you scroll through the mod menu, \nIf disabled - you will be a John Darktide and have no rainbow sprinkles (but I'll love you anyway).",
-		fr = "Active l'effet arc-en-ciel sur le nom du mod. Nécessite un rechargement.\nSi activé, vous aurez une petite expérience euphorique à chaque fois que vous ferez défiler le menu du mod.\nSi désactivé, vous serez un John Darktide sans paillettes (mais je vous aimerai quand même).",
-		ru = "Включает радужный эффект для названия мода. Требуется перезагрузка.\nЕсли включено, вы будете испытывать небольшую эйфорию каждый раз при прокрутке меню мода.\nЕсли выключено - вы будете обычным Джоном Дарктайдом без радужных блёсток (но я всё равно буду вас любить).",
-		["zh-tw"] = "切換模組名稱的彩虹顏色效果。需要重新載入。\n啟用後，每次滾動模組選單時你都會獲得小小的愉悅體驗。\n停用後，你將成為一般的黑暗潮汐玩家，失去彩虹點綴（但我仍然愛你）。",
-		["zh-cn"] = "切换模组名称的彩虹颜色效果。需要重新加载。\n启用后，每次滚动模组菜单时你都会获得小小的愉悦体验。\n禁用后，你将失去彩虹点缀（但我仍然爱你）。",
-	},
+    mod_name_pizazz_toggle = {
+        en = "Enable Name Pizazz",
+        fr = "Activer le nom stylisé",
+        ru = "Включить красочное название",
+        ["zh-tw"] = "啟用名稱特效",
+        ["zh-cn"] = "启用名称特效",
+    },
+    mod_name_pizazz_tooltip = {
+        en =
+        "Toggles the rainbow colours effect on the mod name text. Requires a reload.\nIf enabled, you will get a small euphoric experience everytime you scroll through the mod menu, \nIf disabled - you will be a John Darktide and have no rainbow sprinkles (but I'll love you anyway).",
+        fr =
+        "Active l'effet arc-en-ciel sur le nom du mod. Nécessite un rechargement.\nSi activé, vous aurez une petite expérience euphorique à chaque fois que vous ferez défiler le menu du mod.\nSi désactivé, vous serez un John Darktide sans paillettes (mais je vous aimerai quand même).",
+        ru =
+        "Включает радужный эффект для названия мода. Требуется перезагрузка.\nЕсли включено, вы будете испытывать небольшую эйфорию каждый раз при прокрутке меню мода.\nЕсли выключено - вы будете обычным Джоном Дарктайдом без радужных блёсток (но я всё равно буду вас любить).",
+        ["zh-tw"] = "切換模組名稱的彩虹顏色效果。需要重新載入。\n啟用後，每次滾動模組選單時你都會獲得小小的愉悅體驗。\n停用後，你將成為一般的黑暗潮汐玩家，失去彩虹點綴（但我仍然愛你）。",
+        ["zh-cn"] = "切换模组名称的彩虹颜色效果。需要重新加载。\n启用后，每次滚动模组菜单时你都会获得小小的愉悦体验。\n禁用后，你将失去彩虹点缀（但我仍然爱你）。",
+    },
 
-	mod_name = {
-		en = mod_name["en"],
-		ru = mod_name["ru"],
-		["zh-cn"] = mod_name["zh-cn"],
-		["zh-tw"] = mod_name["zh-tw"],
-	},
-	mod_name_pizazz = {
-		en = mod.gradientText(mod_name["en"], { 0, 128, 255 }, { 255, 0, 150 }, true),
-		ru = mod.gradientText(mod_name["ru"], { 0, 128, 255 }, { 255, 0, 150 }, true),
-		["zh-cn"] = mod.gradientText(mod_name["zh-cn"], { 0, 128, 255 }, { 255, 0, 150 }, true),
-		["zh-tw"] = mod.gradientText(mod_name["zh-tw"], { 0, 128, 255 }, { 255, 0, 150 }, true),
-	},
-	mod_name_boring = {
-		en = mod_name["en"],
-		ru = mod_name["ru"],
-		["zh-cn"] = mod_name["zh-cn"],
-		["zh-tw"] = mod_name["zh-tw"],
-	},
+    mod_name = {
+        en = mod_name["en"],
+        ru = mod_name["ru"],
+        ["zh-cn"] = mod_name["zh-cn"],
+        ["zh-tw"] = mod_name["zh-tw"],
+    },
+    mod_name_pizazz = {
+        en = mod.gradientText(mod_name["en"], { 0, 128, 255 }, { 255, 0, 150 }, true),
+        ru = mod.gradientText(mod_name["ru"], { 0, 128, 255 }, { 255, 0, 150 }, true),
+        ["zh-cn"] = mod.gradientText(mod_name["zh-cn"], { 0, 128, 255 }, { 255, 0, 150 }, true),
+        ["zh-tw"] = mod.gradientText(mod_name["zh-tw"], { 0, 128, 255 }, { 255, 0, 150 }, true),
+    },
+    mod_name_boring = {
+        en = mod_name["en"],
+        ru = mod_name["ru"],
+        ["zh-cn"] = mod_name["zh-cn"],
+        ["zh-tw"] = mod_name["zh-tw"],
+    },
 
-	-- Tab names (used in settings UI)
-	tab_general = {
-		en = "General",
-		fr = "Général",
-		ru = "Общие",
-		["zh-tw"] = "一般",
-		["zh-cn"] = "通用",
-	},
-	tab_ammo_med = {
-		en = "Ammo & Med",
-		fr = "Munitions & Médical",
-		ru = "Боеприпасы и Медицина",
-		["zh-tw"] = "彈藥與醫療",
-		["zh-cn"] = "弹药与医疗",
-	},
-	tab_chests = {
-		en = "Chests",
-		fr = "Coffres",
-		ru = "Ящики",
-		["zh-tw"] = "寶箱",
-		["zh-cn"] = "宝箱",
-	},
-	tab_heretical_idol = {
-		en = "Heretical Idol",
-		fr = "Idole Hérétique",
-		ru = "Еретический идол",
-		["zh-tw"] = "異端雕像",
-		["zh-cn"] = "异端神龛",
-	},
-	tab_materials = {
-		en = "Materials",
-		fr = "Matériaux",
-		ru = "Ресурсы",
-		["zh-tw"] = "材料",
-		["zh-cn"] = "材料",
-	},
-	tab_stimms = {
-		en = "Stimms",
-		fr = "Stimms",
-		ru = "Стимуляторы",
-		["zh-tw"] = "興奮劑",
-		["zh-cn"] = "兴奋剂",
-	},
-	tab_tomes = {
-		en = "Tomes",
-		fr = "Livres",
-		ru = "Книги",
-		["zh-tw"] = "經文",
-		["zh-cn"] = "圣经",
-	},
-	tab_luggables = {
-		en = "Luggables",
-		fr = "Transportables",
-		ru = "Переносимые",
-		["zh-tw"] = "搬運物品",
-		["zh-cn"] = "搬运物",
-	},
-	tab_martyrs_skull = {
-		en = "Martyr's Skull",
-		fr = "Crâne du Martyr",
-		ru = "Череп мученика",
-		["zh-tw"] = "殉道者顱骨",
-		["zh-cn"] = "殉道者颅骨",
-	},
-	tab_expedition = {
-		en = "Expedition",
-		fr = "Expédition",
-		ru = "Экспедиция",
-		["zh-tw"] = "遠征",
-		["zh-cn"] = "远征",
-	},
-	tab_event = {
-		en = "Event",
-		fr = "Événement",
-		ru = "Событие",
-		["zh-tw"] = "活動",
-		["zh-cn"] = "活动",
-	},
-	tab_decoding = {
-		en = "Decoding",
-		fr = "Décodage",
-		ru = "Декодирование",
-		["zh-tw"] = "解密",
-		["zh-cn"] = "解码",
-	},
-	tab_player_assistance = {
-		en = "Player Assistance",
-		fr = "Assistance Joueur",
-		ru = "Помощь игрокам",
-		["zh-tw"] = "玩家支援",
-		["zh-cn"] = "玩家辅助",
-	},
-	tab_unknown = {
-		en = "Unknown",
-		fr = "Inconnu",
-		ru = "Неизвестные",
-		["zh-tw"] = "未知",
-		["zh-cn"] = "未知",
-	},
+    ammo_status_settings = {
+        en = mod_name["AMMO WASTAGE INDICATORS"],
+    },
 
-	mod_description = {
-		en = "{#color("
-			.. colours.text
-			.. ")}Adds brand new markers to some collectables, options such as distance, colour choices, line-of-sight toggles, a whole in-mission Martyr's Skull collection guide and more.{#reset()}\n\n"
-			.. "{#color("
-			.. colours.subtitle
-			.. ")}Author: "
-			.. "{#color("
-			.. colours.text
-			.. ")}Alfthebigheaded\n"
-			.. "{#color("
-			.. colours.subtitle
-			.. ")}Version: {#color("
-			.. colours.text
-			.. ")}"
-			.. mod.version
-			.. "{#reset()}",
-		fr = "Combine tous mes mods 'Marqueurs' en un seul paquet facile à installer. ",
-		ru = "{#color("
-			.. colours.text
-			.. ")}Markers Improved AIO - Добавляет совершенно новые метки для некоторых коллекционных предметов, такие опции, как расстояние, выбор цвета, переключение в зависимости от прямой видимости, полное руководство по сбору Черепов мучеников во время миссий и многое другое.{#reset()}\n\n"
-			.. "{#color("
-			.. colours.subtitle
-			.. ")}Автор: "
-			.. "{#color("
-			.. colours.text
-			.. ")}Alfthebigheaded\n"
-			.. "{#color("
-			.. colours.subtitle
-			.. ")}Версия: {#color("
-			.. colours.text
-			.. ")}"
-			.. mod.version
-			.. "{#reset()}",
-		["zh-tw"] = "將所有「標記」模組整合成一個方便安裝的套件。",
-		["zh-cn"] = "为各类可收集物品添加全新标记，支持距离、颜色、视野显示等设置，内置殉道者颅骨收集攻略等功能。",
-	},
+    -- Tab names (used in settings UI)
+    tab_general = {
+        en = "General",
+        fr = "Général",
+        ru = "Общие",
+        ["zh-tw"] = "一般",
+        ["zh-cn"] = "通用",
+    },
+    tab_ammo_med = {
+        en = "Ammo & Med",
+        fr = "Munitions & Médical",
+        ru = "Боеприпасы и Медицина",
+        ["zh-tw"] = "彈藥與醫療",
+        ["zh-cn"] = "弹药与医疗",
+    },
+    tab_ammo_status = {
+        en = "Ammo Info",
+        fr = "Infos Munitions",
+        ru = "Информация о боеприпасах",
+        ["zh-tw"] = "彈藥資訊",
+        ["zh-cn"] = "弹药信息",
+    },
+    tab_chests = {
+        en = "Chests",
+        fr = "Coffres",
+        ru = "Ящики",
+        ["zh-tw"] = "寶箱",
+        ["zh-cn"] = "宝箱",
+    },
+    tab_heretical_idol = {
+        en = "Heretical Idol",
+        fr = "Idole Hérétique",
+        ru = "Еретический идол",
+        ["zh-tw"] = "異端雕像",
+        ["zh-cn"] = "异端神龛",
+    },
+    tab_materials = {
+        en = "Materials",
+        fr = "Matériaux",
+        ru = "Ресурсы",
+        ["zh-tw"] = "材料",
+        ["zh-cn"] = "材料",
+    },
+    tab_stimms = {
+        en = "Stimms",
+        fr = "Stimms",
+        ru = "Стимуляторы",
+        ["zh-tw"] = "興奮劑",
+        ["zh-cn"] = "兴奋剂",
+    },
+    tab_tomes = {
+        en = "Tomes",
+        fr = "Livres",
+        ru = "Книги",
+        ["zh-tw"] = "經文",
+        ["zh-cn"] = "圣经",
+    },
+    tab_luggables = {
+        en = "Luggables",
+        fr = "Transportables",
+        ru = "Переносимые",
+        ["zh-tw"] = "搬運物品",
+        ["zh-cn"] = "搬运物",
+    },
+    tab_martyrs_skull = {
+        en = "Martyr's Skull",
+        fr = "Crâne du Martyr",
+        ru = "Череп мученика",
+        ["zh-tw"] = "殉道者顱骨",
+        ["zh-cn"] = "殉道者颅骨",
+    },
+    tab_expedition = {
+        en = "Expedition",
+        fr = "Expédition",
+        ru = "Экспедиция",
+        ["zh-tw"] = "遠征",
+        ["zh-cn"] = "远征",
+    },
+    tab_event = {
+        en = "Event",
+        fr = "Événement",
+        ru = "Событие",
+        ["zh-tw"] = "活動",
+        ["zh-cn"] = "活动",
+    },
+    tab_objective = {
+        en = "Objectives",
+        fr = "Objectifs",
+        ru = "Задачи",
+        ["zh-tw"] = "目標",
+        ["zh-cn"] = "目标",
+    },
+    objective_require_line_of_sight_tooltip = {
+        en =
+        "Hide objective markers when they are behind cover. Disabled by default to keep the base game behaviour of showing objectives through walls.",
+        ru =
+        "Скрывать метки задач за укрытием. По умолчанию выключено, чтобы сохранить базовое поведение игры (показ задач сквозь стены).",
+        ["zh-cn"] = "任务标记被遮挡时隐藏。默认关闭以保持原版透视显示任务的特性。",
+    },
+    objective_markers_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    objective_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    objective_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持於螢幕",
+        ["zh-cn"] = "保持在屏幕上",
+    },
+    objective_require_line_of_sight = {
+        en = "Require Line of Sight",
+        fr = "Exiger une ligne de vue",
+        ru = "Требовать прямую видимость",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "需要视野",
+    },
+    objective_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    objective_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальная дистанция",
+        ["zh-tw"] = "最大距離",
+        ["zh-cn"] = "最大距离",
+    },
+    objective_scale = {
+        en = "Scale",
+        fr = "Échelle",
+        ru = "Масштаб",
+        ["zh-tw"] = "大小",
+        ["zh-cn"] = "大小",
+    },
+    objective_alpha = {
+        en = "Alpha",
+        fr = "Alpha",
+        ru = "Альфа",
+        ["zh-tw"] = "透明度",
+        ["zh-cn"] = "透明度",
+    },
+    objective_border_colour = {
+        en = "Border colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет рамки",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    tab_decoding = {
+        en = "Decoding",
+        fr = "Décodage",
+        ru = "Декодирование",
+        ["zh-tw"] = "解密",
+        ["zh-cn"] = "解码",
+    },
+    tab_player_assistance = {
+        en = "Player Assistance",
+        fr = "Assistance Joueur",
+        ru = "Помощь игрокам",
+        ["zh-tw"] = "玩家支援",
+        ["zh-cn"] = "玩家辅助",
+    },
+    tab_unknown = {
+        en = "Unknown",
+        fr = "Inconnu",
+        ru = "Неизвестные",
+        ["zh-tw"] = "未知",
+        ["zh-cn"] = "未知",
+    },
 
-	-- Hover Tag Display Names
-	mod_marker_chest_name = {
-		en = "Chest",
-		fr = "Coffre",
-		ru = "Ящик",
-		["zh-cn"] = "宝箱",
-		["zh-tw"] = "寶箱",
-	},
-	mod_marker_item_name = {
-		en = "Item",
-		fr = "Objet",
-		ru = "Предмет",
-		["zh-cn"] = "物品",
-		["zh-tw"] = "物品",
-	},
-	mod_marker_heretical_idol_name = {
-		en = "Heretical Idol",
-		fr = "Idole Hérétique",
-		ru = "Еретический идол",
-		["zh-cn"] = "异端雕像",
-		["zh-tw"] = "異端雕像",
-	},
-	mod_marker_medicae_station_name = {
-		en = "Medicae Station",
-		fr = "Station Medicae",
-		ru = "Медстанция",
-		["zh-cn"] = "医疗站",
-		["zh-tw"] = "醫療站",
-	},
-	mod_marker_stimm_name = {
-		en = "Stimm",
-		fr = "Stimm",
-		ru = "Стим",
-		["zh-cn"] = "兴奋剂",
-		["zh-tw"] = "興奮劑",
-	},
-	mod_marker_power_stimm_name = {
-		en = "Power Stimm",
-		fr = "Stimm de puissance",
-		ru = "Стим силы",
-		["zh-cn"] = "作战兴奋剂",
-		["zh-tw"] = "戰鬥興奮劑",
-	},
-	mod_marker_speed_stimm_name = {
-		en = "Speed Stimm",
-		fr = "Stimm de vitesse",
-		ru = "Стим скорости",
-		["zh-cn"] = "敏捷兴奋剂",
-		["zh-tw"] = "速度興奮劑",
-	},
-	mod_marker_boost_stimm_name = {
-		en = "Boost Stimm",
-		fr = "Stimm de boost",
-		ru = "Стим ускорения",
-		["zh-cn"] = "专注兴奋剂",
-		["zh-tw"] = "增強興奮劑",
-	},
-	mod_marker_medic_stimm_name = {
-		en = "Medic Stimm",
-		fr = "Stimm médical",
-		ru = "Мед стим",
-		["zh-cn"] = "医疗兴奋剂",
-		["zh-tw"] = "治療針",
-	},
-	mod_marker_broker_stimm_name = {
-		en = "Hive Scum Stimm",
-		fr = "Stimm de la lie du hive",
-		ru = "Стим Отброса Улья",
-		["zh-cn"] = "巢都兴奋剂",
-		["zh-tw"] = "巢都敗類興奮劑",
-	},
-	mod_marker_tome_name = {
-		en = "Tome",
-		fr = "Livre",
-		ru = "Книга",
-		["zh-cn"] = "经文",
-		["zh-tw"] = "經文",
-	},
-	mod_marker_material_name = {
-		en = "Material",
-		fr = "Matériau",
-		ru = "Ресурс",
-		["zh-cn"] = "材料",
-		["zh-tw"] = "材料",
-	},
-	mod_marker_luggable_name = {
-		en = "Carry Item",
-		fr = "Objet à transporter",
-		ru = "Переносимый предмет",
-		["zh-cn"] = "搬运物品",
-		["zh-tw"] = "搬運物品",
-	},
-	mod_marker_expedition_name = {
-		en = "Expedition",
-		fr = "Expédition",
-		ru = "Экспедиция",
-		["zh-cn"] = "远征目标",
-		["zh-tw"] = "遠征目標",
-	},
-	mod_marker_event_name = {
-		en = "Event Pickup",
-		fr = "Objet d'événement",
-		ru = "Событийный предмет",
-		["zh-cn"] = "事件物品",
-		["zh-tw"] = "事件物品",
-	},
-	mod_marker_unknown_name = {
-		en = "Unknown",
-		fr = "Inconnu",
-		ru = "Неизвестно",
-		["zh-cn"] = "未知",
-		["zh-tw"] = "未知",
-	},
+    mod_description = {
+        en = "{#color("
+            .. colours.text
+            ..
+            ")}Adds brand new markers to some collectables, options such as distance, colour choices, line-of-sight toggles, a whole in-mission Martyr's Skull collection guide and more.{#reset()}\n\n"
+            .. "{#color("
+            .. colours.subtitle
+            .. ")}Author: "
+            .. "{#color("
+            .. colours.text
+            .. ")}Alfthebigheaded\n"
+            .. "{#color("
+            .. colours.subtitle
+            .. ")}Version: {#color("
+            .. colours.text
+            .. ")}"
+            .. mod.version
+            .. "{#reset()}",
+        fr = "Combine tous mes mods 'Marqueurs' en un seul paquet facile à installer. ",
+        ru = "{#color("
+            .. colours.text
+            ..
+            ")}Markers Improved AIO - Добавляет совершенно новые метки для некоторых коллекционных предметов, такие опции, как расстояние, выбор цвета, переключение в зависимости от прямой видимости, полное руководство по сбору Черепов мучеников во время миссий и многое другое.{#reset()}\n\n"
+            .. "{#color("
+            .. colours.subtitle
+            .. ")}Автор: "
+            .. "{#color("
+            .. colours.text
+            .. ")}Alfthebigheaded\n"
+            .. "{#color("
+            .. colours.subtitle
+            .. ")}Версия: {#color("
+            .. colours.text
+            .. ")}"
+            .. mod.version
+            .. "{#reset()}",
+        ["zh-tw"] = "將所有「標記」模組整合成一個方便安裝的套件。",
+        ["zh-cn"] = "为各类可收集物品添加全新标记，支持距离、颜色、视野显示等设置，内置殉道者颅骨收集攻略等功能。",
+    },
 
-	-- General Settings
-	aio_settings = {
-		en = "{#color(" .. colours.title .. ")}" .. "Global Marker Settings" .. "{#reset()}",
-		fr = "MARKERS IMPROVED AIO SETTINGS",
-		ru = "НАСТРОЙКИ УЛУЧШЕННЫХ МЕТОК",
-		["zh-tw"] = "圖標改善設定",
-		["zh-cn"] = "全功能标记增强设置",
-	},
-	los_fade_enable = {
-		en = "Fade out icons out of line of sight?",
-		fr = "Fade out icons out of line of sight",
-		ru = "Скрывать иконки вне поля зрения?",
-		["zh-tw"] = "視線外淡化圖標",
-		["zh-cn"] = "视野外图标淡出",
-	},
-	los_opacity = {
-		en = "Out of Line of sight marker opacity (percentage)",
-		fr = "Line of sight alpha (percentage)",
-		ru = "Прозрачность прямой видимости (проценты)",
-		["zh-tw"] = "視線外圖標透明度",
-		["zh-cn"] = "视野外图标透明度（百分比）",
-	},
-	ads_los_opacity = {
-		en = "ADS Line of sight marker opacity (percentage)",
-		fr = "Opacité du marqueur en visée (pourcentage)",
-		ru = "Прозрачность метка при прицеливании (проценты)",
-		["zh-tw"] = "瞄準視線外的圖標透明度",
-		["zh-cn"] = "开镜视野外图标透明度（百分比）",
-	},
-	marker_background_colour = {
-		en = "Marker background colour",
-		fr = "Couleur de fond du marqueur",
-		ru = "Цвет фона метка",
-		["zh-tw"] = "標記背景顏色",
-		["zh-cn"] = "标记背景颜色",
-	},
-	font_type = {
-		en = "Choose a font style (Global)",
-		fr = "Choisir un style de police (Global)",
-		ru = "Выберите стиль шрифта (Глобальный)",
-		["zh-cn"] = "选择字体样式（全局）",
-	},
-	font_type_tooltip = {
-		en = "The global font style to use. This will apply to all text elements from Markers AIO Improved.",
-		fr = "Le style de police global à utiliser. S'appliquera à tous les éléments textuels de Markers AIO Improved.",
-		ru = "Глобальный стиль шрифта. Будет применён ко всем текстовым элементам Улучшенных меток.",
-		["zh-cn"] = "设置使用的全局字体样式，将应用于「标记整合增强版」的所有文本元素。",
-	},
+    -- Hover Tag Display Names
+    mod_marker_chest_name = {
+        en = "Chest",
+        fr = "Coffre",
+        ru = "Ящик",
+        ["zh-cn"] = "宝箱",
+        ["zh-tw"] = "寶箱",
+    },
+    mod_marker_item_name = {
+        en = "Item",
+        fr = "Objet",
+        ru = "Предмет",
+        ["zh-cn"] = "物品",
+        ["zh-tw"] = "物品",
+    },
+    mod_marker_heretical_idol_name = {
+        en = "Heretical Idol",
+        fr = "Idole Hérétique",
+        ru = "Еретический идол",
+        ["zh-cn"] = "异端雕像",
+        ["zh-tw"] = "異端雕像",
+    },
+    mod_marker_medicae_station_name = {
+        en = "Medicae Station",
+        fr = "Station Medicae",
+        ru = "Медстанция",
+        ["zh-cn"] = "医疗站",
+        ["zh-tw"] = "醫療站",
+    },
+    mod_marker_stimm_name = {
+        en = "Stimm",
+        fr = "Stimm",
+        ru = "Стим",
+        ["zh-cn"] = "兴奋剂",
+        ["zh-tw"] = "興奮劑",
+    },
+    mod_marker_power_stimm_name = {
+        en = "Power Stimm",
+        fr = "Stimm de puissance",
+        ru = "Стим силы",
+        ["zh-cn"] = "作战兴奋剂",
+        ["zh-tw"] = "戰鬥興奮劑",
+    },
+    mod_marker_speed_stimm_name = {
+        en = "Speed Stimm",
+        fr = "Stimm de vitesse",
+        ru = "Стим скорости",
+        ["zh-cn"] = "敏捷兴奋剂",
+        ["zh-tw"] = "速度興奮劑",
+    },
+    mod_marker_boost_stimm_name = {
+        en = "Boost Stimm",
+        fr = "Stimm de boost",
+        ru = "Стим ускорения",
+        ["zh-cn"] = "专注兴奋剂",
+        ["zh-tw"] = "增強興奮劑",
+    },
+    mod_marker_medic_stimm_name = {
+        en = "Medic Stimm",
+        fr = "Stimm médical",
+        ru = "Мед стим",
+        ["zh-cn"] = "医疗兴奋剂",
+        ["zh-tw"] = "治療針",
+    },
+    mod_marker_broker_stimm_name = {
+        en = "Hive Scum Stimm",
+        fr = "Stimm de la lie du hive",
+        ru = "Стим Отброса Улья",
+        ["zh-cn"] = "巢都兴奋剂",
+        ["zh-tw"] = "巢都敗類興奮劑",
+    },
+    mod_marker_tome_name = {
+        en = "Tome",
+        fr = "Livre",
+        ru = "Книга",
+        ["zh-cn"] = "经文",
+        ["zh-tw"] = "經文",
+    },
+    mod_marker_material_name = {
+        en = "Material",
+        fr = "Matériau",
+        ru = "Ресурс",
+        ["zh-cn"] = "材料",
+        ["zh-tw"] = "材料",
+    },
+    mod_marker_luggable_name = {
+        en = "Carry Item",
+        fr = "Objet à transporter",
+        ru = "Переносимый предмет",
+        ["zh-cn"] = "搬运物品",
+        ["zh-tw"] = "搬運物品",
+    },
+    mod_marker_expedition_name = {
+        en = "Expedition",
+        fr = "Expédition",
+        ru = "Экспедиция",
+        ["zh-cn"] = "远征目标",
+        ["zh-tw"] = "遠征目標",
+    },
+    mod_marker_event_name = {
+        en = "Event Pickup",
+        fr = "Objet d'événement",
+        ru = "Событийный предмет",
+        ["zh-cn"] = "事件物品",
+        ["zh-tw"] = "事件物品",
+    },
+    mod_marker_unknown_name = {
+        en = "Unknown",
+        fr = "Inconnu",
+        ru = "Неизвестно",
+        ["zh-cn"] = "未知",
+        ["zh-tw"] = "未知",
+    },
 
-	distance_text_enable = {
-		en = "Toggle distance indicator",
-		fr = "Activer l'indicateur de distance",
-		ru = "Включить индикатор расстояния",
-		["zh-cn"] = "开启距离指示器",
-	},
-	distance_text_enable_tooltip = {
-		en = "Adds a text-based indicator near the markers that shows their distance from you in meters.",
-		fr = "Ajoute un indicateur textuel près des marqueurs indiquant la distance en mètres.",
-		ru = "Добавляет текстовый индикатор рядом с меткой, показывающий расстояние до него в метрах.",
-		["zh-cn"] = "在标记旁显示文字指示器，以米为单位显示与你的距离。",
-	},
-	distance_text_position = {
-		en = "Distance indicator position",
-		fr = "Position de l'indicateur de distance",
-		ru = "Позиция индикатора расстояния",
-		["zh-cn"] = "距离指示器位置",
-	},
-	distance_text_position_tooltip = {
-		en = "Pick where to place the distance indicator in relation to the marker.\nNote: Center positioning will make the icon fade a little so you can always read the text.",
-		fr = "Choisissez où placer l'indicateur de distance par rapport au marqueur.\nNote : Le centrage atténuera légèrement l'icône pour une meilleure lisibilité du texte.",
-		ru = "Выберите расположение индикатора расстояния относительно метки.\nПримечание: при центрировании иконка будет слегка затемнена для лучшей читаемости текста.",
-		["zh-cn"] = "选择距离指示器相对于标记的显示位置。\n注意：选择居中时图标会略微淡化，确保文字清晰可见。",
-	},
-	distance_text_scale = {
-		en = "Distance indicator text scale",
-		fr = "Échelle du texte de l'indicateur de distance",
-		ru = "Масштаб текста индикатора расстояния",
-		["zh-cn"] = "距离指示器文字大小",
-	},
+    -- General Settings
+    aio_settings = {
+        en = "{#color(" .. colours.title .. ")}" .. "Global Marker Settings" .. "{#reset()}",
+        fr = "MARKERS IMPROVED AIO SETTINGS",
+        ru = "НАСТРОЙКИ УЛУЧШЕННЫХ МЕТОК",
+        ["zh-tw"] = "圖標改善設定",
+        ["zh-cn"] = "全功能标记增强设置",
+    },
+    los_fade_enable = {
+        en = "Fade out icons out of line of sight?",
+        fr = "Fade out icons out of line of sight",
+        ru = "Скрывать иконки вне поля зрения?",
+        ["zh-tw"] = "視線外淡化圖標",
+        ["zh-cn"] = "视野外图标淡出",
+    },
+    los_opacity = {
+        en = "Out of Line of sight marker opacity (percentage)",
+        fr = "Line of sight alpha (percentage)",
+        ru = "Прозрачность прямой видимости (проценты)",
+        ["zh-tw"] = "視線外圖標透明度",
+        ["zh-cn"] = "视野外图标透明度（百分比）",
+    },
+    ads_los_opacity = {
+        en = "ADS Line of sight marker opacity (percentage)",
+        fr = "Opacité du marqueur en visée (pourcentage)",
+        ru = "Прозрачность метка при прицеливании (проценты)",
+        ["zh-tw"] = "瞄準視線外的圖標透明度",
+        ["zh-cn"] = "开镜视野外图标透明度（百分比）",
+    },
+    marker_background_colour = {
+        en = "Marker background colour",
+        fr = "Couleur de fond du marqueur",
+        ru = "Цвет фона метка",
+        ["zh-tw"] = "標記背景顏色",
+        ["zh-cn"] = "标记背景颜色",
+    },
+    font_type = {
+        en = "Choose a font style (Global)",
+        fr = "Choisir un style de police (Global)",
+        ru = "Выберите стиль шрифта (Глобальный)",
+        ["zh-cn"] = "选择字体样式（全局）",
+    },
+    font_type_tooltip = {
+        en = "The global font style to use. This will apply to all text elements from Markers AIO Improved.",
+        fr = "Le style de police global à utiliser. S'appliquera à tous les éléments textuels de Markers AIO Improved.",
+        ru = "Глобальный стиль шрифта. Будет применён ко всем текстовым элементам Улучшенных меток.",
+        ["zh-cn"] = "设置使用的全局字体样式，将应用于「标记整合增强版」的所有文本元素。",
+    },
 
-	Top = {
-		en = "Top",
-		fr = "Haut",
-		ru = "Сверху",
-		["zh-tw"] = "頂部",
-		["zh-cn"] = "顶部",
-	},
-	Bottom = {
-		en = "Bottom",
-		fr = "Bas",
-		ru = "Снизу",
-		["zh-tw"] = "底部",
-		["zh-cn"] = "底部",
-	},
-	Left = {
-		en = "Left",
-		fr = "Gauche",
-		ru = "Слева",
-		["zh-tw"] = "左側",
-		["zh-cn"] = "左侧",
-	},
-	Right = {
-		en = "Right",
-		fr = "Droite",
-		ru = "Справа",
-		["zh-tw"] = "右側",
-		["zh-cn"] = "右侧",
-	},
-	Center = {
-		en = "Center",
-		fr = "Centre",
-		ru = "По центру",
-		["zh-tw"] = "居中",
-		["zh-cn"] = "居中",
-	},
+    distance_text_enable = {
+        en = "Toggle distance indicator",
+        fr = "Activer l'indicateur de distance",
+        ru = "Включить индикатор расстояния",
+        ["zh-cn"] = "开启距离指示器",
+    },
+    distance_text_enable_tooltip = {
+        en = "Adds a text-based indicator near the markers that shows their distance from you in meters.",
+        fr = "Ajoute un indicateur textuel près des marqueurs indiquant la distance en mètres.",
+        ru = "Добавляет текстовый индикатор рядом с меткой, показывающий расстояние до него в метрах.",
+        ["zh-cn"] = "在标记旁显示文字指示器，以米为单位显示与你的距离。",
+    },
+    distance_text_position = {
+        en = "Distance indicator position",
+        fr = "Position de l'indicateur de distance",
+        ru = "Позиция индикатора расстояния",
+        ["zh-cn"] = "距离指示器位置",
+    },
+    distance_text_position_tooltip = {
+        en =
+        "Pick where to place the distance indicator in relation to the marker.\nNote: Center positioning will make the icon fade a little so you can always read the text.",
+        fr =
+        "Choisissez où placer l'indicateur de distance par rapport au marqueur.\nNote : Le centrage atténuera légèrement l'icône pour une meilleure lisibilité du texte.",
+        ru =
+        "Выберите расположение индикатора расстояния относительно метки.\nПримечание: при центрировании иконка будет слегка затемнена для лучшей читаемости текста.",
+        ["zh-cn"] = "选择距离指示器相对于标记的显示位置。\n注意：选择居中时图标会略微淡化，确保文字清晰可见。",
+    },
+    distance_text_scale = {
+        en = "Distance indicator text scale",
+        fr = "Échelle du texte de l'indicateur de distance",
+        ru = "Масштаб текста индикатора расстояния",
+        ["zh-cn"] = "距离指示器文字大小",
+    },
 
-	-- AMMO MED MARKERS
-	ammo_med_markers_settings = {
-		en = "AMMO & MED MARKERS",
-		fr = "MARQUEURS DE MUNITIONS ET MÉDICAUX",
-		ru = "МЕТКИ - БОЕПРИПАСЫ И МЕДИЦИНА",
-		["zh-tw"] = "彈藥與醫療標記",
-		["zh-cn"] = "弹药与医疗标记",
-	},
-	ammo_med_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	ammo_med_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	ammo_med_markers_alternate_large_ammo_icon = {
-		en = "Use Alternative Icon for Large Ammo pickups",
-		fr = "Utiliser une icône alternative pour les grandes munitions ramassées",
-		ru = "Использовать альтернативные значки для больших сумок с боеприпасами",
-		["zh-tw"] = "使用替代圖示表示大型彈藥",
-		["zh-cn"] = "大型弹药包使用替代图标",
-	},
-	ammo_med_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	ammo_med_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	ammo_med_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	med_station_max_distance = {
-		en = "Medicae Station marker max distance",
-		fr = "Distance max du marqueur de la station Medicae",
-		ru = "Максимальное расстояние метки медстанции",
-		["zh-tw"] = "醫療站標記最大距離",
-		["zh-cn"] = "医疗站标记最大显示距离",
-	},
-	med_station_require_line_of_sight = {
-		en = "Require line of sight (Medicae Station)",
-		fr = "Nécessite une ligne de vue (Station Medicae)",
-		ru = "Должно быть в зоне видимости (Медстанция)",
-		["zh-tw"] = "需要視線範圍（醫療站）",
-		["zh-cn"] = "仅视野内显示（医疗站）",
-	},
-	ammo_med_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	ammo_med_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	ammo_med_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	ammo_med_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	display_med_charges = {
-		en = "Display Medical Charges",
-		fr = "Afficher les charges médicales",
-		ru = "Показывать заряды медстанции",
-		["zh-tw"] = "顯示醫療充能",
-		["zh-cn"] = "显示医疗箱使用次数",
-	},
-	display_ammo_charges = {
-		en = "Display Ammo Charges",
-		fr = "Afficher les charges de munitions",
-		ru = "Показывать заряды ящика с боеприпасами",
-		["zh-tw"] = "顯示彈藥充能",
-		["zh-cn"] = "显示弹药箱使用次数",
-	},
-	display_field_improv_colour = {
-		en = "Adjust colours if 'Field Improvisation' is active?",
-		fr = "Ajuster la couleur pour le talent 'Improvisation sur le terrain' ? ",
-		ru = "Изменять цвет меток, если активен талант «Полевая импровизация»?",
-		["zh-tw"] = "如果啟用「現場應變」天賦，調整標記顏色？",
-		["zh-cn"] = "激活「临场应变」天赋时更改标记颜色",
-	},
-	display_field_improv_icon = {
-		en = "Display 'Field Improvisation' Icon",
-		fr = "Afficher la nouvelle icône du talent 'Improvisation sur le terrain'",
-		ru = "Показывать новый значок таланта «Полевая импровизация»",
-		["zh-tw"] = "顯示新的「現場應變」天賦圖示",
-		["zh-cn"] = "显示「临场应变」天赋专属图标",
-	},
-	display_med_ring = {
-		en = "Display Proximity Radius Around Medkits?",
-		fr = "Afficher le rayon de proximité autour des kits médicaux ?",
-		ru = "Показывать радиус действия аптечек?",
-		["zh-tw"] = "顯示醫療包周圍的接近半徑？",
-		["zh-cn"] = "显示医疗箱生效范围圈",
-	},
-	change_colour_for_ammo_charges = {
-		en = "Change ammo & medicae crate colour depending on charges left?",
-		fr = "Changer la couleur des caisses de munitions en fonction des charges ? ",
-		ru = "Изменять цвет значка ящика с боеприпасами в зависимости от оставшихся зарядов?",
-		["zh-tw"] = "根據剩餘充能改變彈藥箱顏色？",
-		["zh-cn"] = "根据剩余次数改变弹药/医疗箱颜色",
-	},
-	ammo_small_colour = {
-		en = "Ammo (Small) Colour",
-		fr = "Couleur des munitions (petites)",
-		ru = "Цвет малой сумки с боеприпасами",
-		["zh-tw"] = "彈藥（小型）顏色",
-		["zh-cn"] = "小型弹药罐颜色",
-	},
-	field_improv_colour = {
-		en = "Field Improvisation Talent Proximity Radius Colour",
-		fr = "Couleur du rayon de proximité du talent Improvisation sur le terrain",
-		ru = "Цвет радиуса таланта «Полевая импровизация»",
-		["zh-cn"] = "如果有老兵装备临场发挥天赋时的邻近范围颜色",
-	},
-	field_improv_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	field_improv_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	field_improv_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	ammo_small_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	ammo_small_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	ammo_small_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	ammo_small_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	ammo_large_colour = {
-		en = "Ammo (Large) Colour",
-		fr = "Couleur des munitions (grandes)",
-		ru = "Цвет большой сумки с боеприпасами",
-		["zh-tw"] = "彈藥（大型）顏色",
-		["zh-cn"] = "大型弹药包颜色",
-	},
-	ammo_large_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	ammo_large_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	ammo_large_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	ammo_large_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	ammo_crate_colour = {
-		en = "Ammo Crate Colour",
-		fr = "Couleur de la caisse de munitions",
-		ru = "Цвет ящика с боеприпасами",
-		["zh-tw"] = "彈藥箱顏色",
-		["zh-cn"] = "弹药箱颜色",
-	},
-	ammo_crate_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	ammo_crate_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	ammo_crate_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	ammo_crate_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	med_crate_colour = {
-		en = "Medical Crate Colour",
-		fr = "Couleur de la caisse médicale",
-		ru = "Цвет аптечки",
-		["zh-tw"] = "醫療箱顏色",
-		["zh-cn"] = "医疗箱颜色",
-	},
-	med_crate_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	med_crate_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	med_crate_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	med_crate_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	grenade_colour = {
-		en = "Grenade Colour",
-		fr = "Couleur des grenades",
-		ru = "Цвет гранат",
-		["zh-tw"] = "手榴彈顏色",
-		["zh-cn"] = "手雷颜色",
-	},
-	grenade_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	grenade_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	grenade_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	grenade_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
+    Top = {
+        en = "Top",
+        fr = "Haut",
+        ru = "Сверху",
+        ["zh-tw"] = "頂部",
+        ["zh-cn"] = "顶部",
+    },
+    Bottom = {
+        en = "Bottom",
+        fr = "Bas",
+        ru = "Снизу",
+        ["zh-tw"] = "底部",
+        ["zh-cn"] = "底部",
+    },
+    Left = {
+        en = "Left",
+        fr = "Gauche",
+        ru = "Слева",
+        ["zh-tw"] = "左側",
+        ["zh-cn"] = "左侧",
+    },
+    Right = {
+        en = "Right",
+        fr = "Droite",
+        ru = "Справа",
+        ["zh-tw"] = "右側",
+        ["zh-cn"] = "右侧",
+    },
+    Center = {
+        en = "Center",
+        fr = "Centre",
+        ru = "По центру",
+        ["zh-tw"] = "居中",
+        ["zh-cn"] = "居中",
+    },
 
-	-- CHEST MARKERS
-	chest_markers_settings = {
-		en = "CHEST MARKERS",
-		fr = "MARQUEURS DE COFFRES",
-		ru = "МЕТКИ ЯЩИКОВ",
-		["zh-tw"] = "寶箱圖標",
-		["zh-cn"] = "宝箱标记",
-	},
-	chest_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	chest_alternative_icon = {
-		en = "Use Alternative Icon",
-		fr = "Utiliser une icône alternative",
-		ru = "Использовать альтернативный значок",
-		["zh-tw"] = "使用替代圖示",
-		["zh-cn"] = "使用替代图标",
-	},
-	chest_icon = {
-		en = "Use Alternative Icon",
-		fr = "Utiliser une icône alternative",
-		ru = "Использовать альтернативный значок",
-		["zh-tw"] = "使用替代圖示",
-		["zh-cn"] = "使用替代图标",
-	},
-	Default = {
-		en = "Default",
-		fr = "Défaut",
-		ru = "По умолчанию",
-		["zh-tw"] = "預設",
-		["zh-cn"] = "默认",
-	},
-	Video = {
-		en = "Video",
-		fr = "Vidéo",
-		ru = "Видео",
-		["zh-tw"] = "影片",
-		["zh-cn"] = "录像",
-	},
-	Loot = {
-		en = "Loot",
-		fr = "Butin",
-		ru = "Добыча",
-		["zh-tw"] = "戰利品",
-		["zh-cn"] = "战利品",
-	},
-	chest_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	chest_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	chest_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	chest_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	chest_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	chest_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	chest_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	chest_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	chest_icon_colour = {
-		en = "Chest Icon Colour",
-		fr = "Couleur de l'icône du coffre",
-		ru = "Цвет значка ящика",
-		["zh-tw"] = "寶箱圖標顏色",
-		["zh-cn"] = "宝箱图标颜色",
-	},
-	chest_icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	chest_icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	chest_icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	chest_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
+    -- AMMO MED MARKERS
+    ammo_med_markers_settings = {
+        en = "AMMO & MED MARKERS",
+        fr = "MARQUEURS DE MUNITIONS ET MÉDICAUX",
+        ru = "МЕТКИ - БОЕПРИПАСЫ И МЕДИЦИНА",
+        ["zh-tw"] = "彈藥與醫療標記",
+        ["zh-cn"] = "弹药与医疗标记",
+    },
+    ammo_med_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    ammo_med_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    ammo_med_markers_alternate_large_ammo_icon = {
+        en = "Use Alternative Icon for Large Ammo pickups",
+        fr = "Utiliser une icône alternative pour les grandes munitions ramassées",
+        ru = "Использовать альтернативные значки для больших сумок с боеприпасами",
+        ["zh-tw"] = "使用替代圖示表示大型彈藥",
+        ["zh-cn"] = "大型弹药包使用替代图标",
+    },
+    ammo_med_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    ammo_med_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    ammo_med_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    med_station_max_distance = {
+        en = "Medicae Station marker max distance",
+        fr = "Distance max du marqueur de la station Medicae",
+        ru = "Максимальное расстояние метки медстанции",
+        ["zh-tw"] = "醫療站標記最大距離",
+        ["zh-cn"] = "医疗站标记最大显示距离",
+    },
+    med_station_require_line_of_sight = {
+        en = "Require line of sight (Medicae Station)",
+        fr = "Nécessite une ligne de vue (Station Medicae)",
+        ru = "Должно быть в зоне видимости (Медстанция)",
+        ["zh-tw"] = "需要視線範圍（醫療站）",
+        ["zh-cn"] = "仅视野内显示（医疗站）",
+    },
+    ammo_med_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    ammo_med_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    ammo_med_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    ammo_med_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    display_med_charges = {
+        en = "Display Medical Charges",
+        fr = "Afficher les charges médicales",
+        ru = "Показывать заряды медстанции",
+        ["zh-tw"] = "顯示醫療充能",
+        ["zh-cn"] = "显示医疗箱使用次数",
+    },
+    display_med_crate_estimate = {
+        en = "Display Estimated Medcrate Charge",
+        fr = "Afficher l'estimation de charge des caisses médicales",
+        ru = "Показывать оценку заряда медящиков",
+        ["zh-tw"] = "顯示醫療箱估計充能",
+        ["zh-cn"] = "显示医疗箱预估剩余百分比",
+    },
+    display_ammo_charges = {
+        en = "Display Ammo Charges",
+        fr = "Afficher les charges de munitions",
+        ru = "Показывать заряды ящика с боеприпасами",
+        ["zh-tw"] = "顯示彈藥充能",
+        ["zh-cn"] = "显示弹药箱使用次数",
+    },
+    display_field_improv_colour = {
+        en = "Adjust colours if 'Field Improvisation' is active?",
+        fr = "Ajuster la couleur pour le talent 'Improvisation sur le terrain' ? ",
+        ru = "Изменять цвет меток, если активен талант «Полевая импровизация»?",
+        ["zh-tw"] = "如果啟用「現場應變」天賦，調整標記顏色？",
+        ["zh-cn"] = "激活「临场应变」天赋时更改标记颜色",
+    },
+    display_field_improv_icon = {
+        en = "Display 'Field Improvisation' Icon",
+        fr = "Afficher la nouvelle icône du talent 'Improvisation sur le terrain'",
+        ru = "Показывать новый значок таланта «Полевая импровизация»",
+        ["zh-tw"] = "顯示新的「現場應變」天賦圖示",
+        ["zh-cn"] = "显示「临场应变」天赋专属图标",
+    },
+    display_med_ring = {
+        en = "Display Proximity Radius Around Medkits?",
+        fr = "Afficher le rayon de proximité autour des kits médicaux ?",
+        ru = "Показывать радиус действия аптечек?",
+        ["zh-tw"] = "顯示醫療包周圍的接近半徑？",
+        ["zh-cn"] = "显示医疗箱生效范围圈",
+    },
+    change_colour_for_ammo_charges = {
+        en = "Change ammo & medicae crate colour depending on charges left?",
+        fr = "Changer la couleur des caisses de munitions en fonction des charges ? ",
+        ru = "Изменять цвет значка ящика с боеприпасами в зависимости от оставшихся зарядов?",
+        ["zh-tw"] = "根據剩餘充能改變彈藥箱顏色？",
+        ["zh-cn"] = "根据剩余次数改变弹药/医疗箱颜色",
+    },
+    ammo_small_colour = {
+        en = "Ammo (Small) Colour",
+        fr = "Couleur des munitions (petites)",
+        ru = "Цвет малой сумки с боеприпасами",
+        ["zh-tw"] = "彈藥（小型）顏色",
+        ["zh-cn"] = "小型弹药罐颜色",
+    },
+    field_improv_colour = {
+        en = "Field Improvisation Talent Proximity Radius Colour",
+        fr = "Couleur du rayon de proximité du talent Improvisation sur le terrain",
+        ru = "Цвет радиуса таланта «Полевая импровизация»",
+        ["zh-cn"] = "如果有老兵装备临场发挥天赋时的邻近范围颜色",
+    },
+    field_improv_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    field_improv_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    field_improv_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    ammo_small_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    ammo_small_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    ammo_small_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    ammo_small_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    ammo_large_colour = {
+        en = "Ammo (Large) Colour",
+        fr = "Couleur des munitions (grandes)",
+        ru = "Цвет большой сумки с боеприпасами",
+        ["zh-tw"] = "彈藥（大型）顏色",
+        ["zh-cn"] = "大型弹药包颜色",
+    },
+    ammo_large_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    ammo_large_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    ammo_large_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    ammo_large_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    ammo_crate_colour = {
+        en = "Ammo Crate Colour",
+        fr = "Couleur de la caisse de munitions",
+        ru = "Цвет ящика с боеприпасами",
+        ["zh-tw"] = "彈藥箱顏色",
+        ["zh-cn"] = "弹药箱颜色",
+    },
+    ammo_crate_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    ammo_crate_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    ammo_crate_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    ammo_crate_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    med_crate_colour = {
+        en = "Medical Crate Colour",
+        fr = "Couleur de la caisse médicale",
+        ru = "Цвет аптечки",
+        ["zh-tw"] = "醫療箱顏色",
+        ["zh-cn"] = "医疗箱颜色",
+    },
+    med_crate_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    med_crate_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    med_crate_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    med_crate_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    grenade_colour = {
+        en = "Grenade Colour",
+        fr = "Couleur des grenades",
+        ru = "Цвет гранат",
+        ["zh-tw"] = "手榴彈顏色",
+        ["zh-cn"] = "手雷颜色",
+    },
+    grenade_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    grenade_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    grenade_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    grenade_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
 
-	-- HERETICAL IDOL MARKERS
-	heretical_idol_markers_settings = {
-		en = "HERETICAL IDOL MARKERS",
-		fr = "MARQUEURS D'IDÔLES HÉRÉTIQUES",
-		ru = "МЕТКИ ЕРЕТИЧЕСКИХ ИДОЛОВ",
-		["zh-tw"] = "異端雕像圖標",
-		["zh-cn"] = "异端雕像图标",
-	},
-	heretical_idol_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	heretical_idol_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	heretical_idol_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	heretical_idol_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	heretical_idol_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	heretical_idol_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "標記的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	heretical_idol_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	heretical_idol_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	heretical_idol_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
+    -- CHEST MARKERS
+    chest_markers_settings = {
+        en = "CHEST MARKERS",
+        fr = "MARQUEURS DE COFFRES",
+        ru = "МЕТКИ ЯЩИКОВ",
+        ["zh-tw"] = "寶箱圖標",
+        ["zh-cn"] = "宝箱标记",
+    },
+    chest_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    chest_alternative_icon = {
+        en = "Use Alternative Icon",
+        fr = "Utiliser une icône alternative",
+        ru = "Использовать альтернативный значок",
+        ["zh-tw"] = "使用替代圖示",
+        ["zh-cn"] = "使用替代图标",
+    },
+    chest_icon = {
+        en = "Use Alternative Icon",
+        fr = "Utiliser une icône alternative",
+        ru = "Использовать альтернативный значок",
+        ["zh-tw"] = "使用替代圖示",
+        ["zh-cn"] = "使用替代图标",
+    },
+    Default = {
+        en = "Default",
+        fr = "Défaut",
+        ru = "По умолчанию",
+        ["zh-tw"] = "預設",
+        ["zh-cn"] = "默认",
+    },
+    Video = {
+        en = "Video",
+        fr = "Vidéo",
+        ru = "Видео",
+        ["zh-tw"] = "影片",
+        ["zh-cn"] = "录像",
+    },
+    Loot = {
+        en = "Loot",
+        fr = "Butin",
+        ru = "Добыча",
+        ["zh-tw"] = "戰利品",
+        ["zh-cn"] = "战利品",
+    },
+    chest_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    chest_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    chest_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    chest_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    chest_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    chest_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    chest_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    chest_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    chest_icon_colour = {
+        en = "Chest Icon Colour",
+        fr = "Couleur de l'icône du coffre",
+        ru = "Цвет значка ящика",
+        ["zh-tw"] = "寶箱圖標顏色",
+        ["zh-cn"] = "宝箱图标颜色",
+    },
+    chest_icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    chest_icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    chest_icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    chest_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
 
-	icon_colour = {
-		en = "Icon Colour",
-		fr = "Couleur de l'icône",
-		ru = "Цвет значка",
-		["zh-tw"] = "圖示顏色",
-		["zh-cn"] = "图标颜色",
-	},
-	icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	idol_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
+    -- HERETICAL IDOL MARKERS
+    heretical_idol_markers_settings = {
+        en = "HERETICAL IDOL MARKERS",
+        fr = "MARQUEURS D'IDÔLES HÉRÉTIQUES",
+        ru = "МЕТКИ ЕРЕТИЧЕСКИХ ИДОЛОВ",
+        ["zh-tw"] = "異端雕像圖標",
+        ["zh-cn"] = "异端雕像图标",
+    },
+    heretical_idol_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    heretical_idol_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    heretical_idol_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    heretical_idol_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    heretical_idol_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    heretical_idol_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "標記的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    heretical_idol_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    heretical_idol_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    heretical_idol_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
 
-	-- MATERIAL MARKERS
-	material_markers_settings = {
-		en = "MATERIAL MARKERS",
-		fr = "MARQUEURS DE MATÉRIAUX",
-		ru = "МЕТКИ РЕСУРСОВ",
-		["zh-tw"] = "材料圖標",
-		["zh-cn"] = "物资标记",
-	},
-	material_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	material_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	material_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	material_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	material_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	material_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	material_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	material_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	material_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	marker_toggles = {
-		en = "Toggle Materials",
-		fr = "Basculer les matériaux",
-		ru = "Переключение ресурсов",
-		["zh-tw"] = "切換材料",
-		["zh-cn"] = "材料显示开关",
-	},
-	toggle_large_plasteel = {
-		en = "Show Large Plasteel Markers",
-		fr = "Afficher les marqueurs des grandes caches de plastacier",
-		ru = "Показывать метки больших кусков пластали",
-		["zh-tw"] = "顯示大型塑鋼標記",
-		["zh-cn"] = "显示大型塑钢箱标记",
-	},
-	toggle_small_plasteel = {
-		en = "Show Small Plasteel Markers",
-		fr = "Afficher les marqueurs des petites caches de plastacier",
-		ru = "Показывать метки малых кусков пластали",
-		["zh-tw"] = "顯示小型塑鋼標記",
-		["zh-cn"] = "显示小型塑钢箱标记",
-	},
-	toggle_large_diamantine = {
-		en = "Show Large Diamantine Markers",
-		fr = "Afficher les marqueurs des grandes caches de diamantine",
-		ru = "Показывать метки больших кусков диамантина",
-		["zh-tw"] = "顯示大型金剛晶石標記",
-		["zh-cn"] = "显示大型金刚砂箱标记",
-	},
-	toggle_small_diamantine = {
-		en = "Show Small Diamantine Markers",
-		fr = "Afficher les marqueurs des petites caches de diamantine",
-		ru = "Показывать малых больших кусков диамантина",
-		["zh-tw"] = "顯示小型金剛晶石標記",
-		["zh-cn"] = "显示小型金刚砂箱标记",
-	},
-	plasteel_icon_colour = {
-		en = "Plasteel Icon Colour",
-		fr = "Couleur de l'icône plastacier",
-		ru = "Цвет значка пластали",
-		["zh-tw"] = "塑鋼圖示顏色",
-		["zh-cn"] = "塑钢图标颜色",
-	},
-	plasteel_icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	plasteel_icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	plasteel_icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	diamantine_icon_colour = {
-		en = "Diamantine Icon Colour",
-		fr = "Couleur de l'icône diamantine",
-		ru = "Цвет значка диамантина",
-		["zh-tw"] = "金剛晶石圖示顏色",
-		["zh-cn"] = "金刚砂图标颜色",
-	},
-	diamantine_icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	diamantine_icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	diamantine_icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	material_small_border_colour = {
-		en = "Small Material Cache Border Colour",
-		fr = "Couleur de la bordure des petites caches",
-		ru = "Цвет границы малого тайника с ресурсами",
-		["zh-tw"] = "小型材料儲存邊框顏色",
-		["zh-cn"] = "小型物资箱边框颜色",
-	},
-	material_large_border_colour = {
-		en = "Large Material Cache Border Colour",
-		fr = "Couleur de la bordure des grandes caches",
-		ru = "Цвет границы большого тайника с ресурсами",
-		["zh-tw"] = "大型材料儲存邊框顏色",
-		["zh-cn"] = "大型物资箱边框颜色",
-	},
+    icon_colour = {
+        en = "Icon Colour",
+        fr = "Couleur de l'icône",
+        ru = "Цвет значка",
+        ["zh-tw"] = "圖示顏色",
+        ["zh-cn"] = "图标颜色",
+    },
+    icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    idol_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
 
-	-- STIMM MARKERS
-	stimm_markers_settings = {
-		en = "STIMM MARKERS",
-		fr = "MARQUEURS STIMM",
-		ru = "МЕТКИ СТИМУЛЯТОРОВ",
-		["zh-tw"] = "興奮劑標記",
-		["zh-cn"] = "兴奋剂标记",
-	},
-	stimm_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	recolor_stimm_compat_enable = {
-		en = "RecolorStimm mod support?",
-		fr = "Support du mod RecolorStimm ?",
-		ru = "Поддержка мода Recolor Stimm?",
-		["zh-tw"] = "支援 RecolorStimm 模組？",
-		["zh-cn"] = "支持 RecolorStimm 模组？",
-	},
-	recolor_stimm_compat_enable_tooltip = {
-		en = "Toggles recolour stimm mod support, where if enabled - will adjust the colours of the stimms to the colours from RecolorStimms mod - and ignore the markers AIO stimm colours.",
-		fr = "Active la compatibilité avec le mod RecolorStimm. Si activé, ajuste les couleurs des stimms selon le mod RecolorStimm et ignore les couleurs de Markers AIO.",
-		ru = "Включает поддержку мода Recolor Stimm. Если включено - цвета стимуляторов будут взяты из мода Recolor Stimm, игнорируя цвета Улучшенных меток.",
-		["zh-tw"] = "切換 RecolorStimm 模組支援。啟用後將使用 RecolorStimm 的顏色，忽略標記整合版的興奮劑顏色設定。",
-		["zh-cn"] = "切换 RecolorStimm 模组支持。启用后将使用 RecolorStimm 的颜色，忽略标记整合版的兴奋剂颜色设置。",
-	},
-	toggle_background_colour = {
-		en = "Colour Background Instead of Icon?",
-		fr = "Colorer l'arrière-plan au lieu de l'icône ?",
-		ru = "Окрашивать фон вместо значка?",
-		["zh-tw"] = "著色背景而非圖示？",
-		["zh-cn"] = "给背景上色而非图标？",
-	},
-	toggle_background_colour_tooltip = {
-		en = "If enabled, will colour the background instead of the icon. If disabled, will colour the icon instead of the background. Uses the 'Background Colour' setting, as it essentially inverts the colours.",
-		fr = "Si activé, colorera l'arrière-plan au lieu de l'icône. Si désactivé, colorera l'icône. Utilise le paramètre 'Couleur de fond' en inversant les couleurs.",
-		ru = "Если включено, будет окрашивать фон вместо значка. Если выключено - значок вместо фона. По сути инвертирует цвета.",
-		["zh-tw"] = "啟用後將為背景上色而非圖示。停用後則為圖示上色。使用「背景顏色」設定，相當於反轉顏色。",
-		["zh-cn"] = "启用后将为背景上色而非图标。禁用后则为图标上色。使用「背景颜色」设置，本质上是反转颜色。",
-	},
+    -- MATERIAL MARKERS
+    material_markers_settings = {
+        en = "MATERIAL MARKERS",
+        fr = "MARQUEURS DE MATÉRIAUX",
+        ru = "МЕТКИ РЕСУРСОВ",
+        ["zh-tw"] = "材料圖標",
+        ["zh-cn"] = "物资标记",
+    },
+    material_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    material_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    material_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    material_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    material_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    material_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    material_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    material_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    material_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    marker_toggles = {
+        en = "Toggle Materials",
+        fr = "Basculer les matériaux",
+        ru = "Переключение ресурсов",
+        ["zh-tw"] = "切換材料",
+        ["zh-cn"] = "材料显示开关",
+    },
+    toggle_large_plasteel = {
+        en = "Show Large Plasteel Markers",
+        fr = "Afficher les marqueurs des grandes caches de plastacier",
+        ru = "Показывать метки больших кусков пластали",
+        ["zh-tw"] = "顯示大型塑鋼標記",
+        ["zh-cn"] = "显示大型塑钢箱标记",
+    },
+    toggle_small_plasteel = {
+        en = "Show Small Plasteel Markers",
+        fr = "Afficher les marqueurs des petites caches de plastacier",
+        ru = "Показывать метки малых кусков пластали",
+        ["zh-tw"] = "顯示小型塑鋼標記",
+        ["zh-cn"] = "显示小型塑钢箱标记",
+    },
+    toggle_large_diamantine = {
+        en = "Show Large Diamantine Markers",
+        fr = "Afficher les marqueurs des grandes caches de diamantine",
+        ru = "Показывать метки больших кусков диамантина",
+        ["zh-tw"] = "顯示大型金剛晶石標記",
+        ["zh-cn"] = "显示大型金刚砂箱标记",
+    },
+    toggle_small_diamantine = {
+        en = "Show Small Diamantine Markers",
+        fr = "Afficher les marqueurs des petites caches de diamantine",
+        ru = "Показывать малых больших кусков диамантина",
+        ["zh-tw"] = "顯示小型金剛晶石標記",
+        ["zh-cn"] = "显示小型金刚砂箱标记",
+    },
+    plasteel_icon_colour = {
+        en = "Plasteel Icon Colour",
+        fr = "Couleur de l'icône plastacier",
+        ru = "Цвет значка пластали",
+        ["zh-tw"] = "塑鋼圖示顏色",
+        ["zh-cn"] = "塑钢图标颜色",
+    },
+    plasteel_icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    plasteel_icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    plasteel_icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    diamantine_icon_colour = {
+        en = "Diamantine Icon Colour",
+        fr = "Couleur de l'icône diamantine",
+        ru = "Цвет значка диамантина",
+        ["zh-tw"] = "金剛晶石圖示顏色",
+        ["zh-cn"] = "金刚砂图标颜色",
+    },
+    diamantine_icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    diamantine_icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    diamantine_icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    material_small_border_colour = {
+        en = "Small Material Cache Border Colour",
+        fr = "Couleur de la bordure des petites caches",
+        ru = "Цвет границы малого тайника с ресурсами",
+        ["zh-tw"] = "小型材料儲存邊框顏色",
+        ["zh-cn"] = "小型物资箱边框颜色",
+    },
+    material_large_border_colour = {
+        en = "Large Material Cache Border Colour",
+        fr = "Couleur de la bordure des grandes caches",
+        ru = "Цвет границы большого тайника с ресурсами",
+        ["zh-tw"] = "大型材料儲存邊框顏色",
+        ["zh-cn"] = "大型物资箱边框颜色",
+    },
 
-	broker_stimm_enable = {
-		en = "Enable Hive Scum Stimm Markers",
-		fr = "Activer les marqueurs de stimm de la lie du hive",
-		ru = "Включить метки стимов Отбросов Улья",
-		["zh-tw"] = "啟用巢都敗類興奮劑標記",
-		["zh-cn"] = "启用巢都混混兴奋剂标记",
-	},
-	stimm_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	stimm_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	stimm_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	stimm_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	stimm_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	stimm_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	stimm_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	stimm_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	boost_stimm_icon_colour = {
-		en = "Boost Stimm Icon Colour",
-		fr = "Couleur de l'icône de boost Stimm",
-		ru = "Цвет значка стимулятора усиления",
-		["zh-tw"] = "增強興奮劑圖示顏色",
-		["zh-cn"] = "专注兴奋剂图标颜色",
-	},
-	boost_stimm_icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	boost_stimm_icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	boost_stimm_icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	boost_stimm_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	corruption_stimm_icon_colour = {
-		en = "Corruption Stimm Icon Colour",
-		fr = "Couleur de l'icône de corruption Stimm",
-		ru = "Цвет значка мед стима",
-		["zh-tw"] = "治療針圖示顏色",
-		["zh-cn"] = "医疗兴奋剂图标颜色",
-	},
-	corruption_stimm_icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	corruption_stimm_icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	corruption_stimm_icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	corruption_stimm_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	power_stimm_icon_colour = {
-		en = "Power Stimm Icon Colour",
-		fr = "Couleur de l'icône de puissance Stimm",
-		ru = "Цвет значка стима силы",
-		["zh-tw"] = "戰鬥興奮劑圖示顏色",
-		["zh-cn"] = "作战兴奋剂图标颜色",
-	},
-	power_stimm_icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	power_stimm_icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	power_stimm_icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	power_stimm_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	speed_stimm_icon_colour = {
-		en = "Speed Stimm Icon Colour",
-		fr = "Couleur de l'icône de vitesse Stimm",
-		ru = "Цвет значка стима скорости",
-		["zh-tw"] = "速度興奮劑圖示顏色",
-		["zh-cn"] = "敏捷兴奋剂图标颜色",
-	},
-	speed_stimm_icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	speed_stimm_icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	speed_stimm_icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	speed_stimm_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	broker_stimm_icon_colour = {
-		en = "Hive Scum Stimm Icon Colour",
-		fr = "Couleur de l'icône de stimm de la lie du hive",
-		ru = "Цвет значка стима Отбросов Улья",
-		["zh-tw"] = "巢都敗類興奮劑圖示顏色",
-		["zh-cn"] = "巢都渣滓兴奋剂图标颜色",
-	},
-	broker_stimm_icon_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	broker_stimm_icon_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	broker_stimm_icon_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	broker_stimm_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
+    -- STIMM MARKERS
+    stimm_markers_settings = {
+        en = "STIMM MARKERS",
+        fr = "MARQUEURS STIMM",
+        ru = "МЕТКИ СТИМУЛЯТОРОВ",
+        ["zh-tw"] = "興奮劑標記",
+        ["zh-cn"] = "兴奋剂标记",
+    },
+    stimm_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    recolor_stimm_compat_enable = {
+        en = "RecolorStimm mod support?",
+        fr = "Support du mod RecolorStimm ?",
+        ru = "Поддержка мода Recolor Stimm?",
+        ["zh-tw"] = "支援 RecolorStimm 模組？",
+        ["zh-cn"] = "支持 RecolorStimm 模组？",
+    },
+    recolor_stimm_compat_enable_tooltip = {
+        en =
+        "Toggles recolour stimm mod support, where if enabled - will adjust the colours of the stimms to the colours from RecolorStimms mod - and ignore the markers AIO stimm colours.",
+        fr =
+        "Active la compatibilité avec le mod RecolorStimm. Si activé, ajuste les couleurs des stimms selon le mod RecolorStimm et ignore les couleurs de Markers AIO.",
+        ru =
+        "Включает поддержку мода Recolor Stimm. Если включено - цвета стимуляторов будут взяты из мода Recolor Stimm, игнорируя цвета Улучшенных меток.",
+        ["zh-tw"] = "切換 RecolorStimm 模組支援。啟用後將使用 RecolorStimm 的顏色，忽略標記整合版的興奮劑顏色設定。",
+        ["zh-cn"] = "切换 RecolorStimm 模组支持。启用后将使用 RecolorStimm 的颜色，忽略标记整合版的兴奋剂颜色设置。",
+    },
+    toggle_background_colour = {
+        en = "Colour Background Instead of Icon?",
+        fr = "Colorer l'arrière-plan au lieu de l'icône ?",
+        ru = "Окрашивать фон вместо значка?",
+        ["zh-tw"] = "著色背景而非圖示？",
+        ["zh-cn"] = "给背景上色而非图标？",
+    },
+    toggle_background_colour_tooltip = {
+        en =
+        "If enabled, will colour the background instead of the icon. If disabled, will colour the icon instead of the background. Uses the 'Background Colour' setting, as it essentially inverts the colours.",
+        fr =
+        "Si activé, colorera l'arrière-plan au lieu de l'icône. Si désactivé, colorera l'icône. Utilise le paramètre 'Couleur de fond' en inversant les couleurs.",
+        ru =
+        "Если включено, будет окрашивать фон вместо значка. Если выключено - значок вместо фона. По сути инвертирует цвета.",
+        ["zh-tw"] = "啟用後將為背景上色而非圖示。停用後則為圖示上色。使用「背景顏色」設定，相當於反轉顏色。",
+        ["zh-cn"] = "启用后将为背景上色而非图标。禁用后则为图标上色。使用「背景颜色」设置，本质上是反转颜色。",
+    },
 
-	boost_stimm_require_line_of_sight = {
-		en = "Require line of sight (Boost Stimm)",
-		fr = "Nécessite une ligne de vue (Stimm de boost)",
-		ru = "Требуется прямая видимость (стим ускорения)",
-		["zh-cn"] = "专注兴奋剂仅视野内显示",
-		["zh-tw"] = "增強興奮劑需要視線範圍",
-	},
-	corruption_stimm_require_line_of_sight = {
-		en = "Require line of sight (Medic Stimm)",
-		fr = "Nécessite une ligne de vue (Stimm médical)",
-		ru = "Требуется прямая видимость (мед стим)",
-		["zh-cn"] = "医疗兴奋剂仅视野内显示",
-		["zh-tw"] = "醫療興奮劑需要視線範圍",
-	},
-	power_stimm_require_line_of_sight = {
-		en = "Require line of sight (Power Stimm)",
-		fr = "Nécessite une ligne de vue (Stimm de puissance)",
-		ru = "Требуется прямая видимость (стим силы)",
-		["zh-cn"] = "作战兴奋剂仅视野内显示",
-		["zh-tw"] = "戰鬥興奮劑需要視線範圍",
-	},
-	speed_stimm_require_line_of_sight = {
-		en = "Require line of sight (Speed Stimm)",
-		fr = "Nécessite une ligne de vue (Stimm de vitesse)",
-		ru = "Требуется прямая видимость (стим скорости)",
-		["zh-cn"] = "敏捷兴奋剂仅视野内显示",
-		["zh-tw"] = "速度興奮劑需要視線範圍",
-	},
-	broker_stimm_require_line_of_sight = {
-		en = "Require line of sight (Hive Scum Stimm)",
-		fr = "Nécessite une ligne de vue (Stimm de la lie du hive)",
-		ru = "Требуется прямая видимость (стим отбросов улья)",
-		["zh-cn"] = "巢都兴奋剂仅视野内显示",
-		["zh-tw"] = "巢都敗類興奮劑需要視線範圍",
-	},
+    broker_stimm_enable = {
+        en = "Enable Hive Scum Stimm Markers",
+        fr = "Activer les marqueurs de stimm de la lie du hive",
+        ru = "Включить метки стимов Отбросов Улья",
+        ["zh-tw"] = "啟用巢都敗類興奮劑標記",
+        ["zh-cn"] = "启用巢都混混兴奋剂标记",
+    },
+    stimm_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    stimm_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    stimm_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    stimm_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    stimm_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    stimm_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    stimm_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    stimm_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    boost_stimm_icon_colour = {
+        en = "Boost Stimm Icon Colour",
+        fr = "Couleur de l'icône de boost Stimm",
+        ru = "Цвет значка стимулятора усиления",
+        ["zh-tw"] = "增強興奮劑圖示顏色",
+        ["zh-cn"] = "专注兴奋剂图标颜色",
+    },
+    boost_stimm_icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    boost_stimm_icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    boost_stimm_icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    boost_stimm_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    corruption_stimm_icon_colour = {
+        en = "Corruption Stimm Icon Colour",
+        fr = "Couleur de l'icône de corruption Stimm",
+        ru = "Цвет значка мед стима",
+        ["zh-tw"] = "治療針圖示顏色",
+        ["zh-cn"] = "医疗兴奋剂图标颜色",
+    },
+    corruption_stimm_icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    corruption_stimm_icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    corruption_stimm_icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    corruption_stimm_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    power_stimm_icon_colour = {
+        en = "Power Stimm Icon Colour",
+        fr = "Couleur de l'icône de puissance Stimm",
+        ru = "Цвет значка стима силы",
+        ["zh-tw"] = "戰鬥興奮劑圖示顏色",
+        ["zh-cn"] = "作战兴奋剂图标颜色",
+    },
+    power_stimm_icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    power_stimm_icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    power_stimm_icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    power_stimm_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    speed_stimm_icon_colour = {
+        en = "Speed Stimm Icon Colour",
+        fr = "Couleur de l'icône de vitesse Stimm",
+        ru = "Цвет значка стима скорости",
+        ["zh-tw"] = "速度興奮劑圖示顏色",
+        ["zh-cn"] = "敏捷兴奋剂图标颜色",
+    },
+    speed_stimm_icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    speed_stimm_icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    speed_stimm_icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    speed_stimm_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    broker_stimm_icon_colour = {
+        en = "Hive Scum Stimm Icon Colour",
+        fr = "Couleur de l'icône de stimm de la lie du hive",
+        ru = "Цвет значка стима Отбросов Улья",
+        ["zh-tw"] = "巢都敗類興奮劑圖示顏色",
+        ["zh-cn"] = "巢都渣滓兴奋剂图标颜色",
+    },
+    broker_stimm_icon_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    broker_stimm_icon_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    broker_stimm_icon_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    broker_stimm_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
 
-	-- Per-stimm-type require line of sight tooltips
-	boost_stimm_require_line_of_sight_tooltip = {
-		en = "Require line of sight for Boost Stimm markers?",
-		fr = "Les marqueurs de stimm de boost nécessitent-ils une ligne de vue ?",
-		ru = "Требуется ли прямая видимость для меток стима ускорения?",
-		["zh-cn"] = "专注兴奋剂标记是否需要视野？",
-		["zh-tw"] = "增強興奮劑標記是否需要視線？",
-	},
-	corruption_stimm_require_line_of_sight_tooltip = {
-		en = "Require line of sight for Medic Stimm markers?",
-		fr = "Les marqueurs de stimm médical nécessitent-ils une ligne de vue ?",
-		ru = "Требуется ли прямая видимость для меток мед стима?",
-		["zh-cn"] = "医疗兴奋剂标记是否需要视野？",
-		["zh-tw"] = "醫療興奮劑標記是否需要視線？",
-	},
-	power_stimm_require_line_of_sight_tooltip = {
-		en = "Require line of sight for Power Stimm markers?",
-		fr = "Les marqueurs de stimm de puissance nécessitent-ils une ligne de vue ?",
-		ru = "Требуется ли прямая видимость для меток стима силы?",
-		["zh-cn"] = "作战兴奋剂标记是否需要视野？",
-		["zh-tw"] = "戰鬥興奮劑標記是否需要視線？",
-	},
-	speed_stimm_require_line_of_sight_tooltip = {
-		en = "Require line of sight for Speed Stimm markers?",
-		fr = "Les marqueurs de stimm de vitesse nécessitent-ils une ligne de vue ?",
-		ru = "Требуется ли прямая видимость для меток стима скорости?",
-		["zh-cn"] = "敏捷兴奋剂标记是否需要视野？",
-		["zh-tw"] = "速度興奮劑標記是否需要視線？",
-	},
-	broker_stimm_require_line_of_sight_tooltip = {
-		en = "Require line of sight for Hive Scum Stimm markers?",
-		fr = "Les marqueurs de stimm de la lie du hive nécessitent-ils une ligne de vue ?",
-		ru = "Требуется ли прямая видимость для меток стима Отбросов Улья?",
-		["zh-cn"] = "巢都兴奋剂标记是否需要视野？",
-		["zh-tw"] = "巢都敗類興奮劑標記是否需要視線？",
-	},
+    boost_stimm_require_line_of_sight = {
+        en = "Require line of sight (Boost Stimm)",
+        fr = "Nécessite une ligne de vue (Stimm de boost)",
+        ru = "Требуется прямая видимость (стим ускорения)",
+        ["zh-cn"] = "专注兴奋剂仅视野内显示",
+        ["zh-tw"] = "增強興奮劑需要視線範圍",
+    },
+    corruption_stimm_require_line_of_sight = {
+        en = "Require line of sight (Medic Stimm)",
+        fr = "Nécessite une ligne de vue (Stimm médical)",
+        ru = "Требуется прямая видимость (мед стим)",
+        ["zh-cn"] = "医疗兴奋剂仅视野内显示",
+        ["zh-tw"] = "醫療興奮劑需要視線範圍",
+    },
+    power_stimm_require_line_of_sight = {
+        en = "Require line of sight (Power Stimm)",
+        fr = "Nécessite une ligne de vue (Stimm de puissance)",
+        ru = "Требуется прямая видимость (стим силы)",
+        ["zh-cn"] = "作战兴奋剂仅视野内显示",
+        ["zh-tw"] = "戰鬥興奮劑需要視線範圍",
+    },
+    speed_stimm_require_line_of_sight = {
+        en = "Require line of sight (Speed Stimm)",
+        fr = "Nécessite une ligne de vue (Stimm de vitesse)",
+        ru = "Требуется прямая видимость (стим скорости)",
+        ["zh-cn"] = "敏捷兴奋剂仅视野内显示",
+        ["zh-tw"] = "速度興奮劑需要視線範圍",
+    },
+    broker_stimm_require_line_of_sight = {
+        en = "Require line of sight (Hive Scum Stimm)",
+        fr = "Nécessite une ligne de vue (Stimm de la lie du hive)",
+        ru = "Требуется прямая видимость (стим отбросов улья)",
+        ["zh-cn"] = "巢都兴奋剂仅视野内显示",
+        ["zh-tw"] = "巢都敗類興奮劑需要視線範圍",
+    },
 
-	-- TOME MARKERS
-	tome_markers_settings = {
-		en = "TOME MARKERS",
-		fr = "MARQUEURS DE TOME",
-		ru = "МЕТКИ КНИГ",
-		["zh-tw"] = "聖典標記",
-		["zh-cn"] = "圣经标记",
-	},
-	tome_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	tome_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	tome_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	tome_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	tome_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	tome_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	tome_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	tome_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	tome_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	grim_colour = {
-		en = "Grimoire Colour",
-		fr = "Couleur du grimoire",
-		ru = "Цвет гримуара",
-		["zh-tw"] = "魔術書顏色",
-		["zh-cn"] = "魔法书颜色",
-	},
-	grim_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	grim_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	grim_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	script_colour = {
-		en = "Scripture Colour",
-		fr = "Couleur des textes sacrés",
-		ru = "Цвет писания",
-		["zh-tw"] = "經典顏色",
-		["zh-cn"] = "圣经颜色",
-	},
-	script_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	script_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	script_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	tome_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
+    -- Per-stimm-type require line of sight tooltips
+    boost_stimm_require_line_of_sight_tooltip = {
+        en = "Require line of sight for Boost Stimm markers?",
+        fr = "Les marqueurs de stimm de boost nécessitent-ils une ligne de vue ?",
+        ru = "Требуется ли прямая видимость для меток стима ускорения?",
+        ["zh-cn"] = "专注兴奋剂标记是否需要视野？",
+        ["zh-tw"] = "增強興奮劑標記是否需要視線？",
+    },
+    corruption_stimm_require_line_of_sight_tooltip = {
+        en = "Require line of sight for Medic Stimm markers?",
+        fr = "Les marqueurs de stimm médical nécessitent-ils une ligne de vue ?",
+        ru = "Требуется ли прямая видимость для меток мед стима?",
+        ["zh-cn"] = "医疗兴奋剂标记是否需要视野？",
+        ["zh-tw"] = "醫療興奮劑標記是否需要視線？",
+    },
+    power_stimm_require_line_of_sight_tooltip = {
+        en = "Require line of sight for Power Stimm markers?",
+        fr = "Les marqueurs de stimm de puissance nécessitent-ils une ligne de vue ?",
+        ru = "Требуется ли прямая видимость для меток стима силы?",
+        ["zh-cn"] = "作战兴奋剂标记是否需要视野？",
+        ["zh-tw"] = "戰鬥興奮劑標記是否需要視線？",
+    },
+    speed_stimm_require_line_of_sight_tooltip = {
+        en = "Require line of sight for Speed Stimm markers?",
+        fr = "Les marqueurs de stimm de vitesse nécessitent-ils une ligne de vue ?",
+        ru = "Требуется ли прямая видимость для меток стима скорости?",
+        ["zh-cn"] = "敏捷兴奋剂标记是否需要视野？",
+        ["zh-tw"] = "速度興奮劑標記是否需要視線？",
+    },
+    broker_stimm_require_line_of_sight_tooltip = {
+        en = "Require line of sight for Hive Scum Stimm markers?",
+        fr = "Les marqueurs de stimm de la lie du hive nécessitent-ils une ligne de vue ?",
+        ru = "Требуется ли прямая видимость для меток стима Отбросов Улья?",
+        ["zh-cn"] = "巢都兴奋剂标记是否需要视野？",
+        ["zh-tw"] = "巢都敗類興奮劑標記是否需要視線？",
+    },
 
-	-- Tainted Communication Device Markers
-	tainted_markers_settings = {
-		en = "TAINTED COMMUNICATION DEVICE MARKERS",
-		ru = "МЕТКИ ЗАГРЯЗНЁННЫХ КОММУНИКАЦИОННЫХ УСТРОЙСТВ",
-		["zh-cn"] = "腐化通讯器标记",
-		["zh-tw"] = "腐化通訊裝置圖示",
-	},
-	tainted_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	tainted_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	tainted_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	tainted_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	tainted_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	tainted_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	tainted_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	tainted_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	tainted_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	tainted_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	tainted_colour = {
-		en = "Tainted Communications Device Colour",
-		ru = "Цвет загрязнённых коммуникационных устройств",
-		["zh-cn"] = "腐化通讯器颜色",
-	},
-	tainted_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	tainted_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	tainted_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
+    -- TOME MARKERS
+    tome_markers_settings = {
+        en = "TOME MARKERS",
+        fr = "MARQUEURS DE TOME",
+        ru = "МЕТКИ КНИГ",
+        ["zh-tw"] = "聖典標記",
+        ["zh-cn"] = "圣经标记",
+    },
+    tome_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    tome_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    tome_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    tome_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    tome_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    tome_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    tome_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    tome_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    tome_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    grim_colour = {
+        en = "Grimoire Colour",
+        fr = "Couleur du grimoire",
+        ru = "Цвет гримуара",
+        ["zh-tw"] = "魔術書顏色",
+        ["zh-cn"] = "魔法书颜色",
+    },
+    grim_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    grim_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    grim_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    script_colour = {
+        en = "Scripture Colour",
+        fr = "Couleur des textes sacrés",
+        ru = "Цвет писания",
+        ["zh-tw"] = "經典顏色",
+        ["zh-cn"] = "圣经颜色",
+    },
+    script_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    script_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    script_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    tome_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
 
-	-- Tainted Skull Markers
-	tainted_skull_markers_settings = {
-		en = "TAINTED SKULL MARKERS",
-		ru = "МЕТКИ ЗАГРЯЗНЁННЫХ ЧЕРЕПОВ",
-		["zh-cn"] = "腐化颅骨标记",
-	},
-	tainted_skull_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	tainted_skull_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	tainted_skull_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	tainted_skull_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	tainted_skull_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	tainted_skull_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	tainted_skull_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	tainted_skull_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	tainted_skull_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	tainted_skull_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	tainted_skull_colour = {
-		en = "Tainted Skull Colour",
-		ru = "Цвет загрязнённых черепов",
-		["zh-cn"] = "腐化颅骨颜色",
-	},
-	tainted_skull_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	tainted_skull_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	tainted_skull_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
+    -- Tainted Communication Device Markers
+    tainted_markers_settings = {
+        en = "TAINTED COMMUNICATION DEVICE MARKERS",
+        ru = "МЕТКИ ЗАГРЯЗНЁННЫХ КОММУНИКАЦИОННЫХ УСТРОЙСТВ",
+        ["zh-cn"] = "腐化通讯器标记",
+        ["zh-tw"] = "腐化通訊裝置圖示",
+    },
+    tainted_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    tainted_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    tainted_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    tainted_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    tainted_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    tainted_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    tainted_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    tainted_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    tainted_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    tainted_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    tainted_colour = {
+        en = "Tainted Communications Device Colour",
+        ru = "Цвет загрязнённых коммуникационных устройств",
+        ["zh-cn"] = "腐化通讯器颜色",
+    },
+    tainted_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    tainted_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    tainted_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
 
-	-- luggable Markers
-	luggable_markers_settings = {
-		en = "LUGGABLE MARKERS",
-		ru = "МЕТКИ ПЕРЕНОСИМЫХ",
-		["zh-cn"] = "可搬运物品标记",
-	},
-	luggable_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	luggable_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	luggable_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	luggable_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	luggable_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	luggable_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	luggable_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	luggable_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	luggable_colour = {
-		en = "Luggable Colour",
-		ru = "Цвет переносимых",
-		["zh-cn"] = "可搬运物品颜色",
-	},
-	luggable_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	luggable_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	luggable_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	luggable_icon = {
-		en = "Use Alternative Icon",
-		fr = "Utiliser une icône alternative",
-		ru = "Включить альтернативный значок",
-		["zh-tw"] = "使用替代圖示",
-		["zh-cn"] = "使用替代图标",
-	},
+    -- Tainted Skull Markers
+    tainted_skull_markers_settings = {
+        en = "TAINTED SKULL MARKERS",
+        ru = "МЕТКИ ЗАГРЯЗНЁННЫХ ЧЕРЕПОВ",
+        ["zh-cn"] = "腐化颅骨标记",
+    },
+    tainted_skull_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    tainted_skull_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    tainted_skull_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    tainted_skull_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    tainted_skull_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    tainted_skull_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    tainted_skull_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    tainted_skull_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    tainted_skull_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    tainted_skull_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    tainted_skull_colour = {
+        en = "Tainted Skull Colour",
+        ru = "Цвет загрязнённых черепов",
+        ["zh-cn"] = "腐化颅骨颜色",
+    },
+    tainted_skull_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    tainted_skull_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    tainted_skull_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
 
-	-- Martyrs Skull Markers
-	martyrs_skull_markers_settings = {
-		en = "MARTYRS SKULL MARKERS",
-		ru = "МЕТКИ ЧЕРЕПОВ МУЧЕНИКОВ",
-		["zh-cn"] = "殉道者颅骨标记",
-	},
-	martyrs_skull_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	martyrs_skull_guide_enable = {
-		en = "Enable Skull Guide Widget?",
-		ru = "Включить виджет руководства по черепам?",
-		["zh-tw"] = "啟用顱骨收集指南小工具？",
-		["zh-cn"] = "启用颅骨收集攻略小工具",
-	},
-	martyrs_skull_guide_markers_enable = {
-		en = "Enable Skull Guide Markers?",
-		ru = "Включить метки руководства по черепам?",
-		["zh-tw"] = "啟用顱骨收集指南標記？",
-		["zh-cn"] = "启用颅骨收集攻略标记",
-	},
-	martyrs_skull_guide_x_offset = {
-		en = "Guide Widget X Position",
-		ru = "Позиция виджета по X",
-		["zh-cn"] = "指南小工具X位置",
-	},
-	martyrs_skull_guide_y_offset = {
-		en = "Guide Widget Y Position",
-		ru = "Позиция виджета по Y",
-		["zh-cn"] = "指南小工具Y位置",
-	},
-	martyrs_skull_guide_disable_if_collected = {
-		en = "Only show guide if not collected?",
-		ru = "Показывать руководство, если не собран?",
-		["zh-tw"] = "僅在未收集時顯示指南？",
-		["zh-cn"] = "仅未收集时显示攻略",
-	},
-	martyrs_skull_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	martyrs_skull_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	martyrs_skull_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	martyrs_skull_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	martyrs_skull_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	martyrs_skull_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	martyrs_skull_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	martyrs_skull_colour = {
-		en = "Martyrs Skull Colour",
-		ru = "Цвет черепов мучеников",
-		["zh-cn"] = "殉道者颅骨颜色",
-	},
-	martyrs_skull_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	martyrs_skull_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	martyrs_skull_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
+    -- luggable Markers
+    luggable_markers_settings = {
+        en = "LUGGABLE MARKERS",
+        ru = "МЕТКИ ПЕРЕНОСИМЫХ",
+        ["zh-cn"] = "可搬运物品标记",
+    },
+    luggable_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    luggable_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    luggable_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    luggable_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    luggable_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    luggable_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    luggable_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    luggable_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    luggable_colour = {
+        en = "Luggable Colour",
+        ru = "Цвет переносимых",
+        ["zh-cn"] = "可搬运物品颜色",
+    },
+    luggable_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    luggable_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    luggable_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    luggable_icon = {
+        en = "Use Alternative Icon",
+        fr = "Utiliser une icône alternative",
+        ru = "Включить альтернативный значок",
+        ["zh-tw"] = "使用替代圖示",
+        ["zh-cn"] = "使用替代图标",
+    },
 
-	Exclamation = {
-		en = "Exclamation",
-		fr = "Exclamation",
-		ru = "Восклицание",
-		["zh-tw"] = "驚嘆號",
-		["zh-cn"] = "感叹号",
-	},
-	Hands = {
-		en = "Hands",
-		fr = "Mains",
-		ru = "Руки",
-		["zh-tw"] = "手",
-		["zh-cn"] = "手掌",
-	},
-	Fist = {
-		en = "Fist",
-		fr = "Poing",
-		ru = "Кулак",
-		["zh-tw"] = "拳頭",
-		["zh-cn"] = "拳头",
-	},
-	Luggable = {
-		en = "Luggable",
-		fr = "Transportable",
-		ru = "Переносимый",
-		["zh-tw"] = "可搬運",
-		["zh-cn"] = "可搬运",
-	},
-	Gold = {
-		en = "Gold",
-		fr = "Or",
-		ru = "Золото",
-		["zh-tw"] = "金",
-		["zh-cn"] = "金色",
-	},
-	Silver = {
-		en = "Silver",
-		fr = "Argent",
-		ru = "Серебро",
-		["zh-tw"] = "銀",
-		["zh-cn"] = "银色",
-	},
-	Steel = {
-		en = "Steel",
-		fr = "Acier",
-		ru = "Сталь",
-		["zh-tw"] = "鋼",
-		["zh-cn"] = "钢色",
-	},
-	Black = {
-		en = "Black",
-		fr = "Noir",
-		ru = "Чёрный",
-		["zh-tw"] = "黑",
-		["zh-cn"] = "黑色",
-	},
-	Terminal = {
-		en = "Terminal",
-		fr = "Terminal",
-		ru = "Терминал",
-		["zh-tw"] = "終端",
-		["zh-cn"] = "终端",
-	},
-	Tarnished = {
-		en = "Tarnished",
-		fr = "Termi",
-		ru = "Потускневший",
-		["zh-tw"] = "銹蝕",
-		["zh-cn"] = "暗铜色",
-	},
-	-- new toggle LOS settings
-	martyrs_skull_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	ammo_med_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	chest_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	heretical_idol_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	material_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	stimm_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	tome_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	tainted_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	tainted_skull_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	luggable_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
+    -- Martyrs Skull Markers
+    martyrs_skull_markers_settings = {
+        en = "MARTYRS SKULL MARKERS",
+        ru = "МЕТКИ ЧЕРЕПОВ МУЧЕНИКОВ",
+        ["zh-cn"] = "殉道者颅骨标记",
+    },
+    martyrs_skull_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    martyrs_skull_guide_enable = {
+        en = "Enable Skull Guide Widget?",
+        ru = "Включить виджет руководства по черепам?",
+        ["zh-tw"] = "啟用顱骨收集指南小工具？",
+        ["zh-cn"] = "启用颅骨收集攻略小工具",
+    },
+    martyrs_skull_guide_markers_enable = {
+        en = "Enable Skull Guide Markers?",
+        ru = "Включить метки руководства по черепам?",
+        ["zh-tw"] = "啟用顱骨收集指南標記？",
+        ["zh-cn"] = "启用颅骨收集攻略标记",
+    },
+    martyrs_skull_guide_x_offset = {
+        en = "Guide Widget X Position",
+        ru = "Позиция виджета по X",
+        ["zh-cn"] = "指南小工具X位置",
+    },
+    martyrs_skull_guide_y_offset = {
+        en = "Guide Widget Y Position",
+        ru = "Позиция виджета по Y",
+        ["zh-cn"] = "指南小工具Y位置",
+    },
+    martyrs_skull_guide_disable_if_collected = {
+        en = "Only show guide if not collected?",
+        ru = "Показывать руководство, если не собран?",
+        ["zh-tw"] = "僅在未收集時顯示指南？",
+        ["zh-cn"] = "仅未收集时显示攻略",
+    },
+    martyrs_skull_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    martyrs_skull_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    martyrs_skull_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    martyrs_skull_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    martyrs_skull_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    martyrs_skull_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    martyrs_skull_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    martyrs_skull_colour = {
+        en = "Martyrs Skull Colour",
+        ru = "Цвет черепов мучеников",
+        ["zh-cn"] = "殉道者颅骨颜色",
+    },
+    martyrs_skull_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    martyrs_skull_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    martyrs_skull_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
 
-	-- MARTYRS SKULL GUIDE LOCALIZATIONS... THERE'S LOTS x)
-	martyrs_skull_objective_hm_cartel_1 = {
-		en = "Follow number sequence",
-		ru = "Следовать последовательности чисел",
-		["zh-tw"] = "跟隨數字順序",
-		["zh-cn"] = "按数字顺序操作",
-	},
-	martyrs_skull_objective_km_enforcer_A = {
-		en = "First player, press button to start sequence",
-		ru = "Первый игрок, должен нажать кнопку, чтобы начать последовательность",
-		["zh-tw"] = "第一位玩家，按下按鈕開始序列",
-		["zh-cn"] = "1号玩家：按按钮启动序列",
-	},
-	martyrs_skull_objective_km_enforcer_B = {
-		en = "Second player, head through this door",
-		ru = "Второй игрок, должен пройти через эту дверь",
-		["zh-tw"] = "第二位玩家，通過這扇門",
-		["zh-cn"] = "2号玩家：穿过此门",
-	},
-	martyrs_skull_objective_km_enforcer_A1 = {
-		en = "Press once to open first door",
-		ru = "Нажмите один раз, чтобы открыть первую дверь",
-		["zh-tw"] = "按一下以打開第一扇門",
-		["zh-cn"] = "按一次打开第一道门",
-	},
-	martyrs_skull_objective_km_enforcer_A2 = {
-		en = "Press once to open second door",
-		ru = "Нажмите один раз, чтобы открыть вторую дверь",
-		["zh-tw"] = "按一下以打開第二扇門",
-		["zh-cn"] = "按一次打开第二道门",
-	},
-	martyrs_skull_objective_km_enforcer_A3 = {
-		en = "Press once to open third door",
-		ru = "Нажмите один раз, чтобы открыть третью дверь",
-		["zh-tw"] = "按一下以打開第三扇門",
-		["zh-cn"] = "按一次打开第三道门",
-	},
-	martyrs_skull_objective_km_enforcer_B1 = {
-		en = "Press first button to light up corresponding button in control room for player one for the fourth door",
-		ru = "Нажмите первую кнопку, чтобы зажечь соответствующую кнопку в комнате управления для первого игрока у 4 двери",
-		["zh-tw"] = "按下第一個按鈕以點亮控制室中對應玩家一的第四扇門按鈕",
-		["zh-cn"] = "按第一个按钮，点亮控制室中1号玩家对应的第四道门按钮",
-	},
-	martyrs_skull_objective_km_enforcer_B2 = {
-		en = "Press second button to light up corresponding button in control room for player one for the final door",
-		ru = "Нажмите вторую кнопку, чтобы зажечь соответствующую кнопку в комнате управления для первого игрока у последней двери",
-		["zh-tw"] = "按下第二個按鈕以點亮控制室中對應玩家一的最後一扇門按鈕",
-		["zh-cn"] = "按第二个按钮，点亮控制室中1号玩家对应的最后一道门按钮",
-	},
-	martyrs_skull_objective_km_enforcer_A4 = {
-		en = "Press button that lights up when player two completes B1 or B2",
-		ru = "Нажмите кнопку, которая загорается, когда второй игрок завершает Б1 или Б2",
-		["zh-tw"] = "按下當玩家二完成 B1 或 B2 時亮起的按鈕",
-		["zh-cn"] = "按下2号玩家完成B1/B2后亮起的按钮",
-	},
-	martyrs_skull_objective_km_enforcer_B3 = {
-		en = "Open door for other players",
-		ru = "Откройте дверь для других игроков",
-		["zh-tw"] = "為其他玩家打開門",
-		["zh-cn"] = "为队友开门",
-	},
-	martyrs_skull_objective_dm_stockpile_A = {
-		en = "Climb up",
-		ru = "Залезьте сюда",
-		["zh-tw"] = "爬上去",
-		["zh-cn"] = "向上攀爬",
-	},
-	martyrs_skull_objective_dm_stockpile_B = {
-		en = "Head to the control panel and try move the platform along the rails infront of you. The default pattern in the following order: \nDOWN, RIGHT, RIGHT, DOWN, LEFT",
-		ru = "Перейдите в панель управления и попробуйте переместить платформу по рельсам перед вами. Стандартная последовательность движений следующая: ВНИЗ, ВПРАВО, ВПРАВО, ВНИЗ, ВЛЕВО",
-		["zh-tw"] = "前往控制面板，嘗試沿著你面前的軌道移動平台。默認模式按以下順序：\n下、右、右、下、左",
-		["zh-cn"] = "前往控制台，沿轨道移动平台。默认顺序：\n下、右、右、下、左",
-	},
-	martyrs_skull_objective_fm_cargo_1 = {
-		en = "Turn on all showers with the red inquisition symbol quickly.",
-		ru = "Быстро включите каждый душ с красным символом инквизиции",
-		["zh-tw"] = "快速打開所有帶有紅色異端審判符號的淋浴器。",
-		["zh-cn"] = "快速打开所有带红色审判庭标识的淋浴喷头",
-	},
-	martyrs_skull_objective_dm_forge_1 = {
-		en = "Follow number sequence",
-		ru = "Следуйте последовательности чисел",
-		["zh-tw"] = "跟隨數字順序",
-		["zh-cn"] = "按数字顺序操作",
-	},
-	martyrs_skull_objective_dm_forge_9 = {
-		en = "Destroy all nurgle growths holding the door shut.",
-		ru = "Уничтожьте все ростки Нургла, удерживающие дверь от открытия",
-		["zh-tw"] = "摧毀所有阻止門打開的瘟疫生長物。",
-		["zh-cn"] = "摧毁所有封堵大门的纳垢增生体",
-	},
-	martyrs_skull_objective_dm_forge_10 = {
-		en = "Open door",
-		ru = "Откройте дверь",
-		["zh-tw"] = "打開門",
-		["zh-cn"] = "打开大门",
-	},
-	martyrs_skull_objective_lm_cooling_1 = {
-		en = "Climb up boxes to reach the top",
-		ru = "Запрыгните на ящики, чтобы забраться наверх",
-		["zh-tw"] = "爬上箱子到達頂部",
-		["zh-cn"] = "爬上箱子抵达顶部",
-	},
-	martyrs_skull_objective_lm_cooling_2 = {
-		en = "Pick up the key in the body's hand",
-		ru = "Заберите ключ из руки трупа",
-		["zh-tw"] = "從屍體的手中拿起鑰匙",
-		["zh-cn"] = "拾取尸体手中的钥匙",
-	},
-	martyrs_skull_objective_lm_cooling_3 = {
-		en = "Head back over the bridge and use the key on the locked locker.",
-		ru = "Вернитесь обратно через мост и воспользуйтесь ключом от запертого шкафчика",
-		["zh-tw"] = "回到橋頭的房間，使用鑰匙打開鎖住的儲物櫃。",
-		["zh-cn"] = "返回桥上，用钥匙打开上锁的储物柜",
-	},
-	martyrs_skull_objective_lm_scavenge_1 = {
-		en = "Head into room across the bridge",
-		ru = "Пройдите в комнату через мост",
-		["zh-tw"] = "前往橋對面的房間",
-		["zh-cn"] = "进入桥对面的房间",
-	},
-	martyrs_skull_objective_lm_scavenge_B1 = {
-		en = "Player one, climb into the right elevator",
-		ru = "Первый игрок должен забраться в правый лифт",
-		["zh-tw"] = "玩家一，爬進右側電梯",
-		["zh-cn"] = "1号玩家：进入右侧电梯",
-	},
-	martyrs_skull_objective_lm_scavenge_A1 = {
-		en = "Player two, climb into the left elevator to send player one upwards",
-		ru = "Второй игрок должен забраться в лифт и поднять первого игрока наверх",
-		["zh-tw"] = "玩家二，爬進左側電梯以將玩家一送上去",
-		["zh-cn"] = "2号玩家：进入左侧电梯，升起1号玩家",
-	},
-	martyrs_skull_objective_lm_scavenge_B2 = {
-		en = "Player one, grab the battery cell on the crate, and bring it back down in the elevator",
-		ru = "Первый игрок должен взять батарею на ящике и спустить её на лифте",
-		["zh-tw"] = "玩家一，從箱子上拿起電池，並將其帶回電梯下來",
-		["zh-cn"] = "1号玩家：拿取箱子上的电池，乘电梯返回",
-	},
-	martyrs_skull_objective_lm_scavenge_B3 = {
-		en = "Place the battery cell into the socket on the wall",
-		ru = "Вставьте батарейку в ячейку на стене",
-		["zh-tw"] = "將電池放入牆上的插座中",
-		["zh-cn"] = "将电池插入墙上的插槽",
-	},
-	martyrs_skull_objective_fm_armoury_1 = {
-		en = "Enter the building",
-		ru = "Войдите в здание",
-		["zh-tw"] = "進入建築物",
-		["zh-cn"] = "进入建筑",
-	},
-	martyrs_skull_objective_fm_armoury_2 = {
-		en = "Turn the valve",
-		ru = "Поверните кран",
-		["zh-tw"] = "轉動閥門",
-		["zh-cn"] = "转动阀门",
-	},
-	martyrs_skull_objective_fm_armoury_3 = {
-		en = "Climb up to begin parkour, continue up the stairs",
-		ru = "Заберитесь наверх, чтобы начать паркур, продолжая подниматься наверх",
-		["zh-tw"] = "爬上去開始跑酷，繼續上樓梯",
-		["zh-cn"] = "攀爬开始跑酷，沿楼梯继续向上",
-	},
-	martyrs_skull_objective_fm_armoury_5 = {
-		en = "Grab the power cell",
-		ru = "Возьмите элемент питания",
-		["zh-tw"] = "拿起電池",
-		["zh-cn"] = "拿取能量电池",
-	},
-	martyrs_skull_objective_fm_armoury_6 = {
-		en = "Place the power cell into the socket, and pull the lever",
-		ru = "Вставьте батарейку в ячейку и потяните рычаг",
-		["zh-tw"] = "將電池放入插座中，然後拉動杠杆",
-		["zh-cn"] = "将电池插入插槽，拉动杠杆",
-	},
-	martyrs_skull_objective_fm_armoury_7 = {
-		en = "Head back inside and press the button to open the gate to the skull",
-		ru = "Вернитесь внутрь и нажмите кнопку, чтобы открыть ворота к черепу",
-		["zh-tw"] = "回到裡面，按下按鈕打開通往顱骨的門",
-		["zh-cn"] = "返回室内，按按钮打开颅骨通道门",
-	},
-	martyrs_skull_objective_cm_raid_1 = {
-		en = "Head into alleyway",
-		ru = "Зайдите в переулок",
-		["zh-tw"] = "前往小巷",
-		["zh-cn"] = "进入小巷",
-	},
-	martyrs_skull_objective_cm_raid_2 = {
-		en = "Grab the key on the dead body",
-		ru = "Возьмите ключ с трупа",
-		["zh-tw"] = "從屍體身上拿起鑰匙",
-		["zh-cn"] = "拾取尸体上的钥匙",
-	},
-	martyrs_skull_objective_cm_raid_3 = {
-		en = "Head into the bar, and use the key to open the locked gate",
-		ru = "Зайдите в бар и воспользуйтесь ключом, чтобы открыть запертые ворота",
-		["zh-tw"] = "前往酒吧，使用鑰匙打開鎖住的門",
-		["zh-cn"] = "进入酒吧，用钥匙打开上锁的门",
-	},
-	martyrs_skull_objective_cm_raid_4 = {
-		en = "Go up the stairs, climb over the boxes and plant the breaching charge",
-		ru = "Поднимитесь по лестнице, перелезьте через коробки и заложите взрывное устройство",
-		["zh-tw"] = "上樓梯，爬過箱子並安裝爆破裝置",
-		["zh-cn"] = "上楼梯，翻越箱子，放置爆破炸药",
-	},
-	martyrs_skull_objective_cm_raid_5 = {
-		en = "Pickup the key, then head back out to the bar",
-		ru = "Возьмите ключ и возвращайтесь в бар",
-		["zh-tw"] = "拿起鑰匙，然後回到酒吧",
-		["zh-cn"] = "拾取钥匙，返回酒吧",
-	},
-	martyrs_skull_objective_cm_raid_6 = {
-		en = "Use the key to open the gate behind the bar",
-		ru = "Воспользуйтесь ключом, чтобы открыть ворота за баром",
-		["zh-tw"] = "使用鑰匙打開酒吧後面的門",
-		["zh-cn"] = "用钥匙打开酒吧后门",
-	},
-	martyrs_skull_objective_km_heresy_1 = {
-		en = "Follow number sequence",
-		ru = "Следуйте последовательности чисел",
-		["zh-tw"] = "跟隨數字順序",
-		["zh-cn"] = "按数字顺序操作",
-	},
-	martyrs_skull_objective_template_1 = {
-		en = "Input code: 213\nPress middle button",
-		ru = "Введите код: 213\nНажмите среднюю кнопку",
-		["zh-tw"] = "輸入代碼：213\n按下中間按鈕",
-		["zh-cn"] = "输入密码：213\n按下中间按钮",
-	},
-	martyrs_skull_objective_dm_propaganda_1 = {
-		en = "Interact with the dumpster and pick up the 'skull weight' from the ground",
-		ru = "Взаимодействуйте с мусорным контейнером и поднимите с земли груз в виде черепа",
-		["zh-tw"] = "與垃圾桶互動，從地上撿起「顱骨殘骸」",
-		["zh-cn"] = "互动垃圾桶，拾取地上的颅骨配重",
-	},
-	martyrs_skull_objective_dm_propaganda_2 = {
-		en = "Head to the Martyr's Skull door and place the skull weight on the chain",
-		ru = "Направляйтесь к двери с черепами мучеников и повесьте череп-груз на цепь",
-		["zh-tw"] = "前往 Martyr's Skull 門，將顱骨重物放在鏈條上",
-		["zh-cn"] = "前往殉道者颅骨大门，将颅骨配重挂在链条上",
-	},
-	martyrs_skull_objective_fm_resurgence_1 = {
-		en = "Head to control panel, you need to line up the pipes on the wall opposite, using the valves infront of you.\nThe default number of times you will need to turn the valves from left to right are as follows:\nx3,x1,x2,x3",
-		ru = "Перейдите к панели управления, совместите трубы на противоположной стене, используя вентили перед собой. По умолчанию количество поворотов вентилей слева направо следующее: x3, x1, x2, x3",
-		["zh-tw"] = "前往控制面板，您需要使用面前的閥門對面牆上的管道進行對齊。\n從左到右轉動閥門的次數默認為：\nx3,x1,x2,x3",
-		["zh-cn"] = "前往控制台，用阀门对齐对面墙上的管道。\n从左到右阀门转动次数默认：\n3次、1次、2次、3次",
-	},
-	martyrs_skull_objective_hm_complex_1 = {
-		en = "Remember the two symbols in the bottom right corner on the back of the panel",
-		ru = "Запомните два символа в правом нижнем углу на обратной стороне панели",
-		["zh-tw"] = "記住面板背面右下角的兩個符號",
-		["zh-cn"] = "记住面板背面右下角的两个符号",
-	},
-	martyrs_skull_objective_hm_complex_2 = {
-		en = "Head to the chaos rune circle, and light the candles around the edge that match the two symbols from step 1",
-		ru = "Направляйтесь к кругу рун хаоса и зажгите свечи по краю, соответствующие двум символам из шага 1",
-		["zh-tw"] = "前往混沌符文圓圈，點燃與步驟1中的兩個符號相匹配的邊緣蠟燭",
-		["zh-cn"] = "前往混沌符文阵，点燃边缘匹配步骤1符号的蜡烛",
-	},
-	martyrs_skull_objective_cm_archives_1 = {
-		en = "This puzzle involves player one pulling the levers on the ground, whilst player two completes a parkour puzzle.",
-		ru = "В этой головоломке первому игроку нужно дёргать рычаги на земле, а второму игроку нужно прыгать",
-		["zh-tw"] = "這個苦修需要玩家一拉動地上的杠杆，而玩家二完成跑酷謎題。",
-		["zh-cn"] = "解谜：1号玩家拉动地面杠杆，2号玩家完成跑酷",
-	},
-	martyrs_skull_objective_cm_archives_2 = {
-		en = "Player one, begin by pulling this lever to bring the chandelier to the ground, player two jump on, and player one pull the lever again to raise player two back up, then follow the 'B' sequence of markers.",
-		ru = "Первый игрок должен потянуть этот рычаг, чтобы опустить люстру на землю, второй игрок запрыгивает на неё, и первый игрок снова должен потянуть рычаг, чтобы поднять второго игрока наверх, затем следуйте последовательности меток «Б»",
-		["zh-tw"] = "玩家一，首先拉動這個杠杆將吊燈降到地面，玩家二跳上去，然後玩家一再次拉動杠杆將玩家二抬起，然後跟隨 'B' 序列的標記。",
-		["zh-cn"] = "1号玩家：拉杠杆降下吊灯→2号玩家跳上→1号玩家再次拉杠杆升起→2号玩家跟随B标记前进",
-	},
-	martyrs_skull_objective_cm_archives_A1 = {
-		en = "Raise",
-		ru = "Поднимайте",
-		["zh-tw"] = "升起",
-		["zh-cn"] = "升起",
-	},
-	martyrs_skull_objective_cm_archives_A2 = {
-		en = "Lower then raise",
-		ru = "Опустите, а потом поднимите",
-		["zh-tw"] = "降低然後升起",
-		["zh-cn"] = "降下再升起",
-	},
-	martyrs_skull_objective_cm_archives_A3 = {
-		en = "Lower then raise",
-		ru = "Опустите, а потом поднимите",
-		["zh-tw"] = "降低然後升起",
-		["zh-cn"] = "降下再升起",
-	},
-	martyrs_skull_objective_cm_archives_A4 = {
-		en = "Climb up boxes and jump over to chandelier to grab martyr's skull, once player two has completed the puzzle",
-		ru = "Заберитесь на ящики и перепрыгните на люстру, чтобы схватить череп мученика, как только второй игрок решит головоломку",
-		["zh-tw"] = "爬上箱子，跳到吊燈上拿到 Martyr's Skull，等玩家二完成謎題後",
-		["zh-cn"] = "2号玩家解谜完成后，爬上箱子跳上吊灯拾取殉道者颅骨",
-	},
-	martyrs_skull_objective_collect_skull = {
-		en = "Collect Martyr's Skull!",
-		ru = "Возьмите Череп мученика!",
-		["zh-tw"] = "收集 Martyr's Skull！",
-		["zh-cn"] = "拾取殉道者颅骨！",
-	},
-	martyrs_skull_guide_title = {
-		en = "MARTYR'S SKULL GUIDE",
-		ru = "РУКОВОДСТВО ЧЕРЕПА МУЧЕНИКА",
-		["zh-tw"] = "MARTYR'S SKULL 指南",
-		["zh-cn"] = "殉道者颅骨攻略",
-	},
-	martyrs_skull_guide_players_required = {
-		en = "Player 1 = A, Player 2 = B",
-		ru = "Игрок 1 = А, Игрок 2 = Б",
-		["zh-tw"] = "玩家 1 = A，玩家 2 = B",
-		["zh-cn"] = "1号玩家=A，2号玩家=B",
-	},
-	martyrs_skull_guide_players_required_solo = {
-		en = "Solo",
-		ru = "Соло",
-		["zh-tw"] = "單人",
-		["zh-cn"] = "单人可解",
-	},
-	martyrs_skull_guide_players_required_solo_parkour = {
-		en = "Solo (Parkour)",
-		ru = "Соло (Паркур)",
-		["zh-tw"] = "單人（跑酷）",
-		["zh-cn"] = "单人（跑酷）",
-	},
-	martyrs_skull_objective_cm_habs_A1 = {
-		en = "Input code: 213\nPress middle button",
-		ru = "Введите код: 213\nНажмите среднюю кнопку",
-		["zh-tw"] = "輸入代碼：213\n按下中間按鈕",
-		["zh-cn"] = "输入密码：213\n按下中间按钮",
-	},
-	martyrs_skull_objective_cm_habs_A2 = {
-		en = "Press left button",
-		ru = "Нажмите левую кнопку",
-		["zh-tw"] = "按下左側按鈕",
-		["zh-cn"] = "按下左侧按钮",
-	},
-	martyrs_skull_objective_cm_habs_A3 = {
-		en = "Press right button",
-		ru = "Нажмите правую кнопку",
-		["zh-tw"] = "按下右側按鈕",
-		["zh-cn"] = "按下右侧按钮",
-	},
-	martyrs_skull_objective_cm_habs_A4 = {
-		en = "Hold lever for second player to complete B1",
-		ru = "Удерживайте рычаг, чтобы игрок 2 завершил этап Б1",
-		["zh-tw"] = "為第二位玩家完成 B1 持續按住杠杆",
-		["zh-cn"] = "按住杠杆，等待2号玩家完成B1",
-	},
-	martyrs_skull_objective_cm_habs_B1 = {
-		en = "Second player, press button whilst first player holds A4",
-		ru = "Игрок 2 должен нажать кнопку, пока игрок 1 удерживает A4",
-		["zh-tw"] = "第二位玩家，在第一位玩家按住 A4 時按下按鈕",
-		["zh-cn"] = "2号玩家：1号玩家按住A4时按下按钮",
-	},
+    Exclamation = {
+        en = "Exclamation",
+        fr = "Exclamation",
+        ru = "Восклицание",
+        ["zh-tw"] = "驚嘆號",
+        ["zh-cn"] = "感叹号",
+    },
+    Hands = {
+        en = "Hands",
+        fr = "Mains",
+        ru = "Руки",
+        ["zh-tw"] = "手",
+        ["zh-cn"] = "手掌",
+    },
+    Fist = {
+        en = "Fist",
+        fr = "Poing",
+        ru = "Кулак",
+        ["zh-tw"] = "拳頭",
+        ["zh-cn"] = "拳头",
+    },
+    Luggable = {
+        en = "Luggable",
+        fr = "Transportable",
+        ru = "Переносимый",
+        ["zh-tw"] = "可搬運",
+        ["zh-cn"] = "可搬运",
+    },
+    Gold = {
+        en = "Gold",
+        fr = "Or",
+        ru = "Золото",
+        ["zh-tw"] = "金",
+        ["zh-cn"] = "金色",
+    },
+    Silver = {
+        en = "Silver",
+        fr = "Argent",
+        ru = "Серебро",
+        ["zh-tw"] = "銀",
+        ["zh-cn"] = "银色",
+    },
+    Steel = {
+        en = "Steel",
+        fr = "Acier",
+        ru = "Сталь",
+        ["zh-tw"] = "鋼",
+        ["zh-cn"] = "钢色",
+    },
+    Black = {
+        en = "Black",
+        fr = "Noir",
+        ru = "Чёрный",
+        ["zh-tw"] = "黑",
+        ["zh-cn"] = "黑色",
+    },
+    Terminal = {
+        en = "Terminal",
+        fr = "Terminal",
+        ru = "Терминал",
+        ["zh-tw"] = "終端",
+        ["zh-cn"] = "终端",
+    },
+    Tarnished = {
+        en = "Tarnished",
+        fr = "Termi",
+        ru = "Потускневший",
+        ["zh-tw"] = "銹蝕",
+        ["zh-cn"] = "暗铜色",
+    },
+    -- new toggle LOS settings
+    martyrs_skull_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    ammo_med_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    chest_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    heretical_idol_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    material_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    stimm_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    tome_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    tainted_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    tainted_skull_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    luggable_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
 
-	martyrs_skull_objective_km_station_1 = {
-		en = "Turn first valve",
-		ru = "Поверните 1 кран",
-		["zh-tw"] = "轉動第一個閥門",
-		["zh-cn"] = "转动第一个阀��",
-	},
-	martyrs_skull_objective_km_station_2 = {
-		en = "Turn second valve",
-		ru = "Поверните 2 кран",
-		["zh-tw"] = "轉動第二個閥門",
-		["zh-cn"] = "转动第二个阀门",
-	},
-	martyrs_skull_objective_km_station_3 = {
-		en = "Turn third valve",
-		ru = "Поверните 3 кран",
-		["zh-tw"] = "轉動第三個閥門",
-		["zh-cn"] = "转动第三个阀门",
-	},
-	martyrs_skull_objective_km_station_4 = {
-		en = "Turn fourth valve",
-		ru = "Поверните 4 кран",
-		["zh-tw"] = "轉動第四個閥門",
-		["zh-cn"] = "转动第四个阀门",
-	},
-	martyrs_skull_objective_km_station_5 = {
-		en = "Turn final valve",
-		ru = "Поверните последний кран",
-		["zh-tw"] = "轉動最後一個閥門",
-		["zh-cn"] = "转动最后一个阀门",
-	},
+    -- MARTYRS SKULL GUIDE LOCALIZATIONS... THERE'S LOTS x)
+    martyrs_skull_objective_hm_cartel_1 = {
+        en = "Follow number sequence",
+        ru = "Следовать последовательности чисел",
+        ["zh-tw"] = "跟隨數字順序",
+        ["zh-cn"] = "按数字顺序操作",
+    },
+    martyrs_skull_objective_km_enforcer_A = {
+        en = "First player, press button to start sequence",
+        ru = "Первый игрок, должен нажать кнопку, чтобы начать последовательность",
+        ["zh-tw"] = "第一位玩家，按下按鈕開始序列",
+        ["zh-cn"] = "1号玩家：按按钮启动序列",
+    },
+    martyrs_skull_objective_km_enforcer_B = {
+        en = "Second player, head through this door",
+        ru = "Второй игрок, должен пройти через эту дверь",
+        ["zh-tw"] = "第二位玩家，通過這扇門",
+        ["zh-cn"] = "2号玩家：穿过此门",
+    },
+    martyrs_skull_objective_km_enforcer_A1 = {
+        en = "Press once to open first door",
+        ru = "Нажмите один раз, чтобы открыть первую дверь",
+        ["zh-tw"] = "按一下以打開第一扇門",
+        ["zh-cn"] = "按一次打开第一道门",
+    },
+    martyrs_skull_objective_km_enforcer_A2 = {
+        en = "Press once to open second door",
+        ru = "Нажмите один раз, чтобы открыть вторую дверь",
+        ["zh-tw"] = "按一下以打開第二扇門",
+        ["zh-cn"] = "按一次打开第二道门",
+    },
+    martyrs_skull_objective_km_enforcer_A3 = {
+        en = "Press once to open third door",
+        ru = "Нажмите один раз, чтобы открыть третью дверь",
+        ["zh-tw"] = "按一下以打開第三扇門",
+        ["zh-cn"] = "按一次打开第三道门",
+    },
+    martyrs_skull_objective_km_enforcer_B1 = {
+        en = "Press first button to light up corresponding button in control room for player one for the fourth door",
+        ru =
+        "Нажмите первую кнопку, чтобы зажечь соответствующую кнопку в комнате управления для первого игрока у 4 двери",
+        ["zh-tw"] = "按下第一個按鈕以點亮控制室中對應玩家一的第四扇門按鈕",
+        ["zh-cn"] = "按第一个按钮，点亮控制室中1号玩家对应的第四道门按钮",
+    },
+    martyrs_skull_objective_km_enforcer_B2 = {
+        en = "Press second button to light up corresponding button in control room for player one for the final door",
+        ru =
+        "Нажмите вторую кнопку, чтобы зажечь соответствующую кнопку в комнате управления для первого игрока у последней двери",
+        ["zh-tw"] = "按下第二個按鈕以點亮控制室中對應玩家一的最後一扇門按鈕",
+        ["zh-cn"] = "按第二个按钮，点亮控制室中1号玩家对应的最后一道门按钮",
+    },
+    martyrs_skull_objective_km_enforcer_A4 = {
+        en = "Press button that lights up when player two completes B1 or B2",
+        ru = "Нажмите кнопку, которая загорается, когда второй игрок завершает Б1 или Б2",
+        ["zh-tw"] = "按下當玩家二完成 B1 或 B2 時亮起的按鈕",
+        ["zh-cn"] = "按下2号玩家完成B1/B2后亮起的按钮",
+    },
+    martyrs_skull_objective_km_enforcer_B3 = {
+        en = "Open door for other players",
+        ru = "Откройте дверь для других игроков",
+        ["zh-tw"] = "為其他玩家打開門",
+        ["zh-cn"] = "为队友开门",
+    },
+    martyrs_skull_objective_dm_stockpile_A = {
+        en = "Climb up",
+        ru = "Залезьте сюда",
+        ["zh-tw"] = "爬上去",
+        ["zh-cn"] = "向上攀爬",
+    },
+    martyrs_skull_objective_dm_stockpile_B = {
+        en =
+        "Head to the control panel and try move the platform along the rails infront of you. The default pattern in the following order: \nDOWN, RIGHT, RIGHT, DOWN, LEFT",
+        ru =
+        "Перейдите в панель управления и попробуйте переместить платформу по рельсам перед вами. Стандартная последовательность движений следующая: ВНИЗ, ВПРАВО, ВПРАВО, ВНИЗ, ВЛЕВО",
+        ["zh-tw"] = "前往控制面板，嘗試沿著你面前的軌道移動平台。默認模式按以下順序：\n下、右、右、下、左",
+        ["zh-cn"] = "前往控制台，沿轨道移动平台。默认顺序：\n下、右、右、下、左",
+    },
+    martyrs_skull_objective_fm_cargo_1 = {
+        en = "Turn on all showers with the red inquisition symbol quickly.",
+        ru = "Быстро включите каждый душ с красным символом инквизиции",
+        ["zh-tw"] = "快速打開所有帶有紅色異端審判符號的淋浴器。",
+        ["zh-cn"] = "快速打开所有带红色审判庭标识的淋浴喷头",
+    },
+    martyrs_skull_objective_dm_forge_1 = {
+        en = "Follow number sequence",
+        ru = "Следуйте последовательности чисел",
+        ["zh-tw"] = "跟隨數字順序",
+        ["zh-cn"] = "按数字顺序操作",
+    },
+    martyrs_skull_objective_dm_forge_9 = {
+        en = "Destroy all nurgle growths holding the door shut.",
+        ru = "Уничтожьте все ростки Нургла, удерживающие дверь от открытия",
+        ["zh-tw"] = "摧毀所有阻止門打開的瘟疫生長物。",
+        ["zh-cn"] = "摧毁所有封堵大门的纳垢增生体",
+    },
+    martyrs_skull_objective_dm_forge_10 = {
+        en = "Open door",
+        ru = "Откройте дверь",
+        ["zh-tw"] = "打開門",
+        ["zh-cn"] = "打开大门",
+    },
+    martyrs_skull_objective_lm_cooling_1 = {
+        en = "Climb up boxes to reach the top",
+        ru = "Запрыгните на ящики, чтобы забраться наверх",
+        ["zh-tw"] = "爬上箱子到達頂部",
+        ["zh-cn"] = "爬上箱子抵达顶部",
+    },
+    martyrs_skull_objective_lm_cooling_2 = {
+        en = "Pick up the key in the body's hand",
+        ru = "Заберите ключ из руки трупа",
+        ["zh-tw"] = "從屍體的手中拿起鑰匙",
+        ["zh-cn"] = "拾取尸体手中的钥匙",
+    },
+    martyrs_skull_objective_lm_cooling_3 = {
+        en = "Head back over the bridge and use the key on the locked locker.",
+        ru = "Вернитесь обратно через мост и воспользуйтесь ключом от запертого шкафчика",
+        ["zh-tw"] = "回到橋頭的房間，使用鑰匙打開鎖住的儲物櫃。",
+        ["zh-cn"] = "返回桥上，用钥匙打开上锁的储物柜",
+    },
+    martyrs_skull_objective_lm_scavenge_1 = {
+        en = "Head into room across the bridge",
+        ru = "Пройдите в комнату через мост",
+        ["zh-tw"] = "前往橋對面的房間",
+        ["zh-cn"] = "进入桥对面的房间",
+    },
+    martyrs_skull_objective_lm_scavenge_B1 = {
+        en = "Player one, climb into the right elevator",
+        ru = "Первый игрок должен забраться в правый лифт",
+        ["zh-tw"] = "玩家一，爬進右側電梯",
+        ["zh-cn"] = "1号玩家：进入右侧电梯",
+    },
+    martyrs_skull_objective_lm_scavenge_A1 = {
+        en = "Player two, climb into the left elevator to send player one upwards",
+        ru = "Второй игрок должен забраться в лифт и поднять первого игрока наверх",
+        ["zh-tw"] = "玩家二，爬進左側電梯以將玩家一送上去",
+        ["zh-cn"] = "2号玩家：进入左侧电梯，升起1号玩家",
+    },
+    martyrs_skull_objective_lm_scavenge_B2 = {
+        en = "Player one, grab the battery cell on the crate, and bring it back down in the elevator",
+        ru = "Первый игрок должен взять батарею на ящике и спустить её на лифте",
+        ["zh-tw"] = "玩家一，從箱子上拿起電池，並將其帶回電梯下來",
+        ["zh-cn"] = "1号玩家：拿取箱子上的电池，乘电梯返回",
+    },
+    martyrs_skull_objective_lm_scavenge_B3 = {
+        en = "Place the battery cell into the socket on the wall",
+        ru = "Вставьте батарейку в ячейку на стене",
+        ["zh-tw"] = "將電池放入牆上的插座中",
+        ["zh-cn"] = "将电池插入墙上的插槽",
+    },
+    martyrs_skull_objective_fm_armoury_1 = {
+        en = "Enter the building",
+        ru = "Войдите в здание",
+        ["zh-tw"] = "進入建築物",
+        ["zh-cn"] = "进入建筑",
+    },
+    martyrs_skull_objective_fm_armoury_2 = {
+        en = "Turn the valve",
+        ru = "Поверните кран",
+        ["zh-tw"] = "轉動閥門",
+        ["zh-cn"] = "转动阀门",
+    },
+    martyrs_skull_objective_fm_armoury_3 = {
+        en = "Climb up to begin parkour, continue up the stairs",
+        ru = "Заберитесь наверх, чтобы начать паркур, продолжая подниматься наверх",
+        ["zh-tw"] = "爬上去開始跑酷，繼續上樓梯",
+        ["zh-cn"] = "攀爬开始跑酷，沿楼梯继续向上",
+    },
+    martyrs_skull_objective_fm_armoury_5 = {
+        en = "Grab the power cell",
+        ru = "Возьмите элемент питания",
+        ["zh-tw"] = "拿起電池",
+        ["zh-cn"] = "拿取能量电池",
+    },
+    martyrs_skull_objective_fm_armoury_6 = {
+        en = "Place the power cell into the socket, and pull the lever",
+        ru = "Вставьте батарейку в ячейку и потяните рычаг",
+        ["zh-tw"] = "將電池放入插座中，然後拉動杠杆",
+        ["zh-cn"] = "将电池插入插槽，拉动杠杆",
+    },
+    martyrs_skull_objective_fm_armoury_7 = {
+        en = "Head back inside and press the button to open the gate to the skull",
+        ru = "Вернитесь внутрь и нажмите кнопку, чтобы открыть ворота к черепу",
+        ["zh-tw"] = "回到裡面，按下按鈕打開通往顱骨的門",
+        ["zh-cn"] = "返回室内，按按钮打开颅骨通道门",
+    },
+    martyrs_skull_objective_cm_raid_1 = {
+        en = "Head into alleyway",
+        ru = "Зайдите в переулок",
+        ["zh-tw"] = "前往小巷",
+        ["zh-cn"] = "进入小巷",
+    },
+    martyrs_skull_objective_cm_raid_2 = {
+        en = "Grab the key on the dead body",
+        ru = "Возьмите ключ с трупа",
+        ["zh-tw"] = "從屍體身上拿起鑰匙",
+        ["zh-cn"] = "拾取尸体上的钥匙",
+    },
+    martyrs_skull_objective_cm_raid_3 = {
+        en = "Head into the bar, and use the key to open the locked gate",
+        ru = "Зайдите в бар и воспользуйтесь ключом, чтобы открыть запертые ворота",
+        ["zh-tw"] = "前往酒吧，使用鑰匙打開鎖住的門",
+        ["zh-cn"] = "进入酒吧，用钥匙打开上锁的门",
+    },
+    martyrs_skull_objective_cm_raid_4 = {
+        en = "Go up the stairs, climb over the boxes and plant the breaching charge",
+        ru = "Поднимитесь по лестнице, перелезьте через коробки и заложите взрывное устройство",
+        ["zh-tw"] = "上樓梯，爬過箱子並安裝爆破裝置",
+        ["zh-cn"] = "上楼梯，翻越箱子，放置爆破炸药",
+    },
+    martyrs_skull_objective_cm_raid_5 = {
+        en = "Pickup the key, then head back out to the bar",
+        ru = "Возьмите ключ и возвращайтесь в бар",
+        ["zh-tw"] = "拿起鑰匙，然後回到酒吧",
+        ["zh-cn"] = "拾取钥匙，返回酒吧",
+    },
+    martyrs_skull_objective_cm_raid_6 = {
+        en = "Use the key to open the gate behind the bar",
+        ru = "Воспользуйтесь ключом, чтобы открыть ворота за баром",
+        ["zh-tw"] = "使用鑰匙打開酒吧後面的門",
+        ["zh-cn"] = "用钥匙打开酒吧后门",
+    },
+    martyrs_skull_objective_km_heresy_1 = {
+        en = "Follow number sequence",
+        ru = "Следуйте последовательности чисел",
+        ["zh-tw"] = "跟隨數字順序",
+        ["zh-cn"] = "按数字顺序操作",
+    },
+    martyrs_skull_objective_template_1 = {
+        en = "Input code: 213\nPress middle button",
+        ru = "Введите код: 213\nНажмите среднюю кнопку",
+        ["zh-tw"] = "輸入代碼：213\n按下中間按鈕",
+        ["zh-cn"] = "输入密码：213\n按下中间按钮",
+    },
+    martyrs_skull_objective_dm_propaganda_1 = {
+        en = "Interact with the dumpster and pick up the 'skull weight' from the ground",
+        ru = "Взаимодействуйте с мусорным контейнером и поднимите с земли груз в виде черепа",
+        ["zh-tw"] = "與垃圾桶互動，從地上撿起「顱骨殘骸」",
+        ["zh-cn"] = "互动垃圾桶，拾取地上的颅骨配重",
+    },
+    martyrs_skull_objective_dm_propaganda_2 = {
+        en = "Head to the Martyr's Skull door and place the skull weight on the chain",
+        ru = "Направляйтесь к двери с черепами мучеников и повесьте череп-груз на цепь",
+        ["zh-tw"] = "前往 Martyr's Skull 門，將顱骨重物放在鏈條上",
+        ["zh-cn"] = "前往殉道者颅骨大门，将颅骨配重挂在链条上",
+    },
+    martyrs_skull_objective_fm_resurgence_1 = {
+        en =
+        "Head to control panel, you need to line up the pipes on the wall opposite, using the valves infront of you.\nThe default number of times you will need to turn the valves from left to right are as follows:\nx3,x1,x2,x3",
+        ru =
+        "Перейдите к панели управления, совместите трубы на противоположной стене, используя вентили перед собой. По умолчанию количество поворотов вентилей слева направо следующее: x3, x1, x2, x3",
+        ["zh-tw"] = "前往控制面板，您需要使用面前的閥門對面牆上的管道進行對齊。\n從左到右轉動閥門的次數默認為：\nx3,x1,x2,x3",
+        ["zh-cn"] = "前往控制台，用阀门对齐对面墙上的管道。\n从左到右阀门转动次数默认：\n3次、1次、2次、3次",
+    },
+    martyrs_skull_objective_hm_complex_1 = {
+        en = "Remember the two symbols in the bottom right corner on the back of the panel",
+        ru = "Запомните два символа в правом нижнем углу на обратной стороне панели",
+        ["zh-tw"] = "記住面板背面右下角的兩個符號",
+        ["zh-cn"] = "记住面板背面右下角的两个符号",
+    },
+    martyrs_skull_objective_hm_complex_2 = {
+        en =
+        "Head to the chaos rune circle, and light the candles around the edge that match the two symbols from step 1",
+        ru = "Направляйтесь к кругу рун хаоса и зажгите свечи по краю, соответствующие двум символам из шага 1",
+        ["zh-tw"] = "前往混沌符文圓圈，點燃與步驟1中的兩個符號相匹配的邊緣蠟燭",
+        ["zh-cn"] = "前往混沌符文阵，点燃边缘匹配步骤1符号的蜡烛",
+    },
+    martyrs_skull_objective_cm_archives_1 = {
+        en =
+        "This puzzle involves player one pulling the levers on the ground, whilst player two completes a parkour puzzle.",
+        ru = "В этой головоломке первому игроку нужно дёргать рычаги на земле, а второму игроку нужно прыгать",
+        ["zh-tw"] = "這個苦修需要玩家一拉動地上的杠杆，而玩家二完成跑酷謎題。",
+        ["zh-cn"] = "解谜：1号玩家拉动地面杠杆，2号玩家完成跑酷",
+    },
+    martyrs_skull_objective_cm_archives_2 = {
+        en =
+        "Player one, begin by pulling this lever to bring the chandelier to the ground, player two jump on, and player one pull the lever again to raise player two back up, then follow the 'B' sequence of markers.",
+        ru =
+        "Первый игрок должен потянуть этот рычаг, чтобы опустить люстру на землю, второй игрок запрыгивает на неё, и первый игрок снова должен потянуть рычаг, чтобы поднять второго игрока наверх, затем следуйте последовательности меток «Б»",
+        ["zh-tw"] = "玩家一，首先拉動這個杠杆將吊燈降到地面，玩家二跳上去，然後玩家一再次拉動杠杆將玩家二抬起，然後跟隨 'B' 序列的標記。",
+        ["zh-cn"] = "1号玩家：拉杠杆降下吊灯→2号玩家跳上→1号玩家再次拉杠杆升起→2号玩家跟随B标记前进",
+    },
+    martyrs_skull_objective_cm_archives_A1 = {
+        en = "Raise",
+        ru = "Поднимайте",
+        ["zh-tw"] = "升起",
+        ["zh-cn"] = "升起",
+    },
+    martyrs_skull_objective_cm_archives_A2 = {
+        en = "Lower then raise",
+        ru = "Опустите, а потом поднимите",
+        ["zh-tw"] = "降低然後升起",
+        ["zh-cn"] = "降下再升起",
+    },
+    martyrs_skull_objective_cm_archives_A3 = {
+        en = "Lower then raise",
+        ru = "Опустите, а потом поднимите",
+        ["zh-tw"] = "降低然後升起",
+        ["zh-cn"] = "降下再升起",
+    },
+    martyrs_skull_objective_cm_archives_A4 = {
+        en =
+        "Climb up boxes and jump over to chandelier to grab martyr's skull, once player two has completed the puzzle",
+        ru =
+        "Заберитесь на ящики и перепрыгните на люстру, чтобы схватить череп мученика, как только второй игрок решит головоломку",
+        ["zh-tw"] = "爬上箱子，跳到吊燈上拿到 Martyr's Skull，等玩家二完成謎題後",
+        ["zh-cn"] = "2号玩家解谜完成后，爬上箱子跳上吊灯拾取殉道者颅骨",
+    },
+    martyrs_skull_objective_collect_skull = {
+        en = "Collect Martyr's Skull!",
+        ru = "Возьмите Череп мученика!",
+        ["zh-tw"] = "收集 Martyr's Skull！",
+        ["zh-cn"] = "拾取殉道者颅骨！",
+    },
+    martyrs_skull_guide_title = {
+        en = "MARTYR'S SKULL GUIDE",
+        ru = "РУКОВОДСТВО ЧЕРЕПА МУЧЕНИКА",
+        ["zh-tw"] = "MARTYR'S SKULL 指南",
+        ["zh-cn"] = "殉道者颅骨攻略",
+    },
+    martyrs_skull_guide_players_required = {
+        en = "Player 1 = A, Player 2 = B",
+        ru = "Игрок 1 = А, Игрок 2 = Б",
+        ["zh-tw"] = "玩家 1 = A，玩家 2 = B",
+        ["zh-cn"] = "1号玩家=A，2号玩家=B",
+    },
+    martyrs_skull_guide_players_required_solo = {
+        en = "Solo",
+        ru = "Соло",
+        ["zh-tw"] = "單人",
+        ["zh-cn"] = "单人可解",
+    },
+    martyrs_skull_guide_players_required_solo_parkour = {
+        en = "Solo (Parkour)",
+        ru = "Соло (Паркур)",
+        ["zh-tw"] = "單人（跑酷）",
+        ["zh-cn"] = "单人（跑酷）",
+    },
+    martyrs_skull_objective_cm_habs_A1 = {
+        en = "Input code: 213\nPress middle button",
+        ru = "Введите код: 213\nНажмите среднюю кнопку",
+        ["zh-tw"] = "輸入代碼：213\n按下中間按鈕",
+        ["zh-cn"] = "输入密码：213\n按下中间按钮",
+    },
+    martyrs_skull_objective_cm_habs_A2 = {
+        en = "Press left button",
+        ru = "Нажмите левую кнопку",
+        ["zh-tw"] = "按下左側按鈕",
+        ["zh-cn"] = "按下左侧按钮",
+    },
+    martyrs_skull_objective_cm_habs_A3 = {
+        en = "Press right button",
+        ru = "Нажмите правую кнопку",
+        ["zh-tw"] = "按下右側按鈕",
+        ["zh-cn"] = "按下右侧按钮",
+    },
+    martyrs_skull_objective_cm_habs_A4 = {
+        en = "Hold lever for second player to complete B1",
+        ru = "Удерживайте рычаг, чтобы игрок 2 завершил этап Б1",
+        ["zh-tw"] = "為第二位玩家完成 B1 持續按住杠杆",
+        ["zh-cn"] = "按住杠杆，等待2号玩家完成B1",
+    },
+    martyrs_skull_objective_cm_habs_B1 = {
+        en = "Second player, press button whilst first player holds A4",
+        ru = "Игрок 2 должен нажать кнопку, пока игрок 1 удерживает A4",
+        ["zh-tw"] = "第二位玩家，在第一位玩家按住 A4 時按下按鈕",
+        ["zh-cn"] = "2号玩家：1号玩家按住A4时按下按钮",
+    },
 
-	martyrs_skull_objective_lm_rails_1 = {
-		en = "Follow number sequence",
-		ru = "Следуйте последовательности чисел",
-		["zh-tw"] = "跟隨數字順序",
-		["zh-cn"] = "按数字顺序操作",
-	},
+    martyrs_skull_objective_km_station_1 = {
+        en = "Turn first valve",
+        ru = "Поверните 1 кран",
+        ["zh-tw"] = "轉動第一個閥門",
+        ["zh-cn"] = "转动第一个阀��",
+    },
+    martyrs_skull_objective_km_station_2 = {
+        en = "Turn second valve",
+        ru = "Поверните 2 кран",
+        ["zh-tw"] = "轉動第二個閥門",
+        ["zh-cn"] = "转动第二个阀门",
+    },
+    martyrs_skull_objective_km_station_3 = {
+        en = "Turn third valve",
+        ru = "Поверните 3 кран",
+        ["zh-tw"] = "轉動第三個閥門",
+        ["zh-cn"] = "转动第三个阀门",
+    },
+    martyrs_skull_objective_km_station_4 = {
+        en = "Turn fourth valve",
+        ru = "Поверните 4 кран",
+        ["zh-tw"] = "轉動第四個閥門",
+        ["zh-cn"] = "转动第四个阀门",
+    },
+    martyrs_skull_objective_km_station_5 = {
+        en = "Turn final valve",
+        ru = "Поверните последний кран",
+        ["zh-tw"] = "轉動最後一個閥門",
+        ["zh-cn"] = "转动最后一个阀门",
+    },
 
-	martyrs_skull_objective_dm_rise_A1 = {
-		en = "Grab the power cell",
-		ru = "Возьмите элемент питания",
-		["zh-tw"] = "拿起電池",
-		["zh-cn"] = "拿取能量电池",
-	},
-	martyrs_skull_objective_dm_rise_A2 = {
-		en = "Insert the power cell",
-		ru = "Вставьте элемент питания",
-		["zh-tw"] = "插入電池",
-		["zh-cn"] = "插入能量电池",
-	},
-	martyrs_skull_objective_dm_rise_B1 = {
-		en = "Player two, enter elevator",
-		ru = "Игрок 2 должен войти в лифт",
-		["zh-tw"] = "玩家二，進入電梯",
-		["zh-cn"] = "2号玩家：进入电梯",
-	},
-	martyrs_skull_objective_dm_rise_A3 = {
-		en = "Player one, hold the power switch once player 2 is in the elevator",
-		ru = "Игрок 1 удерживает переключатель пока игрок 2 находится в лифте",
-		["zh-tw"] = "玩家一，當玩家二在電梯裡時，按住電源開關",
-		["zh-cn"] = "1号玩家：2号玩家进入电梯后按住电源开关",
-	},
-	martyrs_skull_objective_dm_rise_B2 = {
-		en = "Grab the next power cell",
-		ru = "Возьмите следующий элемент питания",
-		["zh-tw"] = "拿起下一個電池",
-		["zh-cn"] = "拿取下一个能量电池",
-	},
-	martyrs_skull_objective_dm_rise_B3 = {
-		en = "Throw power cell down to player one",
-		ru = "Сбросьте элемент питания игроку 1",
-		["zh-tw"] = "將電池扔給玩家一",
-		["zh-cn"] = "将电池扔给1号玩家",
-	},
-	martyrs_skull_objective_dm_rise_A4 = {
-		en = "Player one, insert second power cell",
-		ru = "Игрок 1 должен вставить второй элемент питания",
-		["zh-tw"] = "玩家一，插入第二個電池",
-		["zh-cn"] = "1号玩家：插入第二个能量电池",
-	},
-	martyrs_skull_objective_dm_rise_A5 = {
-		en = "Hold the next lever for player two",
-		ru = "Удерживайте следующий рычаг для игрока 2",
-		["zh-tw"] = "為玩家二按住下一個杠杆",
-		["zh-cn"] = "为2号玩家按住下一个杠杆",
-	},
-	martyrs_skull_objective_dm_rise_B4 = {
-		en = "Player two, press the elevator button",
-		ru = "Игрок 2 должен нажать кнопку лифта",
-		["zh-tw"] = "玩家二，按下電梯按鈕",
-		["zh-cn"] = "2号玩家：按下电梯按钮",
-	},
-	martyrs_skull_objective_hm_strain_1 = {
-		en = "Head to control room, and open the door",
-		ru = "Идите в комнату управления и откройте дверь",
-		["zh-tw"] = "前往控制室，打開門",
-		["zh-cn"] = "前往控制室，打开大门",
-	},
-	martyrs_skull_objective_hm_strain_2 = {
-		en = "Look above the door for the symbols, remember these",
-		ru = "Посмотрите на символы над дверью и запомните их",
-		["zh-tw"] = "查看門上方的符號，記住這些",
-		["zh-cn"] = "查看门上方的符号并记住",
-	},
-	martyrs_skull_objective_hm_strain_3A = {
-		en = "Press the button until you see the right hand symbol from step 2 on the door through the window",
-		ru = "Нажимайте кнопку, пока на двери через окно не появится правый символ из шага 2",
-		["zh-tw"] = "按下按鈕，直到你在窗戶上看到步驟2中門上的右手符號",
-		["zh-cn"] = "按下按钮，直到你在窗戶上看到步骤2的右侧符号",
-	},
-	martyrs_skull_objective_hm_strain_3B = {
-		en = "Press the button until you see the left hand symbol from step 2 on the door through the window",
-		ru = "Нажимайте кнопку, пока на двери через окно не появится левый символ из шага 2",
-		["zh-tw"] = "按下按鈕，直到你在窗戶上看到步驟2中門上的左手符號",
-		["zh-cn"] = "按下按钮，直到你在窗戶上看到步骤2的左侧符号",
-	},
-	martyrs_skull_objective_hm_strain_4 = {
-		en = "Once the symbols match, press the final button",
-		ru = "Когда символы совпадут, нажмите последнюю кнопку",
-		["zh-tw"] = "當符號匹配時，按下最後一個按鈕",
-		["zh-cn"] = "符号匹配后，按下最终按钮",
-	},
+    martyrs_skull_objective_lm_rails_1 = {
+        en = "Follow number sequence",
+        ru = "Следуйте последовательности чисел",
+        ["zh-tw"] = "跟隨數字順序",
+        ["zh-cn"] = "按数字顺序操作",
+    },
 
-	-- Event Markers
-	event_markers_settings = {
-		en = "LIVE EVENT MARKERS",
-		ru = "МЕТКИ СОБЫТИЙ",
-		["zh-cn"] = "活动物品标记",
-	},
-	event_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	event_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	event_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	event_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	event_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	event_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	event_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	event_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	event_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	event_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	event_colour = {
-		en = "Live Event Markers Colour",
-		ru = "Цвет меток событий",
-		["zh-cn"] = "活动物品标记颜色",
-	},
-	event_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	event_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	event_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	event_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
+    martyrs_skull_objective_dm_rise_A1 = {
+        en = "Grab the power cell",
+        ru = "Возьмите элемент питания",
+        ["zh-tw"] = "拿起電池",
+        ["zh-cn"] = "拿取能量电池",
+    },
+    martyrs_skull_objective_dm_rise_A2 = {
+        en = "Insert the power cell",
+        ru = "Вставьте элемент питания",
+        ["zh-tw"] = "插入電池",
+        ["zh-cn"] = "插入能量电池",
+    },
+    martyrs_skull_objective_dm_rise_B1 = {
+        en = "Player two, enter elevator",
+        ru = "Игрок 2 должен войти в лифт",
+        ["zh-tw"] = "玩家二，進入電梯",
+        ["zh-cn"] = "2号玩家：进入电梯",
+    },
+    martyrs_skull_objective_dm_rise_A3 = {
+        en = "Player one, hold the power switch once player 2 is in the elevator",
+        ru = "Игрок 1 удерживает переключатель пока игрок 2 находится в лифте",
+        ["zh-tw"] = "玩家一，當玩家二在電梯裡時，按住電源開關",
+        ["zh-cn"] = "1号玩家：2号玩家进入电梯后按住电源开关",
+    },
+    martyrs_skull_objective_dm_rise_B2 = {
+        en = "Grab the next power cell",
+        ru = "Возьмите следующий элемент питания",
+        ["zh-tw"] = "拿起下一個電池",
+        ["zh-cn"] = "拿取下一个能量电池",
+    },
+    martyrs_skull_objective_dm_rise_B3 = {
+        en = "Throw power cell down to player one",
+        ru = "Сбросьте элемент питания игроку 1",
+        ["zh-tw"] = "將電池扔給玩家一",
+        ["zh-cn"] = "将电池扔给1号玩家",
+    },
+    martyrs_skull_objective_dm_rise_A4 = {
+        en = "Player one, insert second power cell",
+        ru = "Игрок 1 должен вставить второй элемент питания",
+        ["zh-tw"] = "玩家一，插入第二個電池",
+        ["zh-cn"] = "1号玩家：插入第二个能量电池",
+    },
+    martyrs_skull_objective_dm_rise_A5 = {
+        en = "Hold the next lever for player two",
+        ru = "Удерживайте следующий рычаг для игрока 2",
+        ["zh-tw"] = "為玩家二按住下一個杠杆",
+        ["zh-cn"] = "为2号玩家按住下一个杠杆",
+    },
+    martyrs_skull_objective_dm_rise_B4 = {
+        en = "Player two, press the elevator button",
+        ru = "Игрок 2 должен нажать кнопку лифта",
+        ["zh-tw"] = "玩家二，按下電梯按鈕",
+        ["zh-cn"] = "2号玩家：按下电梯按钮",
+    },
+    martyrs_skull_objective_hm_strain_1 = {
+        en = "Head to control room, and open the door",
+        ru = "Идите в комнату управления и откройте дверь",
+        ["zh-tw"] = "前往控制室，打開門",
+        ["zh-cn"] = "前往控制室，打开大门",
+    },
+    martyrs_skull_objective_hm_strain_2 = {
+        en = "Look above the door for the symbols, remember these",
+        ru = "Посмотрите на символы над дверью и запомните их",
+        ["zh-tw"] = "查看門上方的符號，記住這些",
+        ["zh-cn"] = "查看门上方的符号并记住",
+    },
+    martyrs_skull_objective_hm_strain_3A = {
+        en = "Press the button until you see the right hand symbol from step 2 on the door through the window",
+        ru = "Нажимайте кнопку, пока на двери через окно не появится правый символ из шага 2",
+        ["zh-tw"] = "按下按鈕，直到你在窗戶上看到步驟2中門上的右手符號",
+        ["zh-cn"] = "按下按钮，直到你在窗戶上看到步骤2的右侧符号",
+    },
+    martyrs_skull_objective_hm_strain_3B = {
+        en = "Press the button until you see the left hand symbol from step 2 on the door through the window",
+        ru = "Нажимайте кнопку, пока на двери через окно не появится левый символ из шага 2",
+        ["zh-tw"] = "按下按鈕，直到你在窗戶上看到步驟2中門上的左手符號",
+        ["zh-cn"] = "按下按钮，直到你在窗戶上看到步骤2的左侧符号",
+    },
+    martyrs_skull_objective_hm_strain_4 = {
+        en = "Once the symbols match, press the final button",
+        ru = "Когда символы совпадут, нажмите последнюю кнопку",
+        ["zh-tw"] = "當符號匹配時，按下最後一個按鈕",
+        ["zh-cn"] = "符号匹配后，按下最终按钮",
+    },
 
-	-- Expedition Markers
-	expedition_markers_settings = {
-		en = "EXPEDITION MARKERS",
-		ru = "МЕТКИ ЭКСПЕДИЦИЙ",
-		["zh-cn"] = "远征物资标记",
-	},
-	expedition_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	expedition_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	expedition_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	expedition_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	expedition_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	expedition_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	expedition_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	expedition_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	expedition_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	expedition_border_colour = {
-		en = "Border Colour (General)",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы (основной)",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色（通用）",
-	},
-	expedition_border_colour_1 = {
-		en = "Border Colour (Tier 1 loot)",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы (добыча 1 уровня)",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色（1级）",
-	},
-	expedition_border_colour_2 = {
-		en = "Border Colour (Tier 2 loot)",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы (добыча 2 уровня)",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色（2级）",
-	},
-	expedition_border_colour_3 = {
-		en = "Border Colour (Tier 3 loot)",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы (добыча 3 уровня)",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色（3级）",
-	},
-	expedition_colour = {
-		en = "Expedition Markers Colour (General)",
-		ru = "Цвет меток экспедиций (основной)",
-		["zh-cn"] = "远征标记颜色（通用）",
-	},
-	expedition_pickups_colour = {
-		en = "Expedition Pickup Markers Colour",
-		ru = "Цвет меток подбираемого в экспедициях",
-		["zh-cn"] = "远征拾取物颜色",
-	},
-	expedition_currency_colour = {
-		en = "Expedition Salvage Markers Colour",
-		ru = "Цвет меток спасаемого в экспедициях",
-		["zh-cn"] = "远征废料颜色",
-	},
-	expedition_reliquary_colour = {
-		en = "Expedition Reliquary Markers Colour",
-		ru = "Цвет меток реликвариев в экспедициях",
-		["zh-cn"] = "远征圣骸箱颜色",
-	},
-	expedition_remnants_colour = {
-		en = "Expedition Tech-Remnant Markers Colour",
-		ru = "Цвет меток остатков технологий в экспедициях",
-		["zh-cn"] = "远征科技残片颜色",
-	},
-	expedition_crate_colour = {
-		en = "Expedition Loot Crate Markers Colour",
-		ru = "Цвет меток ящиков с добычей в экспедициях",
-		["zh-cn"] = "远征战利品箱颜色",
-	},
-	expedition_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	expedition_reliquary_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	expedition_pickups_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	expedition_currency_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	expedition_remnants_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	expedition_crate_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	expedition_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	expedition_reliquary_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	expedition_pickups_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	expedition_currency_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	expedition_remnants_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	expedition_crate_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	expedition_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	expedition_reliquary_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	expedition_pickups_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	expedition_currency_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	expedition_remnants_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	expedition_crate_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	expedition_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
+    -- Event Markers
+    event_markers_settings = {
+        en = "LIVE EVENT MARKERS",
+        ru = "МЕТКИ СОБЫТИЙ",
+        ["zh-cn"] = "活动物品标记",
+    },
+    event_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    event_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    event_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    event_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    event_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    event_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    event_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    event_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    event_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    event_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    event_colour = {
+        en = "Live Event Markers Colour",
+        ru = "Цвет меток событий",
+        ["zh-cn"] = "活动物品标记颜色",
+    },
+    objective_colour = {
+        en = "Objective Markers Colour",
+        fr = "Couleur des marqueurs d'objectifs",
+        ru = "Цвет меток задач",
+        ["zh-tw"] = "目標標記顏色",
+        ["zh-cn"] = "目标标记颜色",
+    },
+    objective_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    objective_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    objective_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    event_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    event_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    event_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    event_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
 
-	mod_marker_servo_skull_name = {
-		en = "Hackable Terminal",
-		ru = "Взламываемый терминал",
-		["zh-cn"] = "可破解终端",
-	},
-	-- Servo Skull Markers
-	servo_skull_settings = {
-		en = "DECODING MARKERS",
-		ru = "МЕТКИ - ДЕКОДИРОВАНИЕ",
-		["zh-cn"] = "伺服颅骨标记（可破解终端）",
-	},
-	Investigation = {
-		en = "Investigation",
-		ru = "Расследование",
-	},
-	servo_skull_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	servo_skull_enable_assistance_module = {
-		en = "Enable Assistance Module",
-		fr = "Activer le module d'assistance",
-		ru = "Включить модуль помощи",
-		["zh-tw"] = "啟用支援模組",
-		["zh-cn"] = "启用辅助模块",
-	},
-	servo_skull_enable_assistance_module_tooltip = {
-		en = "Toggle the 'assistance' features, including recolouring downed players' markers and showing their downed states.",
-		fr = "Active les fonctionnalités d'assistance, y compris le recoloriage des marqueurs des joueurs à terre et l'affichage de leur état.",
-		ru = "Включает функции помощи, включая перекраску меток упавших игроков и отображение их состояния.",
-		["zh-tw"] = "切換「支援」功能，包括重新著色倒地玩家標記並顯示其倒地狀態。",
-		["zh-cn"] = "切换「辅助」功能，包括重新着色倒地队友标记并显示其倒地状态。",
-	},
-	servo_skull_icon = {
-		en = "Servo Skull Icon",
-		fr = "Icône du Crâne Serviteur",
-		ru = "Значок сервочерепа",
-		["zh-tw"] = "伺服顱骨圖示",
-		["zh-cn"] = "伺服颅骨图标",
-	},
-	decoding_icon = {
-		en = "Decoding Icon (No Servo Skull Equipped)",
-		fr = "Icône de décodage (aucun Crâne Serviteur équipé)",
-		ru = "Значок декодирования (сервочереп не экипирован)",
-		["zh-tw"] = "解密圖示（未裝備伺服顱骨）",
-		["zh-cn"] = "解码图标（未装备伺服颅骨）",
-	},
-	servo_skull_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	servo_skull_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	servo_skull_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	servo_skull_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	servo_skull_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	servo_skull_default_colour = {
-		en = "Inactive Colour",
-		ru = "Цвет - неактивен",
-		["zh-cn"] = "未激活颜色",
-	},
-	servo_skull_default_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	servo_skull_default_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	servo_skull_default_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	servo_skull_stalled_colour = {
-		en = "Stalled (Can Deploy) Colour",
-		ru = "Цвет - застрял (можно развернуть)",
-		["zh-cn"] = "待命（可部署）颜色",
-	},
-	servo_skull_stalled_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	servo_skull_stalled_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	servo_skull_stalled_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	servo_skull_active_colour = {
-		en = "Active (Decoding) Colour",
-		ru = "Цвет - активен (расшифровка)",
-		["zh-cn"] = "激活（破解中）颜色",
-	},
-	servo_skull_active_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	servo_skull_active_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	servo_skull_active_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	servo_skull_border_colour = {
-		en = "Inactive Border Colour",
-		ru = "Цвет границы - неактивен",
-		["zh-cn"] = "未激活边框颜色",
-	},
-	servo_skull_stalled_border_colour = {
-		en = "Stalled Border Colour",
-		ru = "Цвет границы - застрял",
-		["zh-cn"] = "待命边框颜色",
-	},
-	servo_skull_active_border_colour = {
-		en = "Active Border Colour",
-		ru = "Цвет границы - активен",
-		["zh-cn"] = "激活边框颜色",
-	},
-	servo_skull_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	servo_skull_pulse_when_stalled = {
-		en = "Pulse When Stalled",
-		fr = "Pulser quand bloqué",
-		ru = "Пульсировать при ожидании",
-		["zh-tw"] = "停滯時脈動",
-		["zh-cn"] = "卡住时脉冲闪烁",
-	},
-	pulse_when_stalled_tooltip = {
-		en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
-		fr = "Fait doucement pulser la taille du marqueur lorsque le Crâne Serviteur est bloqué (1x à 1,2x)",
-		ru = "Мягко пульсирует размер метка, когда сервочереп ожидает (от 1x до 1,2x)",
-		["zh-tw"] = "當伺服顱骨停滯時，標記大小會輕微脈動（1倍至1.2倍）",
-		["zh-cn"] = "当伺服颅骨卡住时，标记大小会轻微脉冲（1倍至1.2倍）",
-	},
-	-- Player Assistance Markers
-	player_assistance_settings = {
-		en = "PLAYER ASSISTANCE MARKERS",
-		fr = "MARQUEURS D'ASSISTANCE AU JOUEUR",
-		ru = "МЕТКИ ПОМОЩИ ИГРОКАМ",
-		["zh-tw"] = "玩家支援標記",
-		["zh-cn"] = "玩家辅助标记",
-	},
-	Investigation = {
-		en = "Investigation",
-		fr = "Investigation",
-		ru = "Расследование",
-		["zh-tw"] = "調查",
-		["zh-cn"] = "调查",
-	},
-	player_assistance_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	player_assistance_enable_assistance_module = {
-		en = "Enable Assistance Module",
-		fr = "Activer le module d'assistance",
-		ru = "Включить модуль помощи",
-		["zh-tw"] = "啟用支援模組",
-		["zh-cn"] = "启用辅助模块",
-	},
-	player_assistance_enable_assistance_module_tooltip = {
-		en = "Toggle the 'assistance' features, including recolouring downed players' markers and showing their downed states.",
-		fr = "Active les fonctionnalités d'assistance, y compris le recoloriage des marqueurs des joueurs à terre et l'affichage de leur état.",
-		ru = "Включает функции помощи, включая перекраску меток упавших игроков и отображение их состояния.",
-		["zh-tw"] = "切換「支援」功能，包括重新著色倒地玩家標記並顯示其倒地狀態。",
-		["zh-cn"] = "切换「辅助」功能，包括重新着色倒地队友标记并显示其倒地状态。",
-	},
-	player_assistance_servo_skull_icon = {
-		en = "Servo Skull Icon",
-		fr = "Icône du Crâne Serviteur",
-		ru = "Значок сервочерепа",
-		["zh-tw"] = "伺服顱骨圖示",
-		["zh-cn"] = "伺服颅骨图标",
-	},
-	player_assistance_icon = {
-		en = "Assistance Icon (No Servo Skull Equipped)",
-		fr = "Icône d'assistance (aucun Crâne Serviteur équipé)",
-		ru = "Значок помощи (сервочереп не экипирован)",
-		["zh-tw"] = "支援圖示（未裝備伺服顱骨）",
-		["zh-cn"] = "辅助图标（未装备伺服颅骨）",
-	},
-	player_assistance_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	player_assistance_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	player_assistance_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	player_assistance_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	player_assistance_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	player_assistance_default_colour = {
-		en = "Inactive Colour",
-		ru = "Цвет - неактивен",
-		["zh-cn"] = "未激活颜色",
-	},
-	player_assistance_default_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	player_assistance_default_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	player_assistance_default_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	player_assistance_stalled_colour = {
-		en = "Stalled (Alert) Colour",
-		ru = "Цвет - застрял (внимание)",
-		["zh-cn"] = "待命（可部署）颜色",
-	},
-	player_assistance_stalled_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	player_assistance_stalled_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	player_assistance_stalled_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	player_assistance_active_colour = {
-		en = "Active (Helping) Colour",
-		ru = "Цвет - активен (помощь)",
-		["zh-cn"] = "激活（破解中）颜色",
-	},
-	player_assistance_active_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	player_assistance_active_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	player_assistance_active_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	player_assistance_border_colour = {
-		en = "Inactive Border Colour",
-		ru = "Цвет границы - неактивен",
-		["zh-cn"] = "未激活边框颜色",
-	},
-	player_assistance_stalled_border_colour = {
-		en = "Stalled Border Colour",
-		ru = "Цвет границы - застрял",
-		["zh-cn"] = "待命边框颜色",
-	},
-	player_assistance_active_border_colour = {
-		en = "Active Border Colour",
-		ru = "Цвет границы - активен",
-		["zh-cn"] = "激活边框颜色",
-	},
-	player_assistance_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	player_assistance_pulse_when_stalled = {
-		en = "Pulse When Stalled",
-		fr = "Pulser quand bloqué",
-		ru = "Пульсировать при ожидании",
-		["zh-tw"] = "停滯時脈動",
-		["zh-cn"] = "卡住时脉冲闪烁",
-	},
-	pulse_when_stalled_tooltip = {
-		en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
-		fr = "Fait doucement pulser la taille du marqueur lorsque le Crâne Serviteur est bloqué (1x à 1,2x)",
-		ru = "Мягко пульсирует размер метка, когда сервочереп ожидает (от 1x до 1,2x)",
-		["zh-tw"] = "當伺服顱骨停滯時，標記大小會輕微脈動（1倍至1.2倍）",
-		["zh-cn"] = "当伺服颅骨卡住时，标记大小会轻微脉冲（1倍至1.2倍）",
-	},
-	-- Unknown Markers
-	unknown_markers_settings = {
-		en = "UNKNOWN MARKERS (Those not covered elsewhere!)",
-		ru = "НЕИЗВЕТСНЫЕ МЕТКИ (которые не попали в другие разделы!)",
-		["zh-cn"] = "未知物品标记（未归类物品）",
-	},
-	Help = {
-		en = "Help",
-		fr = "Aide",
-		ru = "Помощь",
-		["zh-tw"] = "求助",
-		["zh-cn"] = "求助",
-	},
-	Medkit = {
-		en = "Medkit",
-		fr = "Kit médical",
-		ru = "Медпакет",
-		["zh-tw"] = "醫療包",
-		["zh-cn"] = "医疗包",
-	},
-	Respawn = {
-		en = "Respawn",
-		fr = "Réapparition",
-		ru = "Возрождение",
-		["zh-tw"] = "重生",
-		["zh-cn"] = "复活",
-	},
-	Stimm = {
-		en = "Stimm",
-		fr = "Stimm",
-		ru = "Стим",
-		["zh-tw"] = "興奮劑",
-		["zh-cn"] = "兴奋剂",
-	},
-	unknown_enable = {
-		en = "Enable Markers",
-		fr = "Activer les marqueurs",
-		ru = "Включить метки",
-		["zh-tw"] = "啟用標記",
-		["zh-cn"] = "启用标记",
-	},
-	unknown_general_settings = {
-		en = "General Settings",
-		fr = "Paramètres généraux",
-		ru = "Общие настройки",
-		["zh-tw"] = "一般設定",
-		["zh-cn"] = "通用设置",
-	},
-	unknown_keep_on_screen = {
-		en = "Keep on screen",
-		fr = "Rester à l'écran",
-		ru = "Держать на экране",
-		["zh-tw"] = "保持顯示於螢幕",
-		["zh-cn"] = "在画面中持续显示",
-	},
-	unknown_require_line_of_sight = {
-		en = "Require line of sight",
-		fr = "Nécessite une ligne de vue",
-		ru = "Должно быть в зоне видимости",
-		["zh-tw"] = "需要視線範圍",
-		["zh-cn"] = "仅视野内显示",
-	},
-	unknown_max_distance = {
-		en = "Max distance",
-		fr = "Distance maximale",
-		ru = "Максимальное расстояние",
-		["zh-tw"] = "最遠距離",
-		["zh-cn"] = "最大显示距离",
-	},
-	unknown_max_size = {
-		en = "Maximum size of marker",
-		fr = "Taille maximale du marqueur",
-		ru = "Максимальный размер метки",
-		["zh-tw"] = "圖標的最大尺寸",
-		["zh-cn"] = "标记最大尺寸",
-	},
-	unknown_min_size = {
-		en = "Minimum size of marker",
-		fr = "Taille minimale du marqueur",
-		ru = "Минимальный размер метки",
-		["zh-tw"] = "圖標的最小尺寸",
-		["zh-cn"] = "标记最小尺寸",
-	},
-	unknown_scale = {
-		en = "Scale",
-		fr = "Scale",
-		ru = "Масштаб",
-		["zh-tw"] = "圖標縮放大小",
-		["zh-cn"] = "标记缩放比例",
-	},
-	unknown_alpha = {
-		en = "Alpha Multiplier",
-		fr = "Multiplicateur d'alpha",
-		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
-		["zh-cn"] = "透明度系数",
-	},
-	unknown_border_colour = {
-		en = "Border Colour",
-		fr = "Couleur de la bordure",
-		ru = "Цвет границы",
-		["zh-tw"] = "邊框顏色",
-		["zh-cn"] = "边框颜色",
-	},
-	unknown_colour = {
-		en = "Unknown Markers Colour",
-		ru = "Цвет неизвестных меток",
-		["zh-cn"] = "未知物品标记颜色",
-	},
-	unknown_colour_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	unknown_colour_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	unknown_colour_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	unknown_toggle_los = {
-		en = "Toggle 'Require Line of Sight'",
-		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
-		["zh-cn"] = "切换「仅视野内显示」",
-	},
-	-- TOOLTIPS
-	colour_R_tooltip = {
-		en = "Red RGB value.",
-		ru = "Значение красного цвета в формате RGB.",
-		["zh-cn"] = "红色RGB数值。",
-	},
-	colour_G_tooltip = {
-		en = "Green RGB value.",
-		ru = "Значение зелёного цвета в формате RGB.",
-		["zh-cn"] = "绿色RGB数值。",
-	},
-	colour_B_tooltip = {
-		en = "Blue RGB value.",
-		ru = "Значение синего цвета в формате RGB.",
-		["zh-cn"] = "蓝色RGB数值。",
-	},
-	max_distance_tooltip = {
-		en = "Maximum distance to find, update and draw markers.",
-		ru = "Максимальное расстояние для поиска, обновления и отрисовки меток.",
-		["zh-cn"] = "搜索、更新与显示标记的最大距离。",
-	},
-	scale_tooltip = {
-		en = "Scale multiplier to apply.\ne.g. 100=1x size, 50=0.5x size, 150=1.5x size.",
-		ru = "Применяется множитель масштабирования. Например: 100 = 1x размер, 50 = 0,5x размер, 150 = 1,5x размер.",
-		["zh-cn"] = "标记缩放倍数。\n例如：100=1倍大小，50=0.5倍大小，150=1.5倍大小。",
-	},
-	los_fade_enable_tooltip = {
-		en = "Fade out markers that are behind a world object/out of line of sight? Only takes effect if 'Require Line of Sight' is disabled.",
-		ru = "Скрывать метки, находящиеся за объектами в игровом мире/вне прямой видимости? Эффект проявляется только в том случае, если параметр «Требовать прямой видимости» отключён.",
-		["zh-cn"] = "是否淡化墙体后方/视线外的标记？仅在关闭「需要视线」时生效。",
-	},
-	los_opacity_tooltip = {
-		en = "Opacity to apply to markers if line of sight fading is enabled.",
-		ru = "Прозрачность, применяемая к меткам, если включено затухание при прямой видимости.",
-		["zh-cn"] = "启用视线淡化后，标记的不透明度。",
-	},
-	ads_los_opacity_tooltip = {
-		en = "Opacity to apply to markers when you aim down sights of your weapon.",
-		ru = "Прозрачность, применяемая к меткам при наведении прицела оружия.",
-		["zh-cn"] = "开镜瞄准状态下标记的不透明度。",
-	},
-	alpha_tooltip = {
-		en = "General opacity to apply to this marker type.",
-		ru = "Общая прозрачность, применяемая к этому типу метки.",
-		["zh-cn"] = "此类标记的整体不透明度。",
-	},
-	border_colour_tooltip = {
-		en = "Select a colour to apply to the 'border' or outer decorative ring of this marker type.",
-		ru = "Выберите цвет, который будет применён к «рамке» или внешнему декоративному кольцу этого типа метки.",
-		["zh-cn"] = "设置此类标记边框或外侧装饰环的颜色。",
-	},
-	marker_background_colour_tooltip = {
-		en = "Background colour to apply to all markers.",
-		ru = "Цвет фона, применяемый ко всем меткам.",
-		["zh-cn"] = "所有标记的背景颜色。",
-	},
-	font_type_tooltip = {
-		en = "Font type to apply to any text elements of markers adjusted by Markers AIO.",
-		ru = "Тип шрифта, применяемый ко всем текстовым элементам меток, настроенных Улучшенными метками.",
-		["zh-cn"] = "标记整合模组调整的所有标记文本字体。",
-	},
-	enable_tooltip = {
-		en = "Enable Markers AIO adjustments to this marker type?",
-		ru = "Включить настройку параметров Улучшенных меток для этого типа меток?",
-		["zh-cn"] = "是否对该类标记启用标记整合模组调整？",
-	},
-	ammo_med_markers_alternate_large_ammo_icon_tooltip = {
-		en = "Use a different icon (Which is more fitting imo) for the large ammo pouches?",
-		ru = "Использовать другую иконку (которая, на мой взгляд, больше подходит) для больших подсумков для патронов?",
-		["zh-cn"] = "为大型弹药包使用更贴合的替代图标。",
-	},
-	keep_on_screen_tooltip = {
-		en = "Stick the marker to the edges of the screen if you are not directly looking at it?",
-		ru = "Если вы не смотрите прямо на метку, она прикрепляется к краям экрана.",
-		["zh-cn"] = "未直视目标时，将标记固定在屏幕边缘。",
-	},
-	require_line_of_sight_tooltip = {
-		en = "Require direct line of sight to this marker type?\nIf enabled, markers behind world objects like walls will be hidden. \nIf disabled, you will be able to see markers through world objects.",
-		ru = "Требуется прямая видимость для этого типа меток?\nЕсли включено, метки, находящиеся за объектами игрового мира, такими как стены, будут скрыты.\nЕсли отключено, вы сможете видеть метки сквозь объекты игрового мира.",
-		["zh-cn"] = "此类标记是否需要直接视线？\n启用后，墙体等障碍物后的标记会隐藏。\n关闭后可穿墙看到标记。",
-	},
-	toggle_los_tooltip = {
-		en = "Optional: Enter a keybind to toggle the 'Require Line of Sight' functionality for this marker type.",
-		ru = "Опционально: укажите сочетание клавиш для переключения функции «Требуется прямая видимость» для этого типа меток.",
-		["zh-cn"] = "可选：设置快捷键切换此类标记的「需要视线」功能。",
-	},
-	display_ammo_charges_tooltip = {
-		en = "Display a text-based numerical counter indicating how many uses an ammo crate has left before it runs out.",
-		ru = "Показывает текстовый числовой счётчик, показывающий, сколько использований осталось у ящика с боеприпасами до того, как он закончится.",
-		["zh-cn"] = "以数字显示弹药箱剩余可使用次数。",
-	},
-	display_med_charges_tooltip = {
-		en = "Display a text-based numerical counter indicating the percentage left on a crate or the charges left on a medical station before it runs out.",
-		ru = "Показывает текстовый числовой счётчик, показывающий процент оставшегося заряда ящика или количество зарядов, оставшихся в медстанции до их полного израсходования.",
-		["zh-cn"] = "以数字显示医疗箱剩余百分比或医疗站剩余使用次数。",
-	},
-	change_colour_for_ammo_charges_tooltip = {
-		en = "Adjust the colour of the background of ammo crate and medical markers to differentiate the amount of uses they have left?",
-		ru = "Изменить цвет фона меток ящиков с боеприпасами и аптечек, чтобы различать количество оставшихся использований?",
-		["zh-cn"] = "根据剩余使用次数改变弹药箱与医疗标记的背景颜色。",
-	},
-	change_colour_for_ammo_charges_4 = {
-		en = "4 Charges Left Colour"
-	},
-	change_colour_for_ammo_charges_3 = {
-		en = "3 Charges Left Colour"
-	},
-	change_colour_for_ammo_charges_2 = {
-		en = "2 Charges Left Colour"
-	},
-	change_colour_for_ammo_charges_1 = {
-		en = "1 Charges Left Colour"
-	},
-	change_colour_for_ammo_charges_4_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	change_colour_for_ammo_charges_4_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	change_colour_for_ammo_charges_4_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	change_colour_for_ammo_charges_3_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	change_colour_for_ammo_charges_3_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	change_colour_for_ammo_charges_3_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	change_colour_for_ammo_charges_2_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	change_colour_for_ammo_charges_2_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	change_colour_for_ammo_charges_2_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	change_colour_for_ammo_charges_1_R = {
-		en = "R",
-		fr = "R",
-		ru = "К",
-		["zh-tw"] = "紅",
-		["zh-cn"] = "红",
-	},
-	change_colour_for_ammo_charges_1_G = {
-		en = "G",
-		fr = "V",
-		ru = "З",
-		["zh-tw"] = "綠",
-		["zh-cn"] = "绿",
-	},
-	change_colour_for_ammo_charges_1_B = {
-		en = "B",
-		fr = "B",
-		ru = "С",
-		["zh-tw"] = "藍",
-		["zh-cn"] = "蓝",
-	},
-	display_field_improv_colour_tooltip = {
-		en = "Adjust the medical crate radius ring to change colour depending on whether a Veteran with the Field Improvisation talent is present in your party.",
-		ru = "Регулирует радиус кольца аптечки так, чтобы оно меняло цвет в зависимости от того, есть ли в вашей группе ветеран с навыком «Полевая импровизация».",
-		["zh-cn"] = "根据队伍中是否有携带临场发挥天赋的老兵，改变医疗箱范围环颜色。",
-	},
-	display_field_improv_icon_tooltip = {
-		en = "Add an icon to ammo crates and medical markers depicting whether a Veteran with the Field Improvisation talent is present in your party.",
-		ru = "Добавляет к ящикам с боеприпасами и медицинским меткам значок, указывающий на наличие в вашей группе ветерана с навыком «Полевая импровизация».",
-		["zh-cn"] = "在弹药箱与医疗标记上显示图标，提示队伍中是否有携带临场发挥天赋的老兵。",
-	},
-	display_med_ring_tooltip = {
-		en = "Display a radius circle around deployed medcrates to indicate the range of the buff.",
-		ru = "Показывает радиус действия установленных аптечек, чтобы показать область действия усиления.",
-		["zh-cn"] = "在放置的医疗箱周围显示范围圈，提示增益生效距离。",
-	},
-	icon_tooltip = {
-		en = "Adjust the icon for this marker type.",
-		ru = "Настройте значок для этого типа метки.",
-		["zh-cn"] = "调整此类标记的图标。",
-	},
-	stimm_enable_tooltip = {
-		en = "Enable colour adjustments for the Hive Scum stimms on the UI elements?",
-		ru = "Включить настройку цвета для стимов Отребья Улья на элементах пользовательского интерфейса?",
-		["zh-cn"] = "为巢都药剂UI元素启用颜色调整。",
-	},
-	martyrs_skull_guide_enable_tooltip = {
-		en = "Enable an on-screen guide widget with step-by-step text for collecting Martyr's Skulls.",
-		ru = "Включите на экране виджет-руководство с пошаговой инструкцией по сбору черепов мучеников.",
-		["zh-cn"] = "启用屏幕上的步骤文字指引，指导收集殉道者颅骨。",
-	},
-	martyrs_skull_guide_markers_enable_tooltip = {
-		en = "Enable in-world positional markers for Martyr's Skull guide steps.",
-		ru = "Включите внутриигровые метки положения для шагов по прохождению маршрута черепа мученика.",
-		["zh-cn"] = "启用任务内殉道者颅骨收集步骤的场景位置标记。",
-	},
-	martyrs_skull_guide_disable_if_collected_tooltip = {
-		en = "Disable the Martyr's Skull guide if you have already collected this skull and have the penance unlocked?",
-		ru = "Отключить руководство по поиску черепов мучеников, если вы уже собрали этот череп и разблокировали искупление?",
-		["zh-cn"] = "已收集颅骨并解锁苦修后，关闭殉道者颅骨指引。",
-	},
-	martyrs_skull_guide_x_offset_tooltip = {
-		en = "Horizontal position of the guide widget (in pixels). 0 = left edge of screen.",
-		ru = "Горизонтальное положение виджета руководства (в пикселях). 0 = левый край экрана.",
-		["zh-cn"] = "指南小工具的水平位置像素值。0 = 屏幕左边缘。",
-	},
-	martyrs_skull_guide_y_offset_tooltip = {
-		en = "Vertical position of the guide widget (in pixels). 0 = top edge of screen.",
-		ru = "Вертикальное положение виджета руководства (в пикселях). 0 = верхний край экрана.",
-		["zh-cn"] = "指南小工具的垂直位置像素值。0 = 屏幕顶部边缘。",
-	},
-	martyrs_skull_collected = {
-		en = "You have already collected this skull.",
-		ru = "Вы уже собирали этот череп.",
-		["zh-cn"] = "你已经收集过这个颅骨了。",
-	},
-	martyrs_skull_not_collected = {
-		en = "You haven't collected this skull before.",
-		ru = "Вы ещё не собирали этот череп.",
-		["zh-cn"] = "你还没有收集过这个颅骨。",
-	},
-	unknown_markers_extra_allowed = {
-		en = "Enable adjustments for buttons & misc markers?",
-		fr = "Activer les ajustements pour les boutons et autres marqueurs divers ?",
-		ru = "Включить настройки для кнопок и прочих меток?",
-		["zh-tw"] = "啟用按鈕與其他雜項標記的調整？",
-		["zh-cn"] = "启用按钮及其他杂项标记的调整？",
-	},
-	unknown_markers_extra_allowed_tooltip = {
-		en = "If enabled, allows buttons and a few other misc unknown markers to be effected by the Unknown Marker settings. Including distance, fading, alpha etc. If disabled, these misc markers will only be effected by the colour choices.",
-		fr = "Si activé, permet aux boutons et autres marqueurs inconnus d'être affectés par les paramètres des marqueurs inconnus (distance, fondu, alpha...). Si désactivé, seuls les choix de couleurs s'appliqueront.",
-		ru = "Если включено, кнопки и другие неизвестные метки будут подвержены настройкам неизвестных меток (расстояние, затухание, прозрачность и т.д.). Если выключено - только выбор цвета.",
-		["zh-tw"] = "啟用後，按鈕與其他雜項未知標記將受未知標記設定影響（距離、淡出、透明度等）。停用後僅受顏色選擇影響。",
-		["zh-cn"] = "启用后，按钮及其他杂项未知标记将受未知标记设置影响（距离、淡出、透明度等）。禁用后仅受颜色选择影响。",
-	},
-	Skull = {
-		en = "Skull",
-		fr = "Crâne",
-		ru = "Череп",
-		["zh-tw"] = "顱骨",
-		["zh-cn"] = "颅骨",
-	},
-	ScannerSkull = {
-		en = "Scanner Skull",
-		fr = "Crâne Scanner",
-		ru = "Череп сканер",
-		["zh-tw"] = "掃描顱骨",
-		["zh-cn"] = "扫描颅骨",
-	},
-	Scanner = {
-		en = "Scanner",
-		fr = "Scanner",
-		ru = "Сканер",
-		["zh-tw"] = "掃描器",
-		["zh-cn"] = "扫描器",
-	},
+    -- Expedition Markers
+    expedition_markers_settings = {
+        en = "EXPEDITION MARKERS",
+        ru = "МЕТКИ ЭКСПЕДИЦИЙ",
+        ["zh-cn"] = "远征物资标记",
+    },
+    expedition_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    expedition_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    expedition_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    expedition_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    expedition_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    expedition_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    expedition_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    expedition_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    expedition_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    expedition_border_colour = {
+        en = "Border Colour (General)",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы (основной)",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色（通用）",
+    },
+    expedition_border_colour_1 = {
+        en = "Border Colour (Tier 1 loot)",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы (добыча 1 уровня)",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色（1级）",
+    },
+    expedition_border_colour_2 = {
+        en = "Border Colour (Tier 2 loot)",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы (добыча 2 уровня)",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色（2级）",
+    },
+    expedition_border_colour_3 = {
+        en = "Border Colour (Tier 3 loot)",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы (добыча 3 уровня)",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色（3级）",
+    },
+    expedition_colour = {
+        en = "Expedition Markers Colour (General)",
+        ru = "Цвет меток экспедиций (основной)",
+        ["zh-cn"] = "远征标记颜色（通用）",
+    },
+    expedition_pickups_colour = {
+        en = "Expedition Pickup Markers Colour",
+        ru = "Цвет меток подбираемого в экспедициях",
+        ["zh-cn"] = "远征拾取物颜色",
+    },
+    expedition_currency_colour = {
+        en = "Expedition Salvage Markers Colour",
+        ru = "Цвет меток спасаемого в экспедициях",
+        ["zh-cn"] = "远征废料颜色",
+    },
+    expedition_reliquary_colour = {
+        en = "Expedition Reliquary Markers Colour",
+        ru = "Цвет меток реликвариев в экспедициях",
+        ["zh-cn"] = "远征圣骸箱颜色",
+    },
+    expedition_remnants_colour = {
+        en = "Expedition Tech-Remnant Markers Colour",
+        ru = "Цвет меток остатков технологий в экспедициях",
+        ["zh-cn"] = "远征科技残片颜色",
+    },
+    expedition_crate_colour = {
+        en = "Expedition Loot Crate Markers Colour",
+        ru = "Цвет меток ящиков с добычей в экспедициях",
+        ["zh-cn"] = "远征战利品箱颜色",
+    },
+    expedition_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    expedition_reliquary_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    expedition_pickups_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    expedition_currency_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    expedition_remnants_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    expedition_crate_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    expedition_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    expedition_reliquary_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    expedition_pickups_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    expedition_currency_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    expedition_remnants_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    expedition_crate_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    expedition_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    expedition_reliquary_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    expedition_pickups_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    expedition_currency_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    expedition_remnants_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    expedition_crate_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    expedition_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+
+    mod_marker_servo_skull_name = {
+        en = "Hackable Terminal",
+        ru = "Взламываемый терминал",
+        ["zh-cn"] = "可破解终端",
+    },
+    -- Servo Skull Markers
+    servo_skull_settings = {
+        en = "DECODING MARKERS",
+        ru = "МЕТКИ - ДЕКОДИРОВАНИЕ",
+        ["zh-cn"] = "伺服颅骨标记（可破解终端）",
+    },
+    Investigation = {
+        en = "Investigation",
+        ru = "Расследование",
+    },
+    servo_skull_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    servo_skull_enable_assistance_module = {
+        en = "Enable Assistance Module",
+        fr = "Activer le module d'assistance",
+        ru = "Включить модуль помощи",
+        ["zh-tw"] = "啟用支援模組",
+        ["zh-cn"] = "启用辅助模块",
+    },
+    servo_skull_enable_assistance_module_tooltip = {
+        en =
+        "Toggle the 'assistance' features, including recolouring downed players' markers and showing their downed states.",
+        fr =
+        "Active les fonctionnalités d'assistance, y compris le recoloriage des marqueurs des joueurs à terre et l'affichage de leur état.",
+        ru = "Включает функции помощи, включая перекраску меток упавших игроков и отображение их состояния.",
+        ["zh-tw"] = "切換「支援」功能，包括重新著色倒地玩家標記並顯示其倒地狀態。",
+        ["zh-cn"] = "切换「辅助」功能，包括重新着色倒地队友标记并显示其倒地状态。",
+    },
+    servo_skull_icon = {
+        en = "Servo Skull Icon",
+        fr = "Icône du Crâne Serviteur",
+        ru = "Значок сервочерепа",
+        ["zh-tw"] = "伺服顱骨圖示",
+        ["zh-cn"] = "伺服颅骨图标",
+    },
+    decoding_icon = {
+        en = "Decoding Icon (No Servo Skull Equipped)",
+        fr = "Icône de décodage (aucun Crâne Serviteur équipé)",
+        ru = "Значок декодирования (сервочереп не экипирован)",
+        ["zh-tw"] = "解密圖示（未裝備伺服顱骨）",
+        ["zh-cn"] = "解码图标（未装备伺服颅骨）",
+    },
+    servo_skull_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    servo_skull_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    servo_skull_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    servo_skull_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    servo_skull_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    servo_skull_default_colour = {
+        en = "Inactive Colour",
+        ru = "Цвет - неактивен",
+        ["zh-cn"] = "未激活颜色",
+    },
+    servo_skull_default_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    servo_skull_default_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    servo_skull_default_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    servo_skull_stalled_colour = {
+        en = "Stalled (Can Deploy) Colour",
+        ru = "Цвет - застрял (можно развернуть)",
+        ["zh-cn"] = "待命（可部署）颜色",
+    },
+    servo_skull_stalled_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    servo_skull_stalled_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    servo_skull_stalled_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    servo_skull_active_colour = {
+        en = "Active (Decoding) Colour",
+        ru = "Цвет - активен (расшифровка)",
+        ["zh-cn"] = "激活（破解中）颜色",
+    },
+    servo_skull_active_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    servo_skull_active_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    servo_skull_active_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    servo_skull_border_colour = {
+        en = "Inactive Border Colour",
+        ru = "Цвет границы - неактивен",
+        ["zh-cn"] = "未激活边框颜色",
+    },
+    servo_skull_stalled_border_colour = {
+        en = "Stalled Border Colour",
+        ru = "Цвет границы - застрял",
+        ["zh-cn"] = "待命边框颜色",
+    },
+    servo_skull_active_border_colour = {
+        en = "Active Border Colour",
+        ru = "Цвет границы - активен",
+        ["zh-cn"] = "激活边框颜色",
+    },
+    servo_skull_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    servo_skull_pulse_when_stalled = {
+        en = "Pulse When Stalled",
+        fr = "Pulser quand bloqué",
+        ru = "Пульсировать при ожидании",
+        ["zh-tw"] = "停滯時脈動",
+        ["zh-cn"] = "卡住时脉冲闪烁",
+    },
+    pulse_when_stalled_tooltip = {
+        en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
+        fr = "Fait doucement pulser la taille du marqueur lorsque le Crâne Serviteur est bloqué (1x à 1,2x)",
+        ru = "Мягко пульсирует размер метка, когда сервочереп ожидает (от 1x до 1,2x)",
+        ["zh-tw"] = "當伺服顱骨停滯時，標記大小會輕微脈動（1倍至1.2倍）",
+        ["zh-cn"] = "当伺服颅骨卡住时，标记大小会轻微脉冲（1倍至1.2倍）",
+    },
+    -- Player Assistance Markers
+    player_assistance_settings = {
+        en = "PLAYER ASSISTANCE MARKERS",
+        fr = "MARQUEURS D'ASSISTANCE AU JOUEUR",
+        ru = "МЕТКИ ПОМОЩИ ИГРОКАМ",
+        ["zh-tw"] = "玩家支援標記",
+        ["zh-cn"] = "玩家辅助标记",
+    },
+    Investigation = {
+        en = "Investigation",
+        fr = "Investigation",
+        ru = "Расследование",
+        ["zh-tw"] = "調查",
+        ["zh-cn"] = "调查",
+    },
+    player_assistance_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    player_assistance_enable_assistance_module = {
+        en = "Enable Assistance Module",
+        fr = "Activer le module d'assistance",
+        ru = "Включить модуль помощи",
+        ["zh-tw"] = "啟用支援模組",
+        ["zh-cn"] = "启用辅助模块",
+    },
+    player_assistance_enable_assistance_module_tooltip = {
+        en =
+        "Toggle the 'assistance' features, including recolouring downed players' markers and showing their downed states.",
+        fr =
+        "Active les fonctionnalités d'assistance, y compris le recoloriage des marqueurs des joueurs à terre et l'affichage de leur état.",
+        ru = "Включает функции помощи, включая перекраску меток упавших игроков и отображение их состояния.",
+        ["zh-tw"] = "切換「支援」功能，包括重新著色倒地玩家標記並顯示其倒地狀態。",
+        ["zh-cn"] = "切换「辅助」功能，包括重新着色倒地队友标记并显示其倒地状态。",
+    },
+    player_assistance_servo_skull_icon = {
+        en = "Servo Skull Icon",
+        fr = "Icône du Crâne Serviteur",
+        ru = "Значок сервочерепа",
+        ["zh-tw"] = "伺服顱骨圖示",
+        ["zh-cn"] = "伺服颅骨图标",
+    },
+    player_assistance_icon = {
+        en = "Assistance Icon (No Servo Skull Equipped)",
+        fr = "Icône d'assistance (aucun Crâne Serviteur équipé)",
+        ru = "Значок помощи (сервочереп не экипирован)",
+        ["zh-tw"] = "支援圖示（未裝備伺服顱骨）",
+        ["zh-cn"] = "辅助图标（未装备伺服颅骨）",
+    },
+    player_assistance_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    player_assistance_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    player_assistance_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    player_assistance_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    player_assistance_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    player_assistance_default_colour = {
+        en = "Inactive Colour",
+        ru = "Цвет - неактивен",
+        ["zh-cn"] = "未激活颜色",
+    },
+    player_assistance_default_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    player_assistance_default_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    player_assistance_default_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    player_assistance_stalled_colour = {
+        en = "Stalled (Alert) Colour",
+        ru = "Цвет - застрял (внимание)",
+        ["zh-cn"] = "待命（可部署）颜色",
+    },
+    player_assistance_stalled_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    player_assistance_stalled_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    player_assistance_stalled_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    player_assistance_active_colour = {
+        en = "Active (Helping) Colour",
+        ru = "Цвет - активен (помощь)",
+        ["zh-cn"] = "激活（破解中）颜色",
+    },
+    player_assistance_active_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    player_assistance_active_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    player_assistance_active_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    player_assistance_border_colour = {
+        en = "Inactive Border Colour",
+        ru = "Цвет границы - неактивен",
+        ["zh-cn"] = "未激活边框颜色",
+    },
+    player_assistance_stalled_border_colour = {
+        en = "Stalled Border Colour",
+        ru = "Цвет границы - застрял",
+        ["zh-cn"] = "待命边框颜色",
+    },
+    player_assistance_active_border_colour = {
+        en = "Active Border Colour",
+        ru = "Цвет границы - активен",
+        ["zh-cn"] = "激活边框颜色",
+    },
+    player_assistance_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    player_assistance_pulse_when_stalled = {
+        en = "Pulse When Stalled",
+        fr = "Pulser quand bloqué",
+        ru = "Пульсировать при ожидании",
+        ["zh-tw"] = "停滯時脈動",
+        ["zh-cn"] = "卡住时脉冲闪烁",
+    },
+    pulse_when_stalled_tooltip = {
+        en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
+        fr = "Fait doucement pulser la taille du marqueur lorsque le Crâne Serviteur est bloqué (1x à 1,2x)",
+        ru = "Мягко пульсирует размер метка, когда сервочереп ожидает (от 1x до 1,2x)",
+        ["zh-tw"] = "當伺服顱骨停滯時，標記大小會輕微脈動（1倍至1.2倍）",
+        ["zh-cn"] = "当伺服颅骨卡住时，标记大小会轻微脉冲（1倍至1.2倍）",
+    },
+    -- Unknown Markers
+    unknown_markers_settings = {
+        en = "UNKNOWN MARKERS (Those not covered elsewhere!)",
+        ru = "НЕИЗВЕТСНЫЕ МЕТКИ (которые не попали в другие разделы!)",
+        ["zh-cn"] = "未知物品标记（未归类物品）",
+    },
+    Help = {
+        en = "Help",
+        fr = "Aide",
+        ru = "Помощь",
+        ["zh-tw"] = "求助",
+        ["zh-cn"] = "求助",
+    },
+    Medkit = {
+        en = "Medkit",
+        fr = "Kit médical",
+        ru = "Медпакет",
+        ["zh-tw"] = "醫療包",
+        ["zh-cn"] = "医疗包",
+    },
+    Respawn = {
+        en = "Respawn",
+        fr = "Réapparition",
+        ru = "Возрождение",
+        ["zh-tw"] = "重生",
+        ["zh-cn"] = "复活",
+    },
+    Stimm = {
+        en = "Stimm",
+        fr = "Stimm",
+        ru = "Стим",
+        ["zh-tw"] = "興奮劑",
+        ["zh-cn"] = "兴奋剂",
+    },
+    unknown_enable = {
+        en = "Enable Markers",
+        fr = "Activer les marqueurs",
+        ru = "Включить метки",
+        ["zh-tw"] = "啟用標記",
+        ["zh-cn"] = "启用标记",
+    },
+    unknown_general_settings = {
+        en = "General Settings",
+        fr = "Paramètres généraux",
+        ru = "Общие настройки",
+        ["zh-tw"] = "一般設定",
+        ["zh-cn"] = "通用设置",
+    },
+    unknown_keep_on_screen = {
+        en = "Keep on screen",
+        fr = "Rester à l'écran",
+        ru = "Держать на экране",
+        ["zh-tw"] = "保持顯示於螢幕",
+        ["zh-cn"] = "在画面中持续显示",
+    },
+    unknown_require_line_of_sight = {
+        en = "Require line of sight",
+        fr = "Nécessite une ligne de vue",
+        ru = "Должно быть в зоне видимости",
+        ["zh-tw"] = "需要視線範圍",
+        ["zh-cn"] = "仅视野内显示",
+    },
+    unknown_max_distance = {
+        en = "Max distance",
+        fr = "Distance maximale",
+        ru = "Максимальное расстояние",
+        ["zh-tw"] = "最遠距離",
+        ["zh-cn"] = "最大显示距离",
+    },
+    unknown_max_size = {
+        en = "Maximum size of marker",
+        fr = "Taille maximale du marqueur",
+        ru = "Максимальный размер метки",
+        ["zh-tw"] = "圖標的最大尺寸",
+        ["zh-cn"] = "标记最大尺寸",
+    },
+    unknown_min_size = {
+        en = "Minimum size of marker",
+        fr = "Taille minimale du marqueur",
+        ru = "Минимальный размер метки",
+        ["zh-tw"] = "圖標的最小尺寸",
+        ["zh-cn"] = "标记最小尺寸",
+    },
+    unknown_scale = {
+        en = "Scale",
+        fr = "Scale",
+        ru = "Масштаб",
+        ["zh-tw"] = "圖標縮放大小",
+        ["zh-cn"] = "标记缩放比例",
+    },
+    unknown_alpha = {
+        en = "Alpha Multiplier",
+        fr = "Multiplicateur d'alpha",
+        ru = "Прозрачность",
+        ["zh-tw"] = "透明度倍增器",
+        ["zh-cn"] = "透明度系数",
+    },
+    unknown_border_colour = {
+        en = "Border Colour",
+        fr = "Couleur de la bordure",
+        ru = "Цвет границы",
+        ["zh-tw"] = "邊框顏色",
+        ["zh-cn"] = "边框颜色",
+    },
+    unknown_colour = {
+        en = "Unknown Markers Colour",
+        ru = "Цвет неизвестных меток",
+        ["zh-cn"] = "未知物品标记颜色",
+    },
+    unknown_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    unknown_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    unknown_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    unknown_toggle_los = {
+        en = "Toggle 'Require Line of Sight'",
+        ru = "Переключение «В зоне видимости»",
+        ["zh-tw"] = "切換「需要視線範圍」",
+        ["zh-cn"] = "切换「仅视野内显示」",
+    },
+    -- TOOLTIPS
+    colour_R_tooltip = {
+        en = "Red RGB value.",
+        ru = "Значение красного цвета в формате RGB.",
+        ["zh-cn"] = "红色RGB数值。",
+    },
+    colour_G_tooltip = {
+        en = "Green RGB value.",
+        ru = "Значение зелёного цвета в формате RGB.",
+        ["zh-cn"] = "绿色RGB数值。",
+    },
+    colour_B_tooltip = {
+        en = "Blue RGB value.",
+        ru = "Значение синего цвета в формате RGB.",
+        ["zh-cn"] = "蓝色RGB数值。",
+    },
+    max_distance_tooltip = {
+        en = "Maximum distance to find, update and draw markers.",
+        ru = "Максимальное расстояние для поиска, обновления и отрисовки меток.",
+        ["zh-cn"] = "搜索、更新与显示标记的最大距离。",
+    },
+    scale_tooltip = {
+        en = "Scale multiplier to apply.\ne.g. 100=1x size, 50=0.5x size, 150=1.5x size.",
+        ru = "Применяется множитель масштабирования. Например: 100 = 1x размер, 50 = 0,5x размер, 150 = 1,5x размер.",
+        ["zh-cn"] = "标记缩放倍数。\n例如：100=1倍大小，50=0.5倍大小，150=1.5倍大小。",
+    },
+    los_fade_enable_tooltip = {
+        en =
+        "Fade out markers that are behind a world object/out of line of sight? Only takes effect if 'Require Line of Sight' is disabled.",
+        ru =
+        "Скрывать метки, находящиеся за объектами в игровом мире/вне прямой видимости? Эффект проявляется только в том случае, если параметр «Требовать прямой видимости» отключён.",
+        ["zh-cn"] = "是否淡化墙体后方/视线外的标记？仅在关闭「需要视线」时生效。",
+    },
+    los_opacity_tooltip = {
+        en = "Opacity to apply to markers if line of sight fading is enabled.",
+        ru = "Прозрачность, применяемая к меткам, если включено затухание при прямой видимости.",
+        ["zh-cn"] = "启用视线淡化后，标记的不透明度。",
+    },
+    ads_los_opacity_tooltip = {
+        en = "Opacity to apply to markers when you aim down sights of your weapon.",
+        ru = "Прозрачность, применяемая к меткам при наведении прицела оружия.",
+        ["zh-cn"] = "开镜瞄准状态下标记的不透明度。",
+    },
+    alpha_tooltip = {
+        en = "General opacity to apply to this marker type.",
+        ru = "Общая прозрачность, применяемая к этому типу метки.",
+        ["zh-cn"] = "此类标记的整体不透明度。",
+    },
+    border_colour_tooltip = {
+        en = "Select a colour to apply to the 'border' or outer decorative ring of this marker type.",
+        ru = "Выберите цвет, который будет применён к «рамке» или внешнему декоративному кольцу этого типа метки.",
+        ["zh-cn"] = "设置此类标记边框或外侧装饰环的颜色。",
+    },
+    marker_background_colour_tooltip = {
+        en = "Background colour to apply to all markers.",
+        ru = "Цвет фона, применяемый ко всем меткам.",
+        ["zh-cn"] = "所有标记的背景颜色。",
+    },
+    font_type_tooltip = {
+        en = "Font type to apply to any text elements of markers adjusted by Markers AIO.",
+        ru = "Тип шрифта, применяемый ко всем текстовым элементам меток, настроенных Улучшенными метками.",
+        ["zh-cn"] = "标记整合模组调整的所有标记文本字体。",
+    },
+    enable_tooltip = {
+        en = "Enable Markers AIO adjustments to this marker type?",
+        ru = "Включить настройку параметров Улучшенных меток для этого типа меток?",
+        ["zh-cn"] = "是否对该类标记启用标记整合模组调整？",
+    },
+    ammo_med_markers_alternate_large_ammo_icon_tooltip = {
+        en = "Use a different icon (Which is more fitting imo) for the large ammo pouches?",
+        ru = "Использовать другую иконку (которая, на мой взгляд, больше подходит) для больших подсумков для патронов?",
+        ["zh-cn"] = "为大型弹药包使用更贴合的替代图标。",
+    },
+    keep_on_screen_tooltip = {
+        en = "Stick the marker to the edges of the screen if you are not directly looking at it?",
+        ru = "Если вы не смотрите прямо на метку, она прикрепляется к краям экрана.",
+        ["zh-cn"] = "未直视目标时，将标记固定在屏幕边缘。",
+    },
+    require_line_of_sight_tooltip = {
+        en =
+        "Require direct line of sight to this marker type?\nIf enabled, markers behind world objects like walls will be hidden. \nIf disabled, you will be able to see markers through world objects.",
+        ru =
+        "Требуется прямая видимость для этого типа меток?\nЕсли включено, метки, находящиеся за объектами игрового мира, такими как стены, будут скрыты.\nЕсли отключено, вы сможете видеть метки сквозь объекты игрового мира.",
+        ["zh-cn"] = "此类标记是否需要直接视线？\n启用后，墙体等障碍物后的标记会隐藏。\n关闭后可穿墙看到标记。",
+    },
+    toggle_los_tooltip = {
+        en = "Optional: Enter a keybind to toggle the 'Require Line of Sight' functionality for this marker type.",
+        ru =
+        "Опционально: укажите сочетание клавиш для переключения функции «Требуется прямая видимость» для этого типа меток.",
+        ["zh-cn"] = "可选：设置快捷键切换此类标记的「需要视线」功能。",
+    },
+    display_ammo_charges_tooltip = {
+        en = "Display a text-based numerical counter indicating how many uses an ammo crate has left before it runs out.",
+        ru =
+        "Показывает текстовый числовой счётчик, показывающий, сколько использований осталось у ящика с боеприпасами до того, как он закончится.",
+        ["zh-cn"] = "以数字显示弹药箱剩余可使用次数。",
+    },
+    display_med_charges_tooltip = {
+        en =
+        "Display a text-based numerical counter indicating the percentage left on a crate or the charges left on a medical station before it runs out. In multiplayer, crate percentages on other players' screens are estimated (shown with a ~).",
+        ru =
+        "Показывает текстовый числовой счётчик, показывающий процент оставшегося заряда ящика или количество зарядов, оставшихся в медстанции до их полного израсходования. В сетевой игре проценты медящиков на других игроках оцениваются (показываются с ~).",
+        ["zh-cn"] = "以数字显示医疗箱剩余百分比或医疗站剩余使用次数。联机游戏中他处的医疗箱百分比为估算值（以 ~ 前缀标示）。",
+    },
+    display_med_crate_estimate_tooltip = {
+        en =
+        "Show the live estimated charge percentage left on a deployed medcrate (crates placed by other players in multiplayer, where the exact reserve is not shared). Estimates are shown as approximate ranges like ~60-80%% to reflect that they cannot be exact, and they already account for the crate lifetime. Disabling this hides only the estimated percentage; the exact percentage still shows when it is known (e.g. solo lobbies/psykhanium).",
+        ru =
+        "Показывает живую оценку оставшегося процента заряда развёрнутого медящика (ящиков, поставленных другими игроками в сетевой игре, где точное значение резерва не передаётся). Оценки показываются приблизительными диапазонами, например ~60-80%%, и уже учитывают время жизни ящика. Отключение скрывает только оценку; точный процент остаётся видимым, когда он известен (например, когда вы хост).",
+        ["zh-cn"] = "显示已部署医疗箱的实时预估剩余百分比（联机游戏中由其他玩家放置的医疗箱无法获取精确值）。预估以近似范围显示（如 ~60-80%），并已计入医疗箱寿命。关闭后仅隐藏预估百分比；已知精确值时（如作为主机）仍会显示精确值。",
+    },
+    ammo_status_colours_enable_tooltip = {
+        en =
+        "Tint ammo pickup markers by how useful they are to you",
+        ru =
+        "Окрашивает метки подбора боеприпасов в зависимости от пользы для вас: зелёный = можно забрать всё, оранжевый = союзнику нужнее, красный = часть боеприпасов будет потрачена впустую.",
+        ["zh-cn"] = "根据弹药拾取对您的用处着色：绿色=可全部拾取，橙色=队友更需要，红色=会有浪费。",
+    },
+    ammo_status_numeric_enable_tooltip = {
+        en =
+        "Master toggle for the gain (+G) and waste (-W) numbers. When enabled you can pick where they appear: on the world marker, in the interact prompt, or both.",
+        ru =
+        "Главный переключатель чисел +G и -W. Когда включено, вы можете выбрать, где они отображаются: на мировой метке, в окне взаимодействия или в обоих местах.",
+        ["zh-cn"] = "获得(+G)与浪费(-W)数字的主开关。开启后可选择显示位置：显示标记上、互动提示中或两者都显示。",
+    },
+    ammo_status_show_gain_tooltip = {
+        en = "Show the number of ammo rounds that will be added to your reserve.",
+        ru = "Показывать число патронов, которое будет добавлено к вашему запасу.",
+        ["zh-cn"] = "显示将补充到后备弹药的数量。",
+    },
+    ammo_status_show_waste_tooltip = {
+        en = "Show how many ammo rounds would be wasted because your reserve is too full.",
+        ru = "Показывать число патронов, которые будут потеряны из-за слишком полного запаса.",
+        ["zh-cn"] = "显示因后备弹药过满而浪费的数量。",
+    },
+    ammo_status_show_most_needy_tooltip = {
+        en =
+        "When a teammate needs the ammo more than you, show their class icon with their team colour to mark who should take this pickup.",
+        ru =
+        "Если союзнику нужно больше боеприпасов, чем вам, показывает иконку его класса в цвете его команды, чтобы отметить, кому следует забрать этот предмет.",
+        ["zh-cn"] = "当队友比您更需要弹药时，以队友职业图标与队友颜色标示谁应该拾取。",
+    },
+    ammo_status_margin_tooltip = {
+        en =
+        "How much lower (in %%) a teammate's ammo must be than yours before they are considered more needy than you.",
+        ru =
+        "На сколько процентов запас боеприпасов союзника должен быть ниже вашего, чтобы он считался более нуждающимся в них.",
+        ["zh-cn"] = "队友弹药百分比比您低多少(%%)才会判定为比您更需要。",
+    },
+    ammo_status_colours_enable = {
+        en = "Status ring colours",
+        fr = "Couleurs de l'anneau d'état",
+        ru = "Цвета кольца статуса",
+        ["zh-tw"] = "狀態環顏色",
+        ["zh-cn"] = "状态环颜色",
+    },
+    ammo_status_numeric_enable = {
+        en = "Show gain/waste numbers",
+        fr = "Afficher les nombres de gain/perte",
+        ru = "Показывать числа +G/-W",
+        ["zh-tw"] = "顯示獲得/浪費數字",
+        ["zh-cn"] = "显示获得/浪费数字",
+    },
+    ammo_status_show_gain = {
+        en = "Show ammo gained",
+        fr = "Afficher les munitions gagnées",
+        ru = "Показывать полученные патроны",
+        ["zh-tw"] = "顯示獲得彈藥",
+        ["zh-cn"] = "显示获得弹药",
+    },
+    ammo_status_show_waste = {
+        en = "Show ammo wasted",
+        fr = "Afficher les munitions perdues",
+        ru = "Показывать потерянные патроны",
+        ["zh-tw"] = "顯示浪費彈藥",
+        ["zh-cn"] = "显示浪费弹药",
+    },
+    ammo_status_show_most_needy = {
+        en = "Show most needy teammate icon",
+        fr = "Icône du coéquipier le plus à court",
+        ru = "Иконка наиболее нуждающегося союзника",
+        ["zh-tw"] = "顯示最需要彈藥的隊友圖示",
+        ["zh-cn"] = "显示最需要弹药的队友图标",
+    },
+    ammo_status_margin = {
+        en = "Needy margin",
+        fr = "Marge de besoin",
+        ru = "Порог нужды",
+        ["zh-tw"] = "需求差額",
+        ["zh-cn"] = "需求差值",
+    },
+    ammo_status_green_colour = {
+        en = "Status Colour: Take It All",
+        fr = "Couleur du statut : Prendre tout",
+        ru = "Цвет статуса: взять всё",
+        ["zh-tw"] = "狀態顏色：全部拾取",
+        ["zh-cn"] = "状态颜色：可全部拾取",
+    },
+    ammo_status_green_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    ammo_status_green_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    ammo_status_green_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    ammo_status_orange_colour = {
+        en = "Status Colour: Teammate Needs It More",
+        fr = "Couleur du statut : Un coéquipier en a plus besoin",
+        ru = "Цвет статуса: союзнику нужнее",
+        ["zh-tw"] = "狀態顏色：隊友更需要",
+        ["zh-cn"] = "状态颜色：队友更需要",
+    },
+    ammo_status_orange_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    ammo_status_orange_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    ammo_status_orange_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    ammo_status_red_colour = {
+        en = "Status Colour: Would Waste Ammo",
+        fr = "Couleur du statut : Munitions gaspillées",
+        ru = "Цвет статуса: боеприпасы будут потеряны",
+        ["zh-tw"] = "狀態顏色：會有浪費",
+        ["zh-cn"] = "状态颜色：会有浪费",
+    },
+    ammo_status_red_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    ammo_status_red_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    ammo_status_red_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    ammo_status_enable = {
+        en = "Enable ammo info",
+        fr = "Activer les infos munitions",
+        ru = "Включить информацию о боеприпасах",
+        ["zh-tw"] = "啟用彈藥資訊",
+        ["zh-cn"] = "启用弹药信息",
+    },
+    ammo_status_enable_tooltip = {
+        en = "Master toggle for the ammo info features (ring colours, gain/waste numbers, most needy teammate icon).",
+        ru =
+        "Главный переключатель функций информации о боеприпасах (цвет кольца, числа +G/-W, иконка наиболее нуждающегося союзника).",
+        ["zh-cn"] = "弹药信息功能总开关（状态环颜色、获得/浪费数值、最需要弹药的队友图标）。",
+    },
+    ammo_status_marker_text_enable = {
+        en = "Show numbers on pickup marker",
+        fr = "Afficher les nombres sur la marqueur",
+        ru = "Показывать числа на метке предмета",
+        ["zh-tw"] = "在拾取標記上顯示數字",
+        ["zh-cn"] = "在拾取标记上显示数字",
+    },
+    ammo_status_marker_text_enable_tooltip = {
+        en =
+        "Show the gain (+G) and waste (-W) numbers directly on the ammo pickup's world marker, under the marker icon.",
+        ru = "Показывать числа +G и -W прямо на мировой метке предмета, под иконкой.",
+        ["zh-cn"] = "在弹药的显示标记图标下方直接显示获得(+G)与浪费(-W)数值。",
+    },
+    ammo_status_popup_text_enable = {
+        en = "Show numbers in interact prompt",
+        fr = "Afficher les nombres dans la fenêtre d'interaction",
+        ru = "Показывать числа в окне взаимодействия",
+        ["zh-tw"] = "在互動提示中顯示數字",
+        ["zh-cn"] = "在互动提示中显示数字",
+    },
+    ammo_status_popup_text_enable_tooltip = {
+        en =
+        "Show the gain (+G) and waste (-W) next to the ammo pickup name in the interact prompt that appears when you are close enough to interact.",
+        ru =
+        "Показывать +G и -W рядом с названием предмета в окне взаимодействия, которое появляется, когда вы достаточно близко для подбора.",
+        ["zh-cn"] = "在足够靠近进行互动时出现的互动提示中，在弹药名称旁显示获得(+G)与浪费(-W)。",
+    },
+    ammo_status_text_font_size = {
+        en = "Pickup marker text size",
+        fr = "Taille du texte de la marqueur",
+        ru = "Размер текста метки",
+        ["zh-tw"] = "拾取標記文字大小",
+        ["zh-cn"] = "拾取标记文字大小",
+    },
+    ammo_status_text_font_size_tooltip = {
+        en = "Font size of the gain/waste numbers shown on the pickup marker.",
+        ru = "Размер шрифта чисел +G/-W на метке предмета.",
+        ["zh-cn"] = "拾取标记上获得/浪费数字的字体大小。",
+    },
+    ammo_status_text_position = {
+        en = "Pickup marker text position",
+        fr = "Position du texte de la marqueur",
+        ru = "Положение текста метки",
+        ["zh-tw"] = "拾取標記文字位置",
+        ["zh-cn"] = "拾取标记文字位置",
+    },
+    ammo_status_text_position_tooltip = {
+        en =
+        "Where the gain/waste numbers are placed relative to the pickup marker icon. Defaults to Top so it does not overlap the distance text (which defaults to Bottom).",
+        ru =
+        "Где размещаются числа +G/-W относительно иконки метки. По умолчанию сверху, чтобы не пересекаться с текстом дистанции (по умолчанию снизу).",
+        ["zh-cn"] = "获得/浪费数字相对拾取标记图标的位置。默认位于上方，以避免与距离文字（默认在下方）重叠。",
+    },
+    ammo_status_text_offset = {
+        en = "Pickup marker text offset",
+        fr = "Décalage du texte de la marqueur",
+        ru = "Смещение текста метки",
+        ["zh-tw"] = "拾取標記文字偏移",
+        ["zh-cn"] = "拾取标记文字偏移",
+    },
+    ammo_status_text_offset_tooltip = {
+        en =
+        "Extra distance (in pixels) added to the chosen position, so you can push the numbers further from or closer to the marker.",
+        ru =
+        "Дополнительное расстояние (в пикселях) к выбранному положению, чтобы отодвинуть или приблизить числа к метке.",
+        ["zh-cn"] = "在所选位置上额外增加的距离（像素），可用来调整数字与标记的距离。",
+    },
+    ammo_status_text_width = {
+        en = "Pickup marker text width",
+        fr = "Largeur du texte de la marqueur",
+        ru = "Ширина текста метки",
+        ["zh-tw"] = "拾取標記文字寬度",
+        ["zh-cn"] = "拾取标记文字宽度",
+    },
+    ammo_status_text_width_tooltip = {
+        en =
+        "Width of the text box on the pickup marker. Large values keep '+30 (-5)' on a single line instead of splitting it.",
+        ru = "Ширина текстового поля на метке. Большие значения не дают тексту '+30 (-5)' переноситься на две строки.",
+        ["zh-cn"] = "拾取标记上文字框的宽度。较大的值可让 '+30 (-5)' 保持在一行而不折行。",
+    },
+    ammo_status_gain_colour = {
+        en = "Gain (+) Colour",
+        fr = "Couleur du gain (+)",
+        ru = "Цвет получения (+)",
+        ["zh-tw"] = "獲得(+)顏色",
+        ["zh-cn"] = "获得(+)颜色",
+    },
+    ammo_status_gain_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    ammo_status_gain_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    ammo_status_gain_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    ammo_status_waste_colour = {
+        en = "Waste (-) Colour",
+        fr = "Couleur de la perte (-)",
+        ru = "Цвет потери (-)",
+        ["zh-tw"] = "浪費(-)顏色",
+        ["zh-cn"] = "浪费(-)颜色",
+    },
+    ammo_status_waste_colour_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    ammo_status_waste_colour_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    ammo_status_waste_colour_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    change_colour_for_ammo_charges_tooltip = {
+        en =
+        "Adjust the colour of the background of ammo crate and medical markers to differentiate the amount of uses they have left?",
+        ru =
+        "Изменить цвет фона меток ящиков с боеприпасами и аптечек, чтобы различать количество оставшихся использований?",
+        ["zh-cn"] = "根据剩余使用次数改变弹药箱与医疗标记的背景颜色。",
+    },
+    change_colour_for_ammo_charges_4 = {
+        en = "4 Charges Left Colour",
+    },
+    change_colour_for_ammo_charges_3 = {
+        en = "3 Charges Left Colour",
+    },
+    change_colour_for_ammo_charges_2 = {
+        en = "2 Charges Left Colour",
+    },
+    change_colour_for_ammo_charges_1 = {
+        en = "1 Charges Left Colour",
+    },
+    change_colour_for_ammo_charges_4_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    change_colour_for_ammo_charges_4_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    change_colour_for_ammo_charges_4_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    change_colour_for_ammo_charges_3_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    change_colour_for_ammo_charges_3_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    change_colour_for_ammo_charges_3_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    change_colour_for_ammo_charges_2_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    change_colour_for_ammo_charges_2_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    change_colour_for_ammo_charges_2_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    change_colour_for_ammo_charges_1_R = {
+        en = "R",
+        fr = "R",
+        ru = "К",
+        ["zh-tw"] = "紅",
+        ["zh-cn"] = "红",
+    },
+    change_colour_for_ammo_charges_1_G = {
+        en = "G",
+        fr = "V",
+        ru = "З",
+        ["zh-tw"] = "綠",
+        ["zh-cn"] = "绿",
+    },
+    change_colour_for_ammo_charges_1_B = {
+        en = "B",
+        fr = "B",
+        ru = "С",
+        ["zh-tw"] = "藍",
+        ["zh-cn"] = "蓝",
+    },
+    display_field_improv_colour_tooltip = {
+        en =
+        "Adjust the medical crate radius ring to change colour depending on whether a Veteran with the Field Improvisation talent is present in your party.",
+        ru =
+        "Регулирует радиус кольца аптечки так, чтобы оно меняло цвет в зависимости от того, есть ли в вашей группе ветеран с навыком «Полевая импровизация».",
+        ["zh-cn"] = "根据队伍中是否有携带临场发挥天赋的老兵，改变医疗箱范围环颜色。",
+    },
+    display_field_improv_icon_tooltip = {
+        en =
+        "Add an icon to ammo crates and medical markers depicting whether a Veteran with the Field Improvisation talent is present in your party.",
+        ru =
+        "Добавляет к ящикам с боеприпасами и медицинским меткам значок, указывающий на наличие в вашей группе ветерана с навыком «Полевая импровизация».",
+        ["zh-cn"] = "在弹药箱与医疗标记上显示图标，提示队伍中是否有携带临场发挥天赋的老兵。",
+    },
+    display_med_ring_tooltip = {
+        en = "Display a radius circle around deployed medcrates to indicate the range of the buff.",
+        ru = "Показывает радиус действия установленных аптечек, чтобы показать область действия усиления.",
+        ["zh-cn"] = "在放置的医疗箱周围显示范围圈，提示增益生效距离。",
+    },
+    icon_tooltip = {
+        en = "Adjust the icon for this marker type.",
+        ru = "Настройте значок для этого типа метки.",
+        ["zh-cn"] = "调整此类标记的图标。",
+    },
+    stimm_enable_tooltip = {
+        en = "Enable colour adjustments for the Hive Scum stimms on the UI elements?",
+        ru = "Включить настройку цвета для стимов Отребья Улья на элементах пользовательского интерфейса?",
+        ["zh-cn"] = "为巢都药剂UI元素启用颜色调整。",
+    },
+    martyrs_skull_guide_enable_tooltip = {
+        en = "Enable an on-screen guide widget with step-by-step text for collecting Martyr's Skulls.",
+        ru = "Включите на экране виджет-руководство с пошаговой инструкцией по сбору черепов мучеников.",
+        ["zh-cn"] = "启用屏幕上的步骤文字指引，指导收集殉道者颅骨。",
+    },
+    martyrs_skull_guide_markers_enable_tooltip = {
+        en = "Enable in-world positional markers for Martyr's Skull guide steps.",
+        ru = "Включите внутриигровые метки положения для шагов по прохождению маршрута черепа мученика.",
+        ["zh-cn"] = "启用任务内殉道者颅骨收集步骤的场景位置标记。",
+    },
+    martyrs_skull_guide_disable_if_collected_tooltip = {
+        en = "Disable the Martyr's Skull guide if you have already collected this skull and have the penance unlocked?",
+        ru =
+        "Отключить руководство по поиску черепов мучеников, если вы уже собрали этот череп и разблокировали искупление?",
+        ["zh-cn"] = "已收集颅骨并解锁苦修后，关闭殉道者颅骨指引。",
+    },
+    martyrs_skull_guide_x_offset_tooltip = {
+        en = "Horizontal position of the guide widget (in pixels). 0 = left edge of screen.",
+        ru = "Горизонтальное положение виджета руководства (в пикселях). 0 = левый край экрана.",
+        ["zh-cn"] = "指南小工具的水平位置像素值。0 = 屏幕左边缘。",
+    },
+    martyrs_skull_guide_y_offset_tooltip = {
+        en = "Vertical position of the guide widget (in pixels). 0 = top edge of screen.",
+        ru = "Вертикальное положение виджета руководства (в пикселях). 0 = верхний край экрана.",
+        ["zh-cn"] = "指南小工具的垂直位置像素值。0 = 屏幕顶部边缘。",
+    },
+    martyrs_skull_collected = {
+        en = "You have already collected this skull.",
+        ru = "Вы уже собирали этот череп.",
+        ["zh-cn"] = "你已经收集过这个颅骨了。",
+    },
+    martyrs_skull_not_collected = {
+        en = "You haven't collected this skull before.",
+        ru = "Вы ещё не собирали этот череп.",
+        ["zh-cn"] = "你还没有收集过这个颅骨。",
+    },
+    unknown_markers_extra_allowed = {
+        en = "Enable adjustments for buttons & misc markers?",
+        fr = "Activer les ajustements pour les boutons et autres marqueurs divers ?",
+        ru = "Включить настройки для кнопок и прочих меток?",
+        ["zh-tw"] = "啟用按鈕與其他雜項標記的調整？",
+        ["zh-cn"] = "启用按钮及其他杂项标记的调整？",
+    },
+    unknown_markers_extra_allowed_tooltip = {
+        en =
+        "If enabled, allows buttons and a few other misc unknown markers to be effected by the Unknown Marker settings. Including distance, fading, alpha etc. If disabled, these misc markers will only be effected by the colour choices.",
+        fr =
+        "Si activé, permet aux boutons et autres marqueurs inconnus d'être affectés par les paramètres des marqueurs inconnus (distance, fondu, alpha...). Si désactivé, seuls les choix de couleurs s'appliqueront.",
+        ru =
+        "Если включено, кнопки и другие неизвестные метки будут подвержены настройкам неизвестных меток (расстояние, затухание, прозрачность и т.д.). Если выключено - только выбор цвета.",
+        ["zh-tw"] = "啟用後，按鈕與其他雜項未知標記將受未知標記設定影響（距離、淡出、透明度等）。停用後僅受顏色選擇影響。",
+        ["zh-cn"] = "启用后，按钮及其他杂项未知标记将受未知标记设置影响（距离、淡出、透明度等）。禁用后仅受颜色选择影响。",
+    },
+    Skull = {
+        en = "Skull",
+        fr = "Crâne",
+        ru = "Череп",
+        ["zh-tw"] = "顱骨",
+        ["zh-cn"] = "颅骨",
+    },
+    ScannerSkull = {
+        en = "Scanner Skull",
+        fr = "Crâne Scanner",
+        ru = "Череп сканер",
+        ["zh-tw"] = "掃描顱骨",
+        ["zh-cn"] = "扫描颅骨",
+    },
+    Scanner = {
+        en = "Scanner",
+        fr = "Scanner",
+        ru = "Сканер",
+        ["zh-tw"] = "掃描器",
+        ["zh-cn"] = "扫描器",
+    },
 }
 
 local apply_color_to_text = function(text, r, g, b)
-	return "{#color(" .. r .. "," .. g .. "," .. b .. ")}" .. text .. "{#reset()}"
+    return "{#color(" .. r .. "," .. g .. "," .. b .. ")}" .. text .. "{#reset()}"
 end
 
 local apply_colours = function()
-	for key, values in pairs(loc) do
-		-- apply rgb colours
-		if
-			string.find(key, "colour")
-			and not string.find(key, "colour_R")
-			and not string.find(key, "colour_G")
-			and not string.find(key, "colour_B")
-		then
-			local r = mod:get(key .. "_R")
-			local g = mod:get(key .. "_G")
-			local b = mod:get(key .. "_B")
+    for key, values in pairs(loc) do
+        -- apply rgb colours
+        if
+            string.find(key, "colour")
+            and not string.find(key, "colour_R")
+            and not string.find(key, "colour_G")
+            and not string.find(key, "colour_B")
+        then
+            local r = mod:get(key .. "_R")
+            local g = mod:get(key .. "_G")
+            local b = mod:get(key .. "_B")
 
-			if r ~= nil and g ~= nil and b ~= nil then
-				for language, text in pairs(values) do
-					local clean = string.gsub(text, "{#.-}", "")
-					clean = string.gsub(clean, "{#reset%(%)%}", "")
-					text = apply_color_to_text(clean, r, g, b)
+            if r ~= nil and g ~= nil and b ~= nil then
+                for language, text in pairs(values) do
+                    local clean = string.gsub(text, "{#.-}", "")
+                    clean = string.gsub(clean, "{#reset%(%)%}", "")
+                    text = apply_color_to_text(clean, r, g, b)
 
-					loc[key][language] = text
-				end
-			end
-		end
+                    loc[key][language] = text
+                end
+            end
+        end
 
-		-- apply border colours
-		if key == "Gold" or key == "Silver" or key == "Steel" or key == "Tarnished" then
-			for language, text in pairs(values) do
-				local argb = mod.lookup_border_color(key)
+        -- apply border colours
+        if key == "Gold" or key == "Silver" or key == "Steel" or key == "Tarnished" then
+            for language, text in pairs(values) do
+                local argb = mod.lookup_border_color(key)
 
-				if argb ~= nil then
-					local temp = apply_color_to_text(key, argb[2], argb[3], argb[4])
+                if argb ~= nil then
+                    local temp = apply_color_to_text(key, argb[2], argb[3], argb[4])
 
-					if loc[temp] == nil then
-						loc[temp] = {}
-						loc[temp][language] = temp
-					else
-						loc[temp][language] = temp
-					end
-				end
-			end
-		end
+                    if loc[temp] == nil then
+                        loc[temp] = {}
+                        loc[temp][language] = temp
+                    else
+                        loc[temp][language] = temp
+                    end
+                end
+            end
+        end
 
-		-- adjust tooltip text opacity
-		if string.find(key, "_tooltip") then
-			for language, text in pairs(values) do
-				local rgb = { 144, 155, 136 }
+        -- adjust tooltip text opacity
+        if string.find(key, "_tooltip") then
+            for language, text in pairs(values) do
+                local rgb = { 144, 155, 136 }
 
-				if rgb ~= nil then
-					local text = apply_color_to_text(text, rgb[1], rgb[2], rgb[3])
+                if rgb ~= nil then
+                    -- Strip any colour tags applied by a previous pass, otherwise every
+                    -- call wraps the already-wrapped string again and grows it forever.
+                    local clean = string.gsub(text, "{#.-}", "")
+                    local text = apply_color_to_text(clean, rgb[1], rgb[2], rgb[3])
 
-					if loc[key] == nil then
-						loc[key] = {}
-						loc[key][language] = text
-					else
-						loc[key][language] = text
-					end
-				end
-			end
-		end
-	end
+                    if loc[key] == nil then
+                        loc[key] = {}
+                        loc[key][language] = text
+                    else
+                        loc[key][language] = text
+                    end
+                end
+            end
+        end
+    end
 
-	return loc
+    return loc
 end
 
 -- Insert font localisation
@@ -4110,28 +4603,28 @@ insert_fonts(loc)
 apply_colours()
 
 mod.toggle_pizazz = function()
-	for key, values in pairs(loc) do
-		if key == "mod_name" then
-			for language, text in pairs(values) do
-				if mod:get("mod_name_pizazz_toggle") then
-					loc[key][language] = loc["mod_name_pizazz"][language]
-				else
-					loc[key][language] = loc["mod_name_boring"][language]
-				end
-			end
-		end
-	end
+    for key, values in pairs(loc) do
+        if key == "mod_name" then
+            for language, text in pairs(values) do
+                if mod:get("mod_name_pizazz_toggle") then
+                    loc[key][language] = loc["mod_name_pizazz"][language]
+                else
+                    loc[key][language] = loc["mod_name_boring"][language]
+                end
+            end
+        end
+    end
 end
 
 mod.toggle_pizazz()
 
 mod.apply_colours = function()
-	apply_colours()
-	return loc
+    apply_colours()
+    return loc
 end
 
 mod.get_loc = function()
-	return loc
+    return loc
 end
 
 return loc

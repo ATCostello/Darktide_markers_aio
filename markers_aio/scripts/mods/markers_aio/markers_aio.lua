@@ -4,2114 +4,2267 @@ local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hu
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local UIScenegraph = require("scripts/managers/ui/ui_scenegraph")
 local HudElementSmartTagging = require("scripts/ui/hud/elements/smart_tagging/hud_element_smart_tagging")
-
+local UISettings = require("scripts/settings/ui/ui_settings")
 local SpecialRulesSettings = require("scripts/settings/ability/special_rules_settings")
 local CompanionServoSkullSettings = require("scripts/settings/companion/companion_servo_skull_settings")
 
 mod.frame_settings = {}
+
 mod.build_frame_settings = function()
-	local fs = mod.frame_settings
+    local fs = mod.frame_settings
 
-	local is_ads = false
-	local player = Managers.player:local_player_safe(1)
+    local is_ads = false
+    local player = Managers.player:local_player_safe(1)
 
-	if player then
-		local unit = player.player_unit
-		if unit then
-			local ude = ScriptUnit.extension(unit, "unit_data_system")
-			if ude then
-				local af = ude:read_component("alternate_fire")
-				is_ads = af and af.is_active or false
-			end
-		end
-	end
+    if player then
+        local unit = player.player_unit
+        if unit then
+            local ude = ScriptUnit.extension(unit, "unit_data_system")
+            if ude then
+                local af = ude:read_component("alternate_fire")
+                is_ads = af and af.is_active or false
+            end
+        end
+    end
 
-	fs.is_ads = is_ads
+    fs.is_ads = is_ads
 
-	-- LOS global settings
-	fs.los_enabled = mod:get("los_fade_enable") == true
-	fs.los_opacity = (mod:get("los_opacity")) / 100
-	fs.ads_los_opacity = (mod:get("ads_los_opacity")) / 100
-	fs.ads_blend = math.lerp(fs.ads_blend or 0, is_ads and 1 or 0, 0.25)
+    -- LOS global settings
+    fs.los_enabled = mod:get("los_fade_enable") == true
+    fs.los_opacity = (mod:get("los_opacity")) / 100
+    fs.ads_los_opacity = (mod:get("ads_los_opacity")) / 100
+    fs.ads_blend = math.lerp(fs.ads_blend or 0, is_ads and 1 or 0, 0.25)
 
-	fs.distance_text_enable = mod:get("distance_text_enable")
-	fs.distance_text_position = mod:get("distance_text_position")
-	fs.distance_text_scale = mod:get("distance_text_scale")
+    fs.distance_text_enable = mod:get("distance_text_enable")
+    fs.distance_text_position = mod:get("distance_text_position")
+    fs.distance_text_scale = mod:get("distance_text_scale")
 
-	fs.med_station_max_distance = mod:get("med_station_max_distance")
+    fs.med_station_max_distance = mod:get("med_station_max_distance")
 
-	-- Feature toggles
-	fs.enable = fs.enable or {}
-	fs.enable.tome = mod:get("tome_enable")
-	fs.enable.material = mod:get("material_enable")
-	fs.enable.ammo_med = mod:get("ammo_med_enable")
-	fs.enable.stimm = mod:get("stimm_enable")
-	fs.enable.chest = mod:get("chest_enable")
-	fs.enable.heretical_idol = mod:get("heretical_idol_enable")
-	fs.enable.event = mod:get("event_enable")
-	fs.enable.luggable = mod:get("luggable_enable")
-	fs.enable.martyrs_skull = mod:get("martyrs_skull_enable")
-	fs.enable.rations = mod:get("event_enable")
-	fs.enable.atonement = mod:get("event_enable")
-	fs.enable.expedition = mod:get("expedition_enable")
-	fs.enable.servo_skull = mod:get("servo_skull_enable")
-	fs.enable.unknown = mod:get("unknown_enable")
-	fs.enable.servo_skull_enable_assistance_module = mod:get("servo_skull_enable_assistance_module")
-	fs.enable.player_assistance = mod:get("player_assistance_enable")
+    -- Feature toggles
+    fs.enable = fs.enable or {}
+    fs.enable.tome = mod:get("tome_enable")
+    fs.enable.material = mod:get("material_enable")
+    fs.enable.ammo_med = mod:get("ammo_med_enable")
+    fs.enable.stimm = mod:get("stimm_enable")
+    fs.enable.chest = mod:get("chest_enable")
+    fs.enable.heretical_idol = mod:get("heretical_idol_enable")
+    fs.enable.event = mod:get("event_enable")
+    fs.enable.objective = mod:get("objective_enable")
+    fs.enable.luggable = mod:get("luggable_enable")
+    fs.enable.martyrs_skull = mod:get("martyrs_skull_enable")
+    fs.enable.rations = mod:get("event_enable")
+    fs.enable.atonement = mod:get("event_enable")
+    fs.enable.expedition = mod:get("expedition_enable")
+    fs.enable.servo_skull = mod:get("servo_skull_enable")
+    fs.enable.unknown = mod:get("unknown_enable")
+    fs.enable.servo_skull_enable_assistance_module = mod:get("servo_skull_enable_assistance_module")
+    fs.enable.player_assistance = mod:get("player_assistance_enable")
 
-	-- Extra global settings
-	fs.marker_background_colour = mod:get("marker_background_colour")
-	fs.font_type = mod:get("font_type")
-	fs.recolor_stimm_compat_enable = mod:get("recolor_stimm_compat_enable")
-	fs.mod_name_pizazz_toggle = mod:get("mod_name_pizazz_toggle")
+    -- Extra global settings
+    fs.marker_background_colour = mod:get("marker_background_colour")
+    fs.font_type = mod:get("font_type")
+    fs.recolor_stimm_compat_enable = mod:get("recolor_stimm_compat_enable")
+    fs.mod_name_pizazz_toggle = mod:get("mod_name_pizazz_toggle")
 
-	-- Flat additional settings accessed by marker files
-	fs.martyrs_skull_guide_enable = mod:get("martyrs_skull_guide_enable")
-	fs.martyrs_skull_guide_markers_enable = mod:get("martyrs_skull_guide_markers_enable")
-	fs.martyrs_skull_guide_disable_if_collected = mod:get("martyrs_skull_guide_disable_if_collected")
-	fs.martyrs_skull_border_colour = mod:get("martyrs_skull_border_colour")
-	fs.servo_skull_icon = mod:get("servo_skull_icon")
-	fs.decoding_icon = mod:get("decoding_icon")
-	fs.servo_skull_pulse_when_stalled = mod:get("servo_skull_pulse_when_stalled")
-	fs.servo_skull_border_colour = mod:get("servo_skull_border_colour")
-	fs.servo_skull_stalled_border_colour = mod:get("servo_skull_stalled_border_colour")
-	fs.servo_skull_active_border_colour = mod:get("servo_skull_active_border_colour")
-	fs.servo_skull_colour_R = mod:get("servo_skull_colour_R")
-	fs.servo_skull_colour_G = mod:get("servo_skull_colour_G")
-	fs.servo_skull_colour_B = mod:get("servo_skull_colour_B")
-	fs.servo_skull_stalled_colour_R = mod:get("servo_skull_stalled_colour_R")
-	fs.servo_skull_stalled_colour_G = mod:get("servo_skull_stalled_colour_G")
-	fs.servo_skull_stalled_colour_B = mod:get("servo_skull_stalled_colour_B")
-	fs.servo_skull_active_colour_R = mod:get("servo_skull_active_colour_R")
-	fs.servo_skull_active_colour_G = mod:get("servo_skull_active_colour_G")
-	fs.servo_skull_active_colour_B = mod:get("servo_skull_active_colour_B")
-	fs.player_assistance_icon = mod:get("player_assistance_icon")
-	fs.player_assistance_servo_skull_icon = mod:get("player_assistance_servo_skull_icon")
-	fs.player_assistance_pulse_when_stalled = mod:get("player_assistance_pulse_when_stalled")
-	fs.player_assistance_border_colour = mod:get("player_assistance_border_colour")
-	fs.player_assistance_stalled_border_colour = mod:get("player_assistance_stalled_border_colour")
-	fs.player_assistance_active_border_colour = mod:get("player_assistance_active_border_colour")
-	fs.player_assistance_default_colour_R = mod:get("player_assistance_default_colour_R")
-	fs.player_assistance_default_colour_G = mod:get("player_assistance_default_colour_G")
-	fs.player_assistance_default_colour_B = mod:get("player_assistance_default_colour_B")
-	fs.player_assistance_stalled_colour_R = mod:get("player_assistance_stalled_colour_R")
-	fs.player_assistance_stalled_colour_G = mod:get("player_assistance_stalled_colour_G")
-	fs.player_assistance_stalled_colour_B = mod:get("player_assistance_stalled_colour_B")
-	fs.player_assistance_active_colour_R = mod:get("player_assistance_active_colour_R")
-	fs.player_assistance_active_colour_G = mod:get("player_assistance_active_colour_G")
-	fs.player_assistance_active_colour_B = mod:get("player_assistance_active_colour_B")
-	fs.event_require_line_of_sight = mod:get("event_require_line_of_sight")
-	fs.event_keep_on_screen = mod:get("event_keep_on_screen")
-	fs.event_border_colour = mod:get("event_border_colour")
-	fs.event_colour_R = mod:get("event_colour_R")
-	fs.event_colour_G = mod:get("event_colour_G")
-	fs.event_colour_B = mod:get("event_colour_B")
-	fs.event_max_distance = mod:get("event_max_distance")
-	fs.rations_keep_on_screen = mod:get("rations_keep_on_screen")
-	fs.unknown_border_colour = mod:get("unknown_border_colour")
-	fs.unknown_markers_extra_allowed = mod:get("unknown_markers_extra_allowed")
-	fs.unknown_colour_R = mod:get("unknown_colour_R")
-	fs.unknown_colour_G = mod:get("unknown_colour_G")
-	fs.unknown_colour_B = mod:get("unknown_colour_B")
-	fs.chest_icon = mod:get("chest_icon")
-	fs.chest_border_colour = mod:get("chest_border_colour")
-	fs.chest_icon_colour_R = mod:get("chest_icon_colour_R")
-	fs.chest_icon_colour_G = mod:get("chest_icon_colour_G")
-	fs.chest_icon_colour_B = mod:get("chest_icon_colour_B")
-	fs.luggable_icon = mod:get("luggable_icon")
-	fs.luggable_border_colour = mod:get("luggable_border_colour")
-	fs.icon_colour_R = mod:get("icon_colour_R")
-	fs.icon_colour_G = mod:get("icon_colour_G")
-	fs.icon_colour_B = mod:get("icon_colour_B")
-	fs.idol_border_colour = mod:get("idol_border_colour")
+    -- Flat additional settings accessed by marker files
+    fs.martyrs_skull_guide_enable = mod:get("martyrs_skull_guide_enable")
+    fs.martyrs_skull_guide_markers_enable = mod:get("martyrs_skull_guide_markers_enable")
+    fs.martyrs_skull_guide_disable_if_collected = mod:get("martyrs_skull_guide_disable_if_collected")
+    fs.martyrs_skull_border_colour = mod:get("martyrs_skull_border_colour")
+    fs.servo_skull_icon = mod:get("servo_skull_icon")
+    fs.decoding_icon = mod:get("decoding_icon")
+    fs.servo_skull_pulse_when_stalled = mod:get("servo_skull_pulse_when_stalled")
+    fs.servo_skull_border_colour = mod:get("servo_skull_border_colour")
+    fs.servo_skull_stalled_border_colour = mod:get("servo_skull_stalled_border_colour")
+    fs.servo_skull_active_border_colour = mod:get("servo_skull_active_border_colour")
+    fs.servo_skull_colour_R = mod:get("servo_skull_colour_R")
+    fs.servo_skull_colour_G = mod:get("servo_skull_colour_G")
+    fs.servo_skull_colour_B = mod:get("servo_skull_colour_B")
+    fs.servo_skull_stalled_colour_R = mod:get("servo_skull_stalled_colour_R")
+    fs.servo_skull_stalled_colour_G = mod:get("servo_skull_stalled_colour_G")
+    fs.servo_skull_stalled_colour_B = mod:get("servo_skull_stalled_colour_B")
+    fs.servo_skull_active_colour_R = mod:get("servo_skull_active_colour_R")
+    fs.servo_skull_active_colour_G = mod:get("servo_skull_active_colour_G")
+    fs.servo_skull_active_colour_B = mod:get("servo_skull_active_colour_B")
+    fs.player_assistance_icon = mod:get("player_assistance_icon")
+    fs.player_assistance_servo_skull_icon = mod:get("player_assistance_servo_skull_icon")
+    fs.player_assistance_pulse_when_stalled = mod:get("player_assistance_pulse_when_stalled")
+    fs.player_assistance_border_colour = mod:get("player_assistance_border_colour")
+    fs.player_assistance_stalled_border_colour = mod:get("player_assistance_stalled_border_colour")
+    fs.player_assistance_active_border_colour = mod:get("player_assistance_active_border_colour")
+    fs.player_assistance_default_colour_R = mod:get("player_assistance_default_colour_R")
+    fs.player_assistance_default_colour_G = mod:get("player_assistance_default_colour_G")
+    fs.player_assistance_default_colour_B = mod:get("player_assistance_default_colour_B")
+    fs.player_assistance_stalled_colour_R = mod:get("player_assistance_stalled_colour_R")
+    fs.player_assistance_stalled_colour_G = mod:get("player_assistance_stalled_colour_G")
+    fs.player_assistance_stalled_colour_B = mod:get("player_assistance_stalled_colour_B")
+    fs.player_assistance_active_colour_R = mod:get("player_assistance_active_colour_R")
+    fs.player_assistance_active_colour_G = mod:get("player_assistance_active_colour_G")
+    fs.player_assistance_active_colour_B = mod:get("player_assistance_active_colour_B")
+    fs.event_require_line_of_sight = mod:get("event_require_line_of_sight")
+    fs.event_keep_on_screen = mod:get("event_keep_on_screen")
+    fs.event_border_colour = mod:get("event_border_colour")
+    fs.event_colour_R = mod:get("event_colour_R")
+    fs.event_colour_G = mod:get("event_colour_G")
+    fs.event_colour_B = mod:get("event_colour_B")
+    fs.event_max_distance = mod:get("event_max_distance")
+    fs.rations_keep_on_screen = mod:get("rations_keep_on_screen")
+    fs.unknown_border_colour = mod:get("unknown_border_colour")
+    fs.unknown_markers_extra_allowed = mod:get("unknown_markers_extra_allowed")
+    fs.unknown_colour_R = mod:get("unknown_colour_R")
+    fs.unknown_colour_G = mod:get("unknown_colour_G")
+    fs.unknown_colour_B = mod:get("unknown_colour_B")
+    fs.chest_icon = mod:get("chest_icon")
+    fs.chest_border_colour = mod:get("chest_border_colour")
+    fs.chest_icon_colour_R = mod:get("chest_icon_colour_R")
+    fs.chest_icon_colour_G = mod:get("chest_icon_colour_G")
+    fs.chest_icon_colour_B = mod:get("chest_icon_colour_B")
+    fs.luggable_icon = mod:get("luggable_icon")
+    fs.luggable_border_colour = mod:get("luggable_border_colour")
+    fs.icon_colour_R = mod:get("icon_colour_R")
+    fs.icon_colour_G = mod:get("icon_colour_G")
+    fs.icon_colour_B = mod:get("icon_colour_B")
+    fs.idol_border_colour = mod:get("idol_border_colour")
 
-	-- Per-type settings cache
-	fs.per_type = fs.per_type or {}
-	local pt = fs.per_type
+    -- Per-type settings cache
+    fs.per_type = fs.per_type or {}
+    local pt = fs.per_type
 
-	local marker_types = {
-		"tome",
-		"material",
-		"ammo_med",
-		"stimm",
-		"chest",
-		"heretical_idol",
-		"event",
-		"luggable",
-		"martyrs_skull",
-		"expedition",
-		"servo_skull",
-		"unknown",
-		"player_assistance",
-	}
+    local marker_types = {
+        "tome",
+        "material",
+        "ammo_med",
+        "stimm",
+        "chest",
+        "heretical_idol",
+        "event",
+        "objective",
+        "luggable",
+        "martyrs_skull",
+        "expedition",
+        "servo_skull",
+        "unknown",
+        "player_assistance",
+    }
 
-	for _, t in ipairs(marker_types) do
-		pt[t] = pt[t] or {}
-		pt[t].max_distance = mod:get(t .. "_max_distance")
-		pt[t].require_line_of_sight = mod:get(t .. "_require_line_of_sight")
-		pt[t].keep_on_screen = mod:get(t .. "_keep_on_screen")
-		pt[t].scale = mod:get(t .. "_scale") or 100
-		pt[t].alpha = mod:get(t .. "_alpha") or 1
-		pt[t].colour_R = mod:get(t .. "_colour_R")
-		pt[t].colour_G = mod:get(t .. "_colour_G")
-		pt[t].colour_B = mod:get(t .. "_colour_B")
-		pt[t].border_colour = mod:get(t .. "_border_colour")
-	end
+    for _, t in ipairs(marker_types) do
+        pt[t] = pt[t] or {}
+        pt[t].max_distance = mod:get(t .. "_max_distance")
+        pt[t].require_line_of_sight = mod:get(t .. "_require_line_of_sight")
+        pt[t].keep_on_screen = mod:get(t .. "_keep_on_screen")
+        pt[t].scale = mod:get(t .. "_scale") or 100
+        pt[t].alpha = mod:get(t .. "_alpha") or 1
+        pt[t].colour_R = mod:get(t .. "_colour_R")
+        pt[t].colour_G = mod:get(t .. "_colour_G")
+        pt[t].colour_B = mod:get(t .. "_colour_B")
+        pt[t].border_colour = mod:get(t .. "_border_colour")
+    end
 
-	-- Non-standard marker types (share event_* settings)
-	pt.stolen_rations = pt.stolen_rations or {}
-	pt.tainted_device = pt.tainted_device or {}
-	pt.tainted_skull = pt.tainted_skull or {}
-	pt.rations = pt.rations or {}
-	pt.atonement = pt.atonement or {}
+    pt.stolen_rations = pt.stolen_rations or {}
+    pt.tainted_device = pt.tainted_device or {}
+    pt.tainted_skull = pt.tainted_skull or {}
+    pt.rations = pt.rations or {}
+    pt.atonement = pt.atonement or {}
 
-	pt.stolen_rations.max_distance = mod:get("stolen_rations_max_distance") or mod:get("event_max_distance")
-	pt.stolen_rations.require_line_of_sight = mod:get("stolen_rations_require_line_of_sight")
-		or mod:get("event_require_line_of_sight")
-	pt.stolen_rations.keep_on_screen = mod:get("rations_keep_on_screen")
+    pt.stolen_rations.max_distance = mod:get("stolen_rations_max_distance") or mod:get("event_max_distance")
+    pt.stolen_rations.require_line_of_sight = mod:get("stolen_rations_require_line_of_sight")
+        or mod:get("event_require_line_of_sight")
+    pt.stolen_rations.keep_on_screen = mod:get("rations_keep_on_screen")
 
-	pt.tainted_device.max_distance = mod:get("tainted_device_max_distance") or mod:get("event_max_distance")
-	pt.tainted_device.require_line_of_sight = mod:get("tainted_device_require_line_of_sight")
-		or mod:get("event_require_line_of_sight")
-	pt.tainted_device.keep_on_screen = mod:get("event_keep_on_screen")
+    pt.tainted_device.max_distance = mod:get("tainted_device_max_distance") or mod:get("event_max_distance")
+    pt.tainted_device.require_line_of_sight = mod:get("tainted_device_require_line_of_sight")
+        or mod:get("event_require_line_of_sight")
+    pt.tainted_device.keep_on_screen = mod:get("event_keep_on_screen")
 
-	pt.tainted_skull.max_distance = mod:get("tainted_skull_max_distance") or mod:get("event_max_distance")
-	pt.tainted_skull.require_line_of_sight = mod:get("event_require_line_of_sight")
-	pt.tainted_skull.keep_on_screen = mod:get("event_keep_on_screen")
+    pt.tainted_skull.max_distance = mod:get("tainted_skull_max_distance") or mod:get("event_max_distance")
+    pt.tainted_skull.require_line_of_sight = mod:get("event_require_line_of_sight")
+    pt.tainted_skull.keep_on_screen = mod:get("event_keep_on_screen")
 
-	pt.rations.max_distance = pt.ammo_med.max_distance
-	pt.rations.require_line_of_sight = mod:get("event_require_line_of_sight")
-	pt.rations.keep_on_screen = mod:get("rations_keep_on_screen")
+    pt.rations.max_distance = pt.ammo_med.max_distance
+    pt.rations.require_line_of_sight = mod:get("event_require_line_of_sight")
+    pt.rations.keep_on_screen = mod:get("rations_keep_on_screen")
 
-	pt.atonement.max_distance = pt.event.max_distance
-	pt.atonement.require_line_of_sight = mod:get("event_require_line_of_sight")
-	pt.atonement.keep_on_screen = mod:get("event_keep_on_screen")
+    pt.atonement.max_distance = pt.event.max_distance
+    pt.atonement.require_line_of_sight = mod:get("event_require_line_of_sight")
+    pt.atonement.keep_on_screen = mod:get("event_keep_on_screen")
 
-	-- Event-shared colour settings
-	for _, t in ipairs({ "stolen_rations", "tainted_device", "tainted_skull", "rations", "atonement" }) do
-		pt[t].colour_R = mod:get("event_colour_R")
-		pt[t].colour_G = mod:get("event_colour_G")
-		pt[t].colour_B = mod:get("event_colour_B")
-		pt[t].border_colour = mod:get("event_border_colour")
-	end
+    for _, t in ipairs({ "stolen_rations", "tainted_device", "tainted_skull", "rations", "atonement" }) do
+        pt[t].colour_R = mod:get("event_colour_R")
+        pt[t].colour_G = mod:get("event_colour_G")
+        pt[t].colour_B = mod:get("event_colour_B")
+        pt[t].border_colour = mod:get("event_border_colour")
+    end
 
-	-- Mirror per-type keys for files that use flat access
-	fs.chest_max_distance = pt.chest.max_distance
-	fs.chest_keep_on_screen = pt.chest.keep_on_screen
-	fs.material_max_distance = pt.material.max_distance
-	fs.material_keep_on_screen = pt.material.keep_on_screen
-	fs.tome_max_distance = pt.tome.max_distance
-	fs.tome_keep_on_screen = pt.tome.keep_on_screen
-	fs.stimm_max_distance = pt.stimm.max_distance
-	fs.stimm_keep_on_screen = pt.stimm.keep_on_screen
-	fs.heretical_idol_max_distance = pt.heretical_idol.max_distance
-	fs.heretical_idol_keep_on_screen = pt.heretical_idol.keep_on_screen
-	fs.heretical_idol_enable = fs.enable.heretical_idol
+    fs.chest_max_distance = pt.chest.max_distance
+    fs.chest_keep_on_screen = pt.chest.keep_on_screen
+    fs.material_max_distance = pt.material.max_distance
+    fs.material_keep_on_screen = pt.material.keep_on_screen
+    fs.tome_max_distance = pt.tome.max_distance
+    fs.tome_keep_on_screen = pt.tome.keep_on_screen
+    fs.stimm_max_distance = pt.stimm.max_distance
+    fs.stimm_keep_on_screen = pt.stimm.keep_on_screen
+    fs.heretical_idol_max_distance = pt.heretical_idol.max_distance
+    fs.heretical_idol_keep_on_screen = pt.heretical_idol.keep_on_screen
+    fs.heretical_idol_enable = fs.enable.heretical_idol
 
-	-- Ammo/med sub-type settings
-	fs.ammo_med_max_distance = mod:get("ammo_med_max_distance")
-	fs.ammo_med_keep_on_screen = mod:get("ammo_med_keep_on_screen")
-	fs.ammo_med_require_line_of_sight = mod:get("ammo_med_require_line_of_sight")
-	fs.med_station_require_line_of_sight = mod:get("med_station_require_line_of_sight")
-	fs.med_station_max_distance = mod:get("med_station_max_distance")
-	fs.display_med_ring = mod:get("display_med_ring")
-	fs.display_med_charges = mod:get("display_med_charges")
-	fs.display_ammo_charges = mod:get("display_ammo_charges")
-	fs.change_colour_for_ammo_charges = mod:get("change_colour_for_ammo_charges")
+    fs.objective_max_distance = pt.objective.max_distance
+    fs.objective_keep_on_screen = pt.objective.keep_on_screen
+    fs.objective_require_line_of_sight = pt.objective.require_line_of_sight
 
-	fs.charges_4_colour_R = mod:get("change_colour_for_ammo_charges_4_R")
-	fs.charges_4_colour_G = mod:get("change_colour_for_ammo_charges_4_G")
-	fs.charges_4_colour_B = mod:get("change_colour_for_ammo_charges_4_B")
+    fs.ammo_status_colours_enable = mod:get("ammo_status_colours_enable")
+    fs.ammo_status_numeric_enable = mod:get("ammo_status_numeric_enable")
+    fs.ammo_status_show_most_needy = mod:get("ammo_status_show_most_needy")
+    fs.ammo_status_show_gain = mod:get("ammo_status_show_gain")
+    fs.ammo_status_show_waste = mod:get("ammo_status_show_waste")
+    fs.ammo_status_margin = mod:get("ammo_status_margin") or 0
+    fs.ammo_status_green_colour_R = mod:get("ammo_status_green_colour_R")
+    fs.ammo_status_green_colour_G = mod:get("ammo_status_green_colour_G")
+    fs.ammo_status_green_colour_B = mod:get("ammo_status_green_colour_B")
+    fs.ammo_status_orange_colour_R = mod:get("ammo_status_orange_colour_R")
+    fs.ammo_status_orange_colour_G = mod:get("ammo_status_orange_colour_G")
+    fs.ammo_status_orange_colour_B = mod:get("ammo_status_orange_colour_B")
+    fs.ammo_status_red_colour_R = mod:get("ammo_status_red_colour_R")
+    fs.ammo_status_red_colour_G = mod:get("ammo_status_red_colour_G")
+    fs.ammo_status_red_colour_B = mod:get("ammo_status_red_colour_B")
+    fs.ammo_status_enable = mod:get("ammo_status_enable")
+    fs.ammo_status_marker_text_enable = mod:get("ammo_status_marker_text_enable")
+    fs.ammo_status_popup_text_enable = mod:get("ammo_status_popup_text_enable")
+    fs.ammo_status_text_font_size = mod:get("ammo_status_text_font_size")
+    fs.ammo_status_text_position = mod:get("ammo_status_text_position")
+    fs.ammo_status_text_offset = mod:get("ammo_status_text_offset")
+    fs.ammo_status_text_width = mod:get("ammo_status_text_width")
+    fs.ammo_status_gain_colour_R = mod:get("ammo_status_gain_colour_R")
+    fs.ammo_status_gain_colour_G = mod:get("ammo_status_gain_colour_G")
+    fs.ammo_status_gain_colour_B = mod:get("ammo_status_gain_colour_B")
+    fs.ammo_status_waste_colour_R = mod:get("ammo_status_waste_colour_R")
+    fs.ammo_status_waste_colour_G = mod:get("ammo_status_waste_colour_G")
+    fs.ammo_status_waste_colour_B = mod:get("ammo_status_waste_colour_B")
 
-	fs.charges_3_colour_R = mod:get("change_colour_for_ammo_charges_3_R")
-	fs.charges_3_colour_G = mod:get("change_colour_for_ammo_charges_3_G")
-	fs.charges_3_colour_B = mod:get("change_colour_for_ammo_charges_3_B")
+    fs.ammo_med_max_distance = mod:get("ammo_med_max_distance")
+    fs.ammo_med_keep_on_screen = mod:get("ammo_med_keep_on_screen")
+    fs.ammo_med_require_line_of_sight = mod:get("ammo_med_require_line_of_sight")
+    fs.med_station_require_line_of_sight = mod:get("med_station_require_line_of_sight")
+    fs.med_station_max_distance = mod:get("med_station_max_distance")
+    fs.display_med_ring = mod:get("display_med_ring")
+    fs.display_med_charges = mod:get("display_med_charges")
+    fs.display_med_crate_estimate = mod:get("display_med_crate_estimate")
+    fs.display_ammo_charges = mod:get("display_ammo_charges")
+    fs.change_colour_for_ammo_charges = mod:get("change_colour_for_ammo_charges")
 
-	fs.charges_2_colour_R = mod:get("change_colour_for_ammo_charges_2_R")
-	fs.charges_2_colour_G = mod:get("change_colour_for_ammo_charges_2_G")
-	fs.charges_2_colour_B = mod:get("change_colour_for_ammo_charges_2_B")
+    fs.charges_4_colour_R = mod:get("change_colour_for_ammo_charges_4_R")
+    fs.charges_4_colour_G = mod:get("change_colour_for_ammo_charges_4_G")
+    fs.charges_4_colour_B = mod:get("change_colour_for_ammo_charges_4_B")
 
-	fs.charges_1_colour_R = mod:get("change_colour_for_ammo_charges_1_R")
-	fs.charges_1_colour_G = mod:get("change_colour_for_ammo_charges_1_G")
-	fs.charges_1_colour_B = mod:get("change_colour_for_ammo_charges_1_B")
+    fs.charges_3_colour_R = mod:get("change_colour_for_ammo_charges_3_R")
+    fs.charges_3_colour_G = mod:get("change_colour_for_ammo_charges_3_G")
+    fs.charges_3_colour_B = mod:get("change_colour_for_ammo_charges_3_B")
 
-	fs.display_field_improv_colour = mod:get("display_field_improv_colour")
-	fs.display_field_improv_icon = mod:get("display_field_improv_icon")
-	fs.ammo_med_markers_alternate_large_ammo_icon = mod:get("ammo_med_markers_alternate_large_ammo_icon")
-	fs.field_improv_colour_R = mod:get("field_improv_colour_R")
-	fs.field_improv_colour_G = mod:get("field_improv_colour_G")
-	fs.field_improv_colour_B = mod:get("field_improv_colour_B")
-	fs.ammo_small_colour_R = mod:get("ammo_small_colour_R")
-	fs.ammo_small_colour_G = mod:get("ammo_small_colour_G")
-	fs.ammo_small_colour_B = mod:get("ammo_small_colour_B")
-	fs.ammo_small_border_colour = mod:get("ammo_small_border_colour")
-	fs.ammo_large_colour_R = mod:get("ammo_large_colour_R")
-	fs.ammo_large_colour_G = mod:get("ammo_large_colour_G")
-	fs.ammo_large_colour_B = mod:get("ammo_large_colour_B")
-	fs.ammo_large_border_colour = mod:get("ammo_large_border_colour")
-	fs.ammo_crate_colour_R = mod:get("ammo_crate_colour_R")
-	fs.ammo_crate_colour_G = mod:get("ammo_crate_colour_G")
-	fs.ammo_crate_colour_B = mod:get("ammo_crate_colour_B")
-	fs.ammo_crate_border_colour = mod:get("ammo_crate_border_colour")
-	fs.med_crate_colour_R = mod:get("med_crate_colour_R")
-	fs.med_crate_colour_G = mod:get("med_crate_colour_G")
-	fs.med_crate_colour_B = mod:get("med_crate_colour_B")
-	fs.med_crate_border_colour = mod:get("med_crate_border_colour")
-	fs.grenade_colour_R = mod:get("grenade_colour_R")
-	fs.grenade_colour_G = mod:get("grenade_colour_G")
-	fs.grenade_colour_B = mod:get("grenade_colour_B")
-	fs.grenade_border_colour = mod:get("grenade_border_colour")
+    fs.charges_2_colour_R = mod:get("change_colour_for_ammo_charges_2_R")
+    fs.charges_2_colour_G = mod:get("change_colour_for_ammo_charges_2_G")
+    fs.charges_2_colour_B = mod:get("change_colour_for_ammo_charges_2_B")
 
-	-- Stimm colour settings
-	fs.power_stimm_icon_colour_R = mod:get("power_stimm_icon_colour_R")
-	fs.power_stimm_icon_colour_G = mod:get("power_stimm_icon_colour_G")
-	fs.power_stimm_icon_colour_B = mod:get("power_stimm_icon_colour_B")
-	fs.power_stimm_border_colour = mod:get("power_stimm_border_colour")
-	fs.speed_stimm_icon_colour_R = mod:get("speed_stimm_icon_colour_R")
-	fs.speed_stimm_icon_colour_G = mod:get("speed_stimm_icon_colour_G")
-	fs.speed_stimm_icon_colour_B = mod:get("speed_stimm_icon_colour_B")
-	fs.speed_stimm_border_colour = mod:get("speed_stimm_border_colour")
-	fs.boost_stimm_icon_colour_R = mod:get("boost_stimm_icon_colour_R")
-	fs.boost_stimm_icon_colour_G = mod:get("boost_stimm_icon_colour_G")
-	fs.boost_stimm_icon_colour_B = mod:get("boost_stimm_icon_colour_B")
-	fs.boost_stimm_border_colour = mod:get("boost_stimm_border_colour")
-	fs.corruption_stimm_icon_colour_R = mod:get("corruption_stimm_icon_colour_R")
-	fs.corruption_stimm_icon_colour_G = mod:get("corruption_stimm_icon_colour_G")
-	fs.corruption_stimm_icon_colour_B = mod:get("corruption_stimm_icon_colour_B")
-	fs.corruption_stimm_border_colour = mod:get("corruption_stimm_border_colour")
-	fs.broker_stimm_icon_colour_R = mod:get("broker_stimm_icon_colour_R")
-	fs.broker_stimm_icon_colour_G = mod:get("broker_stimm_icon_colour_G")
-	fs.broker_stimm_icon_colour_B = mod:get("broker_stimm_icon_colour_B")
-	fs.broker_stimm_border_colour = mod:get("broker_stimm_border_colour")
-	fs.broker_stimm_enable = mod:get("broker_stimm_enable")
-	fs.stimm_require_line_of_sight = mod:get("stimm_require_line_of_sight")
-	fs.boost_stimm_require_line_of_sight = mod:get("boost_stimm_require_line_of_sight")
-	fs.corruption_stimm_require_line_of_sight = mod:get("corruption_stimm_require_line_of_sight")
-	fs.power_stimm_require_line_of_sight = mod:get("power_stimm_require_line_of_sight")
-	fs.speed_stimm_require_line_of_sight = mod:get("speed_stimm_require_line_of_sight")
-	fs.broker_stimm_require_line_of_sight = mod:get("broker_stimm_require_line_of_sight")
-	fs.toggle_background_colour = mod:get("toggle_background_colour")
+    fs.charges_1_colour_R = mod:get("change_colour_for_ammo_charges_1_R")
+    fs.charges_1_colour_G = mod:get("change_colour_for_ammo_charges_1_G")
+    fs.charges_1_colour_B = mod:get("change_colour_for_ammo_charges_1_B")
 
-	-- Material settings
-	fs.plasteel_icon_colour_R = mod:get("plasteel_icon_colour_R")
-	fs.plasteel_icon_colour_G = mod:get("plasteel_icon_colour_G")
-	fs.plasteel_icon_colour_B = mod:get("plasteel_icon_colour_B")
-	fs.diamantine_icon_colour_R = mod:get("diamantine_icon_colour_R")
-	fs.diamantine_icon_colour_G = mod:get("diamantine_icon_colour_G")
-	fs.diamantine_icon_colour_B = mod:get("diamantine_icon_colour_B")
-	fs.material_small_border_colour = mod:get("material_small_border_colour")
-	fs.material_large_border_colour = mod:get("material_large_border_colour")
-	fs.toggle_large_plasteel = mod:get("toggle_large_plasteel")
-	fs.toggle_small_plasteel = mod:get("toggle_small_plasteel")
-	fs.toggle_large_diamantine = mod:get("toggle_large_diamantine")
-	fs.toggle_small_diamantine = mod:get("toggle_small_diamantine")
+    fs.display_field_improv_colour = mod:get("display_field_improv_colour")
+    fs.display_field_improv_icon = mod:get("display_field_improv_icon")
+    fs.ammo_med_markers_alternate_large_ammo_icon = mod:get("ammo_med_markers_alternate_large_ammo_icon")
+    fs.field_improv_colour_R = mod:get("field_improv_colour_R")
+    fs.field_improv_colour_G = mod:get("field_improv_colour_G")
+    fs.field_improv_colour_B = mod:get("field_improv_colour_B")
+    fs.ammo_small_colour_R = mod:get("ammo_small_colour_R")
+    fs.ammo_small_colour_G = mod:get("ammo_small_colour_G")
+    fs.ammo_small_colour_B = mod:get("ammo_small_colour_B")
+    fs.ammo_small_border_colour = mod:get("ammo_small_border_colour")
+    fs.ammo_large_colour_R = mod:get("ammo_large_colour_R")
+    fs.ammo_large_colour_G = mod:get("ammo_large_colour_G")
+    fs.ammo_large_colour_B = mod:get("ammo_large_colour_B")
+    fs.ammo_large_border_colour = mod:get("ammo_large_border_colour")
+    fs.ammo_crate_colour_R = mod:get("ammo_crate_colour_R")
+    fs.ammo_crate_colour_G = mod:get("ammo_crate_colour_G")
+    fs.ammo_crate_colour_B = mod:get("ammo_crate_colour_B")
+    fs.ammo_crate_border_colour = mod:get("ammo_crate_border_colour")
+    fs.med_crate_colour_R = mod:get("med_crate_colour_R")
+    fs.med_crate_colour_G = mod:get("med_crate_colour_G")
+    fs.med_crate_colour_B = mod:get("med_crate_colour_B")
+    fs.med_crate_border_colour = mod:get("med_crate_border_colour")
+    fs.grenade_colour_R = mod:get("grenade_colour_R")
+    fs.grenade_colour_G = mod:get("grenade_colour_G")
+    fs.grenade_colour_B = mod:get("grenade_colour_B")
+    fs.grenade_border_colour = mod:get("grenade_border_colour")
 
-	-- Tome settings
-	fs.grim_colour_R = mod:get("grim_colour_R")
-	fs.grim_colour_G = mod:get("grim_colour_G")
-	fs.grim_colour_B = mod:get("grim_colour_B")
-	fs.script_colour_R = mod:get("script_colour_R")
-	fs.script_colour_G = mod:get("script_colour_G")
-	fs.script_colour_B = mod:get("script_colour_B")
-	fs.tome_border_colour = mod:get("tome_border_colour")
+    -- Stimm colour settings
+    fs.power_stimm_icon_colour_R = mod:get("power_stimm_icon_colour_R")
+    fs.power_stimm_icon_colour_G = mod:get("power_stimm_icon_colour_G")
+    fs.power_stimm_icon_colour_B = mod:get("power_stimm_icon_colour_B")
+    fs.power_stimm_border_colour = mod:get("power_stimm_border_colour")
+    fs.speed_stimm_icon_colour_R = mod:get("speed_stimm_icon_colour_R")
+    fs.speed_stimm_icon_colour_G = mod:get("speed_stimm_icon_colour_G")
+    fs.speed_stimm_icon_colour_B = mod:get("speed_stimm_icon_colour_B")
+    fs.speed_stimm_border_colour = mod:get("speed_stimm_border_colour")
+    fs.boost_stimm_icon_colour_R = mod:get("boost_stimm_icon_colour_R")
+    fs.boost_stimm_icon_colour_G = mod:get("boost_stimm_icon_colour_G")
+    fs.boost_stimm_icon_colour_B = mod:get("boost_stimm_icon_colour_B")
+    fs.boost_stimm_border_colour = mod:get("boost_stimm_border_colour")
+    fs.corruption_stimm_icon_colour_R = mod:get("corruption_stimm_icon_colour_R")
+    fs.corruption_stimm_icon_colour_G = mod:get("corruption_stimm_icon_colour_G")
+    fs.corruption_stimm_icon_colour_B = mod:get("corruption_stimm_icon_colour_B")
+    fs.corruption_stimm_border_colour = mod:get("corruption_stimm_border_colour")
+    fs.broker_stimm_icon_colour_R = mod:get("broker_stimm_icon_colour_R")
+    fs.broker_stimm_icon_colour_G = mod:get("broker_stimm_icon_colour_G")
+    fs.broker_stimm_icon_colour_B = mod:get("broker_stimm_icon_colour_B")
+    fs.broker_stimm_border_colour = mod:get("broker_stimm_border_colour")
+    fs.broker_stimm_enable = mod:get("broker_stimm_enable")
+    fs.stimm_require_line_of_sight = mod:get("stimm_require_line_of_sight")
+    fs.boost_stimm_require_line_of_sight = mod:get("boost_stimm_require_line_of_sight")
+    fs.corruption_stimm_require_line_of_sight = mod:get("corruption_stimm_require_line_of_sight")
+    fs.power_stimm_require_line_of_sight = mod:get("power_stimm_require_line_of_sight")
+    fs.speed_stimm_require_line_of_sight = mod:get("speed_stimm_require_line_of_sight")
+    fs.broker_stimm_require_line_of_sight = mod:get("broker_stimm_require_line_of_sight")
+    fs.toggle_background_colour = mod:get("toggle_background_colour")
 
-	-- Expedition settings
-	fs.expedition_border_colour_1 = mod:get("expedition_border_colour_1")
-	fs.expedition_border_colour_2 = mod:get("expedition_border_colour_2")
-	fs.expedition_border_colour_3 = mod:get("expedition_border_colour_3")
-	fs.expedition_pickups_colour_R = mod:get("expedition_pickups_colour_R")
-	fs.expedition_pickups_colour_G = mod:get("expedition_pickups_colour_G")
-	fs.expedition_pickups_colour_B = mod:get("expedition_pickups_colour_B")
-	fs.expedition_currency_colour_R = mod:get("expedition_currency_colour_R")
-	fs.expedition_currency_colour_G = mod:get("expedition_currency_colour_G")
-	fs.expedition_currency_colour_B = mod:get("expedition_currency_colour_B")
-	fs.expedition_reliquary_colour_R = mod:get("expedition_reliquary_colour_R")
-	fs.expedition_reliquary_colour_G = mod:get("expedition_reliquary_colour_G")
-	fs.expedition_reliquary_colour_B = mod:get("expedition_reliquary_colour_B")
-	fs.expedition_remnants_colour_R = mod:get("expedition_remnants_colour_R")
-	fs.expedition_remnants_colour_G = mod:get("expedition_remnants_colour_G")
-	fs.expedition_remnants_colour_B = mod:get("expedition_remnants_colour_B")
-	fs.expedition_crate_colour_R = mod:get("expedition_crate_colour_R")
-	fs.expedition_crate_colour_G = mod:get("expedition_crate_colour_G")
-	fs.expedition_crate_colour_B = mod:get("expedition_crate_colour_B")
-	fs.expedition_colour_R = mod:get("expedition_colour_R")
-	fs.expedition_colour_G = mod:get("expedition_colour_G")
-	fs.expedition_colour_B = mod:get("expedition_colour_B")
+    -- Material settings
+    fs.plasteel_icon_colour_R = mod:get("plasteel_icon_colour_R")
+    fs.plasteel_icon_colour_G = mod:get("plasteel_icon_colour_G")
+    fs.plasteel_icon_colour_B = mod:get("plasteel_icon_colour_B")
+    fs.diamantine_icon_colour_R = mod:get("diamantine_icon_colour_R")
+    fs.diamantine_icon_colour_G = mod:get("diamantine_icon_colour_G")
+    fs.diamantine_icon_colour_B = mod:get("diamantine_icon_colour_B")
+    fs.material_small_border_colour = mod:get("material_small_border_colour")
+    fs.material_large_border_colour = mod:get("material_large_border_colour")
+    fs.toggle_large_plasteel = mod:get("toggle_large_plasteel")
+    fs.toggle_small_plasteel = mod:get("toggle_small_plasteel")
+    fs.toggle_large_diamantine = mod:get("toggle_large_diamantine")
+    fs.toggle_small_diamantine = mod:get("toggle_small_diamantine")
 
-	-- Check if local player has the Cryptic servo skull blitz equipped
-	fs.servo_skull_equipped = false
-	if player and player.player_unit and Unit.alive(player.player_unit) then
-		local talent_ext = ScriptUnit.has_extension(player.player_unit, "talent_system")
-		if talent_ext then
-			local sr = SpecialRulesSettings.special_rules
-			fs.servo_skull_equipped = talent_ext:has_special_rule(sr.cryptic_servo_skull_hack)
-				or talent_ext:has_special_rule(sr.cryptic_servo_skull_inject_ally)
-				or talent_ext:has_special_rule(sr.cryptic_servo_skull_flamethrower)
-		end
-	end
+    -- Tome settings
+    fs.grim_colour_R = mod:get("grim_colour_R")
+    fs.grim_colour_G = mod:get("grim_colour_G")
+    fs.grim_colour_B = mod:get("grim_colour_B")
+    fs.script_colour_R = mod:get("script_colour_R")
+    fs.script_colour_G = mod:get("script_colour_G")
+    fs.script_colour_B = mod:get("script_colour_B")
+    fs.tome_border_colour = mod:get("tome_border_colour")
 
-	-- Inject ally servo skull state
-	fs.inject_ally = nil
-	if player and player.player_unit and Unit.alive(player.player_unit) then
-		local talent_ext = ScriptUnit.has_extension(player.player_unit, "talent_system")
-		if
-			talent_ext
-			and talent_ext:has_special_rule(SpecialRulesSettings.special_rules.cryptic_servo_skull_inject_ally)
-		then
-			local spawner_ext = ScriptUnit.has_extension(player.player_unit, "companion_spawner_system")
-			if spawner_ext then
-				local comp_unit =
-					spawner_ext:spawned_unit_lookup(SpecialRulesSettings.special_rules.cryptic_servo_skull_inject_ally)
-				if comp_unit and Unit.alive(comp_unit) then
-					local ability_ext = ScriptUnit.has_extension(player.player_unit, "ability_system")
-					if
-						ability_ext
-						and ability_ext:remaining_ability_charges("grenade_ability")
-							>= CompanionServoSkullSettings.ability_charges.inject_ally
-					then
-						fs.inject_ally = {
-							companion_unit = comp_unit,
-						}
-					end
-				end
-			end
-		end
-	end
+    -- Expedition settings
+    fs.expedition_border_colour_1 = mod:get("expedition_border_colour_1")
+    fs.expedition_border_colour_2 = mod:get("expedition_border_colour_2")
+    fs.expedition_border_colour_3 = mod:get("expedition_border_colour_3")
+    fs.expedition_pickups_colour_R = mod:get("expedition_pickups_colour_R")
+    fs.expedition_pickups_colour_G = mod:get("expedition_pickups_colour_G")
+    fs.expedition_pickups_colour_B = mod:get("expedition_pickups_colour_B")
+    fs.expedition_currency_colour_R = mod:get("expedition_currency_colour_R")
+    fs.expedition_currency_colour_G = mod:get("expedition_currency_colour_G")
+    fs.expedition_currency_colour_B = mod:get("expedition_currency_colour_B")
+    fs.expedition_reliquary_colour_R = mod:get("expedition_reliquary_colour_R")
+    fs.expedition_reliquary_colour_G = mod:get("expedition_reliquary_colour_G")
+    fs.expedition_reliquary_colour_B = mod:get("expedition_reliquary_colour_B")
+    fs.expedition_remnants_colour_R = mod:get("expedition_remnants_colour_R")
+    fs.expedition_remnants_colour_G = mod:get("expedition_remnants_colour_G")
+    fs.expedition_remnants_colour_B = mod:get("expedition_remnants_colour_B")
+    fs.expedition_crate_colour_R = mod:get("expedition_crate_colour_R")
+    fs.expedition_crate_colour_G = mod:get("expedition_crate_colour_G")
+    fs.expedition_crate_colour_B = mod:get("expedition_crate_colour_B")
+    fs.expedition_colour_R = mod:get("expedition_colour_R")
+    fs.expedition_colour_G = mod:get("expedition_colour_G")
+    fs.expedition_colour_B = mod:get("expedition_colour_B")
 
-	-- Check if the inject_ally skull is actively performing an injection
-	fs.servo_skull_injecting = false
-	if fs.inject_ally then
-		local comp_unit = fs.inject_ally.companion_unit
-		if comp_unit and Unit.alive(comp_unit) then
-			local game_session = Managers.state.game_session:game_session()
-			local go_id = Managers.state.unit_spawner:game_object_id(comp_unit)
-			if game_session and go_id then
-				local state = GameSession.game_object_field(game_session, go_id, "state")
-				if state == "inject_ally" then
-					fs.servo_skull_injecting = true
-				end
-			end
-		end
-	end
+    -- Check if local player has the Cryptic servo skull blitz equipped
+    fs.servo_skull_equipped = false
+    if player and player.player_unit and Unit.alive(player.player_unit) then
+        local talent_ext = ScriptUnit.has_extension(player.player_unit, "talent_system")
+        if talent_ext then
+            local sr = SpecialRulesSettings.special_rules
+            fs.servo_skull_equipped = talent_ext:has_special_rule(sr.cryptic_servo_skull_hack)
+                or talent_ext:has_special_rule(sr.cryptic_servo_skull_inject_ally)
+                or talent_ext:has_special_rule(sr.cryptic_servo_skull_flamethrower)
+        end
+    end
+
+    -- Inject ally servo skull state
+    fs.inject_ally = nil
+    if player and player.player_unit and Unit.alive(player.player_unit) then
+        local talent_ext = ScriptUnit.has_extension(player.player_unit, "talent_system")
+        if
+            talent_ext
+            and talent_ext:has_special_rule(SpecialRulesSettings.special_rules.cryptic_servo_skull_inject_ally)
+        then
+            local spawner_ext = ScriptUnit.has_extension(player.player_unit, "companion_spawner_system")
+            if spawner_ext then
+                local comp_unit =
+                    spawner_ext:spawned_unit_lookup(SpecialRulesSettings.special_rules.cryptic_servo_skull_inject_ally)
+                if comp_unit and Unit.alive(comp_unit) then
+                    local ability_ext = ScriptUnit.has_extension(player.player_unit, "ability_system")
+                    if
+                        ability_ext
+                        and ability_ext:remaining_ability_charges("grenade_ability")
+                        >= CompanionServoSkullSettings.ability_charges.inject_ally
+                    then
+                        fs.inject_ally = {
+                            companion_unit = comp_unit,
+                        }
+                    end
+                end
+            end
+        end
+    end
+
+    -- Check if the inject_ally skull is actively performing an injection
+    fs.servo_skull_injecting = false
+    if fs.inject_ally then
+        local comp_unit = fs.inject_ally.companion_unit
+        if comp_unit and Unit.alive(comp_unit) then
+            local game_session = Managers.state.game_session:game_session()
+            local go_id = Managers.state.unit_spawner:game_object_id(comp_unit)
+            if game_session and go_id then
+                local state = GameSession.game_object_field(game_session, go_id, "state")
+                if state == "inject_ally" then
+                    fs.servo_skull_injecting = true
+                end
+            end
+        end
+    end
 end
 
 mod.build_frame_settings()
 
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/chest_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/material_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/stimm_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/tome_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/tainted_device_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/tainted_skull_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/luggable_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/stolen_rations_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/atonement_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/unknown_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/expedition_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/servo_skull_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/player_assistance_markers")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/icon_package_loader")
-
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/ammo_med/ammo_med_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/chest_markers/chest_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/heretical_idols/heretical_idol_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/material_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/stimm_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/tome_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/tainted_device_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/tainted_skull_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/luggable_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/stolen_rations_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/atonement_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/unknown_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/expedition_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/objective_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/servo_skull_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/player_assistance_markers")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/icon_package_loader")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/utilities")
 
-local HereticalIdolTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/heretical_idol_markers_template")
-local MedMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/ammo_med_markers_template")
-local ChestMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/chest_markers_template")
-local MartyrsSkullMarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers_template")
+local HereticalIdolTemplate =
+    mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/heretical_idols/heretical_idol_markers_template")
+local MedMarkerTemplate =
+    mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/ammo_med/ammo_med_markers_template")
+local ChestMarkerTemplate =
+    mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/chest_markers/chest_markers_template")
+local MartyrsSkullMarkerTemplate =
+    mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers_template")
 local MartyrsSkullMarkerGuideTemplate =
-	mod:io_dofile("markers_aio/scripts/mods/markers_aio/martyrs_skull_markers_guide_template")
-
--- Guide widget element registration
-local GUIDE_WIDGET_PATH = "markers_aio/scripts/mods/markers_aio/martyrs_skull_guide_widget"
+    mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers_guide_template")
+local GUIDE_WIDGET_PATH = "markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_guide_widget"
 mod:add_require_path(GUIDE_WIDGET_PATH)
 
 local guide_element_def = {
-	class_name = "MartyrsSkullGuideElement",
-	filename = GUIDE_WIDGET_PATH,
-	visibility_groups = {
-		"dead",
-		"alive",
-		"player_in_danger_zone",
-	},
+    class_name = "MartyrsSkullGuideElement",
+    filename = GUIDE_WIDGET_PATH,
+    visibility_groups = {
+        "dead",
+        "alive",
+        "player_in_danger_zone",
+    },
 }
 
 mod:hook(
-	"UIManager",
-	"create_player_hud",
-	function(original_func, self, peer_id, local_player_id, elements, visibility_groups)
-		table.insert(elements, guide_element_def)
-		return original_func(self, peer_id, local_player_id, elements, visibility_groups)
-	end
+    "UIManager",
+    "create_player_hud",
+    function(original_func, self, peer_id, local_player_id, elements, visibility_groups)
+        table.insert(elements, guide_element_def)
+        return original_func(self, peer_id, local_player_id, elements, visibility_groups)
+    end
 )
 
 mod:hook(
-	"UIManager",
-	"create_spectator_hud",
-	function(original_func, self, world_viewport_name, peer_id, local_player_id, elements, visibility_groups)
-		table.insert(elements, guide_element_def)
-		return original_func(self, world_viewport_name, peer_id, local_player_id, elements, visibility_groups)
-	end
+    "UIManager",
+    "create_spectator_hud",
+    function(original_func, self, world_viewport_name, peer_id, local_player_id, elements, visibility_groups)
+        table.insert(elements, guide_element_def)
+        return original_func(self, world_viewport_name, peer_id, local_player_id, elements, visibility_groups)
+    end
 )
 
 mod.guide_widget_set_content = function(header, body, steps)
-	local hud = Managers.ui and Managers.ui:get_hud()
-	if not hud then
-		return
-	end
-	local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
-	if element then
-		element:set_content(header, body, steps)
-	end
+    local hud = Managers.ui and Managers.ui:get_hud()
+    if not hud then
+        return
+    end
+    local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
+    if element then
+        element:set_content(header, body, steps)
+    end
 end
 
 mod.guide_widget_clear = function()
-	local hud = Managers.ui and Managers.ui:get_hud()
-	if not hud then
-		return
-	end
-	local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
-	if element then
-		element:clear()
-	end
+    local hud = Managers.ui and Managers.ui:get_hud()
+    if not hud then
+        return
+    end
+    local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
+    if element then
+        element:clear()
+    end
 end
 
 mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
-	mod.build_frame_settings()
+    mod.build_frame_settings()
 
-	-- add new marker templates to templates table
-	self._marker_templates[HereticalIdolTemplate.name] = HereticalIdolTemplate
-	self._marker_templates["nurgle_totem"] = HereticalIdolTemplate
-	self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
-	self._marker_templates[ChestMarkerTemplate.name] = ChestMarkerTemplate
-	self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
-	self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
+    self._marker_templates[HereticalIdolTemplate.name] = HereticalIdolTemplate
+    self._marker_templates["nurgle_totem"] = HereticalIdolTemplate
+    self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
+    self._marker_templates[ChestMarkerTemplate.name] = ChestMarkerTemplate
+    self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
+    self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
 
-	-- reset runtime state on (re)init to avoid growth across missions/hot-joins
-	mod.active_chests = {}
-	mod.current_heretical_idol_markers = {}
-	mod.totem_units = {}
-	mod.medical_crate_charges = {}
-	mod.reset_martyrs_skull_guides()
+    mod.active_chests = {}
+    mod.current_heretical_idol_markers = {}
+    mod.totem_units = {}
+    mod.medical_crate_charges = {}
+    mod.reset_martyrs_skull_guides()
+    mod._needs_totem_scan = true
 
-	-- scan for nurgle totems that already exist (covers menu→game transition after mod reload)
-	mod._needs_totem_scan = true
+    local loc = Managers and Managers.localization
 
-	-- Register AIO marker display names in the game's localization string cache.
-	-- This prevents "unlocalized" errors when the base game tries to re-localize
-	-- our resolved display names (e.g., "Chest") through _lookup().
-	local loc = Managers and Managers.localization
-	if loc and loc._string_cache then
-		local cache = loc._string_cache
-		local mod_names = {
-			"mod_marker_chest_name",
-			"mod_marker_item_name",
-			"mod_marker_medicae_station_name",
-			"mod_marker_heretical_idol_name",
-			"mod_marker_stimm_name",
-			"mod_marker_power_stimm_name",
-			"mod_marker_speed_stimm_name",
-			"mod_marker_boost_stimm_name",
-			"mod_marker_medic_stimm_name",
-			"mod_marker_broker_stimm_name",
-			"mod_marker_tome_name",
-			"mod_marker_material_name",
-			"mod_marker_luggable_name",
-			"mod_marker_expedition_name",
-			"mod_marker_event_name",
-			"mod_marker_servo_skull_name",
-			"mod_marker_unknown_name",
-		}
-		for _, key in ipairs(mod_names) do
-			local resolved = mod:localize(key)
-			if resolved then
-				cache[resolved] = resolved
-			end
-		end
-	end
+    if loc and loc._string_cache then
+        local cache = loc._string_cache
+        local mod_names = {
+            "mod_marker_chest_name",
+            "mod_marker_item_name",
+            "mod_marker_medicae_station_name",
+            "mod_marker_heretical_idol_name",
+            "mod_marker_stimm_name",
+            "mod_marker_power_stimm_name",
+            "mod_marker_speed_stimm_name",
+            "mod_marker_boost_stimm_name",
+            "mod_marker_medic_stimm_name",
+            "mod_marker_broker_stimm_name",
+            "mod_marker_tome_name",
+            "mod_marker_material_name",
+            "mod_marker_luggable_name",
+            "mod_marker_expedition_name",
+            "mod_marker_event_name",
+            "mod_marker_servo_skull_name",
+            "mod_marker_unknown_name",
+        }
+        for _, key in ipairs(mod_names) do
+            local resolved = mod:localize(key)
+            if resolved and resolved ~= key then
+                cache[key] = resolved
+            end
+        end
+    end
 end)
 
 mod.totem_units = {}
 
 mod.is_totem_unit = function(unit)
-	if not unit or not Unit.alive(unit) then
-		return false
-	end
-	local ude = ScriptUnit.has_extension(unit, "unit_data_system")
-	if not ude then
-		return false
-	end
-	if ude._breed and ude._breed.name == "nurgle_totem" then
-		return true
-	end
-	local armor_name = Unit.get_data(unit, "armor_data_name")
-	if armor_name == "nurgle_totem" then
-		return true
-	end
-	return false
+    if not unit or not Unit.alive(unit) then
+        return false
+    end
+    local ude = ScriptUnit.has_extension(unit, "unit_data_system")
+    if not ude then
+        return false
+    end
+    if ude._breed and ude._breed.name == "nurgle_totem" then
+        return true
+    end
+    local armor_name = Unit.get_data(unit, "armor_data_name")
+    if armor_name == "nurgle_totem" then
+        return true
+    end
+    return false
 end
 
 mod.find_totem_marker_by_unit = function(unit)
-	local ui_manager = Managers.ui
-	if not ui_manager then
-		return
-	end
-	local hud = ui_manager:get_hud()
-	if not hud then
-		return
-	end
-	local world_markers = hud:element("HudElementWorldMarkers")
-	if not world_markers then
-		return
-	end
-	local markers = world_markers._markers_by_type and world_markers._markers_by_type["nurgle_totem"]
-	if not markers then
-		return
-	end
-	for i = 1, #markers do
-		local marker = markers[i]
-		if marker.unit == unit then
-			return marker
-		end
-	end
+    local ui_manager = Managers.ui
+    if not ui_manager then
+        return
+    end
+    local hud = ui_manager:get_hud()
+    if not hud then
+        return
+    end
+    local world_markers = hud:element("HudElementWorldMarkers")
+    if not world_markers then
+        return
+    end
+    local markers = world_markers._markers_by_type and world_markers._markers_by_type["nurgle_totem"]
+    if not markers then
+        return
+    end
+    for i = 1, #markers do
+        local marker = markers[i]
+        if marker.unit == unit then
+            return marker
+        end
+    end
 end
 
 mod.add_totem_marker = function(unit)
-	if not unit or not Unit.alive(unit) then
-		return
-	end
-	if not mod.totem_units then
-		mod.totem_units = {}
-	end
-	if mod.totem_units[unit] then
-		return
-	end
-	local existing = mod.find_totem_marker_by_unit(unit)
-	if existing then
-		mod.totem_units[unit] = existing.id
-		return
-	end
-	local marker_id
-	Managers.event:trigger("add_world_marker_unit", "nurgle_totem", unit, function(id)
-		marker_id = id
-	end)
-	mod.totem_units[unit] = marker_id
+    if not unit or not Unit.alive(unit) then
+        return
+    end
+    if not mod.totem_units then
+        mod.totem_units = {}
+    end
+    if mod.totem_units[unit] then
+        return
+    end
+    local existing = mod.find_totem_marker_by_unit(unit)
+    if existing then
+        mod.totem_units[unit] = existing.id
+        return
+    end
+    local marker_id
+    Managers.event:trigger("add_world_marker_unit", "nurgle_totem", unit, function(id)
+        marker_id = id
+    end)
+    mod.totem_units[unit] = marker_id
 end
 
 mod.remove_totem_from_tracking = function(unit)
-	if not mod.totem_units or not unit then
-		return
-	end
-	local marker_id = mod.totem_units[unit]
-	if marker_id then
-		Managers.event:trigger("remove_world_marker", marker_id)
-	end
-	mod.totem_units[unit] = nil
+    if not mod.totem_units or not unit then
+        return
+    end
+    local marker_id = mod.totem_units[unit]
+    if marker_id then
+        Managers.event:trigger("remove_world_marker", marker_id)
+    end
+    mod.totem_units[unit] = nil
 end
 
 mod.scan_for_existing_totems = function()
-	if not Managers.world then
-		return
-	end
-	local world = Managers.world:world("level_world")
-	if not world then
-		return
-	end
-	local units = World.units(world)
-	if not units then
-		return
-	end
-	for i = 1, #units do
-		local unit = units[i]
-		if Unit.alive(unit) and mod.is_totem_unit(unit) then
-			mod.add_totem_marker(unit)
-		end
-	end
+    if not Managers.world then
+        return
+    end
+    local world = Managers.world:world("level_world")
+    if not world then
+        return
+    end
+    local units = World.units(world)
+    if not units then
+        return
+    end
+    for i = 1, #units do
+        local unit = units[i]
+        if Unit.alive(unit) and mod.is_totem_unit(unit) then
+            mod.add_totem_marker(unit)
+        end
+    end
 end
 
 mod:hook_safe(CLASS.PropUnitDataExtension, "setup_from_component", function(self, prop_data_name)
-	if prop_data_name == "nurgle_totem" then
-		mod.add_totem_marker(self._unit)
-	end
+    if prop_data_name == "nurgle_totem" then
+        mod.add_totem_marker(self._unit)
+    end
 end)
 
 mod:hook_safe(CLASS.DestructibleExtension, "destroy", function(self)
-	mod.remove_totem_from_tracking(self._unit)
+    mod.remove_totem_from_tracking(self._unit)
 end)
 
 mod:hook_safe(CLASS.MissionObjectiveSystem, "hot_join_sync", function(self, sender, channel)
-	mod.reset_martyrs_skull_guides()
-	mod.scan_for_existing_totems()
+    mod.reset_martyrs_skull_guides()
+    mod.scan_for_existing_totems()
 end)
 
 mod.get_marker_pickup_type = function(marker)
-	if
-		marker.type ~= "interaction"
-		or not marker.unit
-		or not Unit
-		or type(marker.unit) ~= "userdata"
-		or not Unit.alive(marker.unit)
-		or not Unit.has_data(marker.unit, "pickup_type")
-	then
-		return
-	end
-	return Unit.get_data(marker.unit, "pickup_type")
+    if
+        marker.type ~= "interaction"
+        or not marker.unit
+        or not Unit
+        or type(marker.unit) ~= "userdata"
+        or not Unit.alive(marker.unit)
+        or not Unit.has_data(marker.unit, "pickup_type")
+    then
+        return
+    end
+    return Unit.get_data(marker.unit, "pickup_type")
 end
 
 mod.set_colour = function(dst, src)
-	if not dst or not src then
-		return
-	end
+    if not dst or not src then
+        return
+    end
 
-	dst[1] = src[1] or 255
-	dst[2] = src[2] or 255
-	dst[3] = src[3] or 255
-	dst[4] = src[4] or 255
+    dst[1] = src[1] or 255
+    dst[2] = src[2] or 255
+    dst[3] = src[3] or 255
+    dst[4] = src[4] or 255
 end
 
 mod.set_colour_argb = function(dst, a, r, g, b)
-	if not dst then
-		return
-	end
+    if not dst then
+        return
+    end
 
-	dst[1] = a or 255
-	dst[2] = r or 255
-	dst[3] = g or 255
-	dst[4] = b or 255
+    dst[1] = a or 255
+    dst[2] = r or 255
+    dst[3] = g or 255
+    dst[4] = b or 255
 end
 
 local LOOKUP_COLOUR_DEFAULT = { 255, 255, 255, 255 }
 
 local COLOUR_LOOKUP = {
-	Gold = { 255, 232, 188, 109 },
-	Silver = { 255, 187, 198, 201 },
-	Steel = { 255, 161, 166, 169 },
-	Black = { 255, 35, 31, 32 },
-	Brass = { 255, 226, 199, 126 },
-	Terminal = Color.terminal_background(225, true),
-	Default = { 255, 161, 166, 169 },
-	Tarnished = { 255, 130, 115, 102 },
+    Gold = { 255, 232, 188, 109 },
+    Silver = { 255, 187, 198, 201 },
+    Steel = { 255, 161, 166, 169 },
+    Black = { 255, 35, 31, 32 },
+    Brass = { 255, 226, 199, 126 },
+    Terminal = Color.terminal_background(225, true),
+    Default = { 255, 161, 166, 169 },
+    Tarnished = { 255, 130, 115, 102 },
 }
 
 mod.lookup_colour = function(colour_string)
-	local color = LOOKUP_COLOUR_DEFAULT
+    local color = LOOKUP_COLOUR_DEFAULT
 
-	if colour_string then
-		color = COLOUR_LOOKUP[colour_string]
-	end
+    if colour_string then
+        color = COLOUR_LOOKUP[colour_string]
+    end
 
-	return color
+    return color
 end
 
 mod.get_marker_by_id = function(id)
-	local ui_manager = Managers.ui
-	local hud = ui_manager:get_hud()
-	local world_markers = hud and hud:element("HudElementWorldMarkers")
-	local markers_by_id = world_markers and world_markers._markers_by_id
+    local ui_manager = Managers.ui
+    local hud = ui_manager:get_hud()
+    local world_markers = hud and hud:element("HudElementWorldMarkers")
+    local markers_by_id = world_markers and world_markers._markers_by_id
 
-	return markers_by_id[id]
+    return markers_by_id[id]
 end
 
 HudElementWorldMarkers._get_scale = function(self, scale_settings, distance)
-	if distance and scale_settings then
-		local easing_function = scale_settings.easing_function
+    if distance and scale_settings then
+        local easing_function = scale_settings.easing_function
 
-		if distance > scale_settings.distance_max then
-			return scale_settings.scale_from
-		elseif distance < scale_settings.distance_min then
-			return scale_settings.scale_to
-		else
-			local distance_fade_fraction = 1
-				- (distance - scale_settings.distance_min)
-					/ (scale_settings.distance_max - scale_settings.distance_min)
-			local eased_distance_scale_fraction = easing_function and easing_function(distance_fade_fraction)
-				or distance_fade_fraction
-			local adjusted_fade = scale_settings.scale_from
-				+ eased_distance_scale_fraction * (scale_settings.scale_to - scale_settings.scale_from)
+        if distance > scale_settings.distance_max then
+            return scale_settings.scale_from
+        elseif distance < scale_settings.distance_min then
+            return scale_settings.scale_to
+        else
+            local distance_fade_fraction = 1
+                - (distance - scale_settings.distance_min)
+                / (scale_settings.distance_max - scale_settings.distance_min)
+            local eased_distance_scale_fraction = easing_function and easing_function(distance_fade_fraction)
+                or distance_fade_fraction
+            local adjusted_fade = scale_settings.scale_from
+                + eased_distance_scale_fraction * (scale_settings.scale_to - scale_settings.scale_from)
 
-			return adjusted_fade
-		end
-	else
-		return 1
-	end
+            return adjusted_fade
+        end
+    else
+        return 1
+    end
 end
 
 HudElementWorldMarkers._get_fade = function(self, fade_settings, distance)
-	if fade_settings and distance then
-		local easing_function = fade_settings.easing_function
-		local return_value
+    if fade_settings and distance then
+        local easing_function = fade_settings.easing_function
+        local return_value
 
-		if distance > fade_settings.distance_max then
-			return_value = fade_settings.fade_from
-		elseif distance < fade_settings.distance_min then
-			return_value = fade_settings.fade_to
-		else
-			local distance_fade_fraction = 1
-				- (distance - fade_settings.distance_min)
-					/ (fade_settings.distance_max - fade_settings.distance_min)
-			local eased_distance_fade_fraction = easing_function(distance_fade_fraction)
-			local adjusted_fade = fade_settings.fade_from
-				+ eased_distance_fade_fraction * (fade_settings.fade_to - fade_settings.fade_from)
+        if distance > fade_settings.distance_max then
+            return_value = fade_settings.fade_from
+        elseif distance < fade_settings.distance_min then
+            return_value = fade_settings.fade_to
+        else
+            local distance_fade_fraction = 1
+                - (distance - fade_settings.distance_min)
+                / (fade_settings.distance_max - fade_settings.distance_min)
+            local eased_distance_fade_fraction = easing_function(distance_fade_fraction)
+            local adjusted_fade = fade_settings.fade_from
+                + eased_distance_fade_fraction * (fade_settings.fade_to - fade_settings.fade_from)
 
-			return_value = adjusted_fade
-		end
+            return_value = adjusted_fade
+        end
 
-		if fade_settings.invert then
-			return 1 - return_value
-		else
-			return return_value
-		end
-	else
-		return 1
-	end
+        if fade_settings.invert then
+            return 1 - return_value
+        else
+            return return_value
+        end
+    else
+        return 1
+    end
 end
 
 local temp_drawable_markers = {}
 
 local HudElementWorldMarkersSettings =
-	require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
+    require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
 
 HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
-	local camera = self:_get_camera()
-	if not camera then
-		return
-	end
+    local camera = self:_get_camera()
+    if not camera then
+        return
+    end
 
-	local markers_by_type = self._markers_by_type
-	local drawable_markers = temp_drawable_markers
-	table.clear(drawable_markers)
+    local markers_by_type = self._markers_by_type
+    local drawable_markers = temp_drawable_markers
+    table.clear(drawable_markers)
 
-	for _, markers in pairs(markers_by_type) do
-		for i = 1, #markers do
-			local marker = markers[i]
-			if marker.draw and marker.widget then
-				drawable_markers[#drawable_markers + 1] = marker
-			end
-		end
-	end
+    for _, markers in pairs(markers_by_type) do
+        for i = 1, #markers do
+            local marker = markers[i]
+            if marker.draw and marker.widget then
+                drawable_markers[#drawable_markers + 1] = marker
+            end
+        end
+    end
 
-	table.sort(drawable_markers, function(a, b)
-		-- Objectives always draw last (highest Z)
-		if a.type == "objective" and b.type ~= "objective" then
-			return false
-		elseif b.type == "objective" and a.type ~= "objective" then
-			return true
-		end
+    table.sort(drawable_markers, function(a, b)
+        -- Objectives always draw last (highest Z)
+        if a.type == "objective" and b.type ~= "objective" then
+            return false
+        elseif b.type == "objective" and a.type ~= "objective" then
+            return true
+        end
 
-		-- Vanilla vs AIO ordering
-		if a.markers_aio_type and not b.markers_aio_type then
-			return false
-		elseif not a.markers_aio_type and b.markers_aio_type then
-			return true
-		end
+        -- Vanilla vs AIO ordering
+        if a.markers_aio_type and not b.markers_aio_type then
+            return false
+        elseif not a.markers_aio_type and b.markers_aio_type then
+            return true
+        end
 
-		return (a.distance or 0) > (b.distance or 0)
-	end)
+        return (a.distance or 0) > (b.distance or 0)
+    end)
 
-	local BASE_Z = 0
-	local Z_STRIDE = 4
+    local BASE_Z = 0
+    local Z_STRIDE = 4
 
-	for i = 1, #drawable_markers do
-		local marker = drawable_markers[i]
-		local widget = marker.widget
-		local offset = widget.offset
+    for i = 1, #drawable_markers do
+        local marker = drawable_markers[i]
+        local widget = marker.widget
+        local offset = widget.offset
 
-		if offset then
-			offset[3] = BASE_Z + (i * Z_STRIDE)
-		end
+        if offset then
+            offset[3] = BASE_Z + (i * Z_STRIDE)
+        end
 
-		widget.alpha_multiplier = widget.alpha_multiplier or 1
+        widget.alpha_multiplier = widget.alpha_multiplier or 1
 
-		if offset and widget.style.marker_text and widget.content.marker_text and widget.content.marker_text ~= "" then
-			widget.style.marker_text.offset[3] = offset[3] + 2
-		end
-		UIWidget.draw(widget, ui_renderer)
-	end
+        if offset and widget.style.marker_text and widget.content.marker_text and widget.content.marker_text ~= "" then
+            widget.style.marker_text.offset[3] = offset[3] + 2
+        end
+
+        if marker.markers_aio_type == nil then
+            -- Vanilla (non-AIO) markers: restore vanilla distance fade-at-draw behaviour
+            local template = marker.template
+            local alpha_multiplier = 1
+
+            if template and template.fade_settings and not marker.block_fade_settings then
+                alpha_multiplier = self:_get_fade(template.fade_settings, marker.distance) or 1
+            end
+
+            local previous_alpha_multiplier = widget.alpha_multiplier
+
+            widget.alpha_multiplier = previous_alpha_multiplier * alpha_multiplier
+
+            UIWidget.draw(widget, ui_renderer)
+
+            widget.alpha_multiplier = previous_alpha_multiplier
+        else
+            UIWidget.draw(widget, ui_renderer)
+        end
+    end
 end
 
 local DEBUG_MARKER = "objective"
 local temp_array_markers_to_remove = {}
 local temp_marker_raycast_queue = {}
 local HudElementWorldMarkersSettings =
-	require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
+    require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
 
 local function force_text_full_alpha(marker)
-	if not marker or not marker.widget or not marker.widget.style then
-		return
-	end
+    if not marker or not marker.widget or not marker.widget.style then
+        return
+    end
 
-	local widget = marker.widget
-	local style = widget.style
-	local text_style = style.marker_text
+    local widget = marker.widget
+    local style = widget.style
+    local text_style = style.marker_text
 
-	if not text_style or not text_style.color then
-		return
-	end
+    if not text_style or not text_style.color then
+        return
+    end
 
-	local widget_alpha = widget.alpha_multiplier or 1
-	if widget_alpha <= 0 then
-		return
-	end
+    local widget_alpha = widget.alpha_multiplier or 1
+    if widget_alpha <= 0 then
+        return
+    end
 
-	-- Counter widget + renderer alpha
-	local corrected_alpha = math.clamp(255 / widget_alpha, 0, 255)
+    -- Counter widget + renderer alpha
+    local corrected_alpha = math.clamp(255 / widget_alpha, 0, 255)
 
-	text_style.color[1] = corrected_alpha
+    text_style.color[1] = corrected_alpha
 end
 
 local function compute_distance_alpha(marker, max_distance)
-	if not max_distance or not marker.distance then
-		return 1
-	end
+    if not max_distance or not marker.distance then
+        return 1
+    end
 
-	local d = math.clamp(marker.distance / max_distance, 0, 1)
+    local d = math.clamp(marker.distance / max_distance, 0, 1)
 
-	if d < 0.85 then
-		return 1
-	end
+    if d < 0.85 then
+        return 1
+    end
 
-	local t = (d - 0.85) / 0.25
-	t = math.clamp(t, 0, 1)
-	t = t * t * (3 - 2 * t)
+    local t = (d - 0.85) / 0.25
+    t = math.clamp(t, 0, 1)
+    t = t * t * (3 - 2 * t)
 
-	return 1 - t
+    return 1 - t
 end
 
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
-	-- Build frame state
-	-- Throttle
-	local update_interval = 20
-	self._update_time = (self._update_time or 0) + dt
-	self._total_update_time = (self._total_update_time or 0) + dt
-
-	if self._update_time > update_interval then
-		self._update_time = 0
-		mod.build_frame_settings()
-	end
-
-	local fs = mod.frame_settings
-
-	if mod._needs_totem_scan then
-		mod._needs_totem_scan = false
-		mod.scan_for_existing_totems()
-	end
-
-	local raycasts_allowed = self._raycast_frame_counter == 0
-
-	self._raycast_frame_counter = (self._raycast_frame_counter + 1)
-		% HudElementWorldMarkersSettings.raycasts_frame_delay
-
-	local camera = self:_get_camera()
-
-	if camera then
-		local scale = ui_renderer.scale
-		local inverse_scale = ui_renderer.inverse_scale
-		local camera_position = Camera.local_position(camera)
-		local camera_rotation = Camera.local_rotation(camera)
-		local camera_forward = Quaternion.forward(camera_rotation)
-		local camera_direction = Quaternion.forward(camera_rotation)
-		local camera_position_center = camera_position + camera_forward
-		local camera_pose = Camera.local_pose(camera)
-		local camera_position_right = Matrix4x4.right(camera_pose)
-		local camera_position_left = -camera_position_right
-		local camera_position_up = Matrix4x4.up(camera_pose)
-		local camera_position_down = -camera_position_up
-		local root_size = UIScenegraph.size_scaled(self._ui_scenegraph, "screen")
-		local markers_by_id = self._markers_by_id
-		local markers_by_type = self._markers_by_type
-		local ALIVE = ALIVE
-
-		table.clear(temp_marker_raycast_queue)
-
-		for marker_type, markers in pairs(markers_by_type) do
-			for i = 1, #markers do
-				-- DEFAULT STUFF
-				local marker = markers[i]
-				local id = marker.id
-				local template = marker.template
-				local update = markers_by_id[id] ~= nil
-				local remove = marker.remove
-				local widget = marker.widget
-
-				if widget then
-					local content = widget.content
-					local screen_clamp = template.screen_clamp and not marker.block_screen_clamp
-					local screen_margins = template.screen_margins
-
-					local max_distance = template.max_distance
-					if marker.markers_aio_type then
-						local pt = fs.per_type
-						max_distance = pt[marker.markers_aio_type] and pt[marker.markers_aio_type].max_distance
-					end
-
-					-- Never distance-cull base game objective markers
-					if marker.type == "objective" or (template and template.name == "objective") then
-						max_distance = nil
-					end
-
-					if marker.block_max_distance then
-						max_distance = math.huge
-					end
-
-					local life_time = template.life_time
-					local check_line_of_sight = template.check_line_of_sight
-					local marker_position
-
-					if update then
-						local world_position = marker.world_position
-
-						if world_position then
-							marker_position = world_position:unbox()
-						else
-							local unit = marker.unit
-
-							if ALIVE[unit] then
-								local unit_node = template.unit_node
-								local node = unit_node and Unit.has_node(unit, unit_node) and Unit.node(unit, unit_node)
-									or 1
-								marker_position = Unit.world_position(unit, node)
-							else
-								remove = true
-							end
-						end
-
-						if life_time then
-							local duration = marker.duration or 0
-							duration = math.min(duration + dt, life_time)
-
-							if life_time <= duration then
-								remove = true
-							else
-								marker.duration = duration
-							end
-						end
-					end
-
-					if remove then
-						update = false
-						temp_array_markers_to_remove[#temp_array_markers_to_remove + 1] = marker
-					end
-
-					if update then
-						local position_offset = template.position_offset
-
-						if position_offset then
-							marker_position.x = marker_position.x + position_offset[1]
-							marker_position.y = marker_position.y + position_offset[2]
-							marker_position.z = marker_position.z + position_offset[3]
-						end
-
-						-- Health station: push marker up so it's not inside the mesh
-						if marker.data and marker.data._active_interaction_type == "health_station" then
-							marker_position.z = marker_position.z
-						end
-
-						Vector3Box.store(marker.position, marker_position)
-
-						local distance = Vector3.distance(marker_position, camera_position)
-
-						content.distance = distance
-						marker.distance = distance
-
-						local out_of_reach = max_distance and max_distance < distance
-						local draw = not out_of_reach
-
-						if not out_of_reach then
-							local marker_direction = Vector3.normalize(marker_position - camera_position)
-							marker_direction = Vector3.normalize(marker_direction)
-
-							local forward_dot_dir = Vector3.dot(camera_direction, marker_direction)
-							local is_inside_frustum = Camera.inside_frustum(camera, marker_position) > 0
-							local camera_left = Vector3.cross(camera_direction, Vector3.up())
-							local left_dot_dir = Vector3.dot(camera_left, marker_direction)
-							local angle = math.atan2(left_dot_dir, forward_dot_dir)
-							local is_behind = forward_dot_dir < 0 and true or false
-							local is_under = marker_position.z < camera_position.z
-							local x, y = self:_convert_world_to_screen_position(camera, marker_position)
-							local pixel_offset = template.pixel_offset
-
-							if pixel_offset then
-								x = x + pixel_offset[1]
-								y = y + pixel_offset[2]
-							end
-
-							local screen_x, screen_y = self:_get_screen_offset(scale)
-
-							x = x - screen_x
-							y = y - screen_y
-
-							local is_clamped, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down =
-								false, false, false, false, false
-
-							if screen_clamp then
-								local clamped_x, clamped_y
-
-								clamped_x, clamped_y, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down =
-									self:_clamp_to_screen(
-										x,
-										y,
-										screen_margins,
-										is_behind,
-										is_under,
-										marker_position,
-										camera_position_center,
-										camera_position_left,
-										camera_position_right,
-										camera_position_up,
-										camera_position_down
-									)
-								is_clamped = is_clamped_left or is_clamped_right or is_clamped_up or is_clamped_down
-								x = clamped_x
-								y = clamped_y
-							end
-
-							if not is_clamped then
-								if is_behind then
-									draw = false
-								elseif not is_inside_frustum then
-									local vertical_pixel_overlap, horizontal_pixel_overlap
-
-									if x < 0 then
-										horizontal_pixel_overlap = math.abs(x)
-									elseif x > root_size[1] then
-										horizontal_pixel_overlap = x - root_size[1]
-									end
-
-									if y < 0 then
-										vertical_pixel_overlap = math.abs(y)
-									elseif y > root_size[2] then
-										vertical_pixel_overlap = y - root_size[2]
-									end
-
-									if vertical_pixel_overlap or horizontal_pixel_overlap then
-										draw = false
-
-										local check_widget_visible = template.check_widget_visible
-
-										if check_widget_visible then
-											draw = check_widget_visible(
-												widget,
-												vertical_pixel_overlap,
-												horizontal_pixel_overlap
-											)
-										end
-									else
-										draw = false
-									end
-								end
-							elseif is_clamped_left or is_clamped_right then
-								if is_clamped_left then
-									angle = 0
-								elseif is_clamped_right then
-									angle = math.pi
-								end
-							elseif is_clamped_up then
-								angle = math.pi * 0.5
-							elseif is_clamped_down then
-								angle = -math.pi * 0.5
-							end
-
-							content.is_inside_frustum = is_inside_frustum
-							content.is_clamped = is_clamped
-							content.is_under = is_under
-							content.distance = distance
-							content.angle = angle
-							marker.is_inside_frustum = is_inside_frustum
-							marker.is_clamped = is_clamped
-							marker.is_under = is_under
-							marker.distance = distance
-							marker.angle = angle
-
-							local offset = widget.offset
-
-							offset[1] = x * inverse_scale
-							offset[2] = y * inverse_scale
-
-							marker.raycast_frame_count = (marker.raycast_frame_count or 0) + 1
-
-							if raycasts_allowed then
-								temp_marker_raycast_queue[#temp_marker_raycast_queue + 1] = marker
-							end
-						end
-
-						marker.draw = draw
-					end
-
-					marker.update = update
-				end
-			end
-		end
-
-		if raycasts_allowed then
-			self:_raycast_markers(temp_marker_raycast_queue)
-			table.clear(temp_marker_raycast_queue)
-		end
-
-		-- MARKERS AIO
-		for marker_type, markers in pairs(markers_by_type) do
-			for i = 1, #markers do
-				local marker = markers[i]
-
-				if marker and marker.update then
-					marker.markers_aio_type = nil
-
-					local template = marker.template
-					local update_function = template.update_function
-
-					if update_function then
-						update_function(self, ui_renderer, marker.widget, marker, template, dt, t)
-					end
-
-					-- Hide distance text on objective markers for decoder devices
-					if marker.type == "objective" and marker.widget then
-						local unit = marker.unit
-						if unit and type(unit) == "userdata" and Unit.alive(unit) then
-							local decoder_ext = ScriptUnit.has_extension(unit, "decoder_device_system")
-							if decoder_ext and decoder_ext:unit_is_enabled() and not decoder_ext:is_finished() then
-								marker.widget.content.text = ""
-							end
-						end
-					end
-
-					if fs.enable.tome then
-						mod.update_tome_markers(self, marker)
-					end
-					if fs.enable.material then
-						mod.update_material_markers(self, marker)
-					end
-					if fs.enable.ammo_med then
-						mod.update_ammo_med_markers(self, marker)
-					end
-					if fs.enable.stimm then
-						mod.update_stimm_markers(self, marker)
-					end
-					if fs.enable.chest then
-						mod.update_chest_markers(self, marker)
-					end
-					if fs.enable.heretical_idol then
-						mod.update_marker_icon(self, marker)
-					end
-					if fs.enable.luggable then
-						mod.update_luggable_markers(self, marker)
-					end
-					if fs.enable.martyrs_skull then
-						mod.update_martyrs_skull_markers(self, marker)
-					end
-					if fs.enable.expedition then
-						mod.update_expedition_markers(self, marker)
-					end
-					if fs.enable.servo_skull and marker.type ~= "objective" and marker.type ~= "player_assistance" then
-						mod.update_servo_skull_markers(self, marker)
-					end
-					if
-						fs.enable.player_assistance
-						and marker.type ~= "objective"
-						and marker.type ~= "player_assistance"
-					then
-						mod.update_player_assistance_markers(self, marker)
-					end
-					if fs.enable.event then
-						mod.update_tainted_skull_markers(self, marker)
-						mod.update_TaintedDevices_markers(self, marker)
-						mod.update_stolenrations_markers(self, marker)
-						mod.update_atonement_markers(self, marker)
-					end
-					-- Unknown markers will get subtle changes so they work with distance/occlusion and have same background colour
-					if not marker.markers_aio_type and fs.enable.unknown then
-						mod.update_unknown_markers(self, marker)
-					end
-
-					--[[
-					if marker.widget and marker.distance and not marker.markers_aio_type then
-						local template = marker.template
-						local max_distance = template and template.max_distance
-							or (marker.markers_aio_type and mod:get(marker.markers_aio_type .. "_max_distance"))
-
-						if max_distance then
-							local dist_alpha = compute_distance_alpha(marker, max_distance)
-
-							marker.widget.alpha_multiplier = (marker.widget.alpha_multiplier or 1) * dist_alpha
-						end
-					end]]
-
-					if marker.markers_aio_type then
-						mod.adjust_los_requirement(marker)
-						mod.adjust_distance_visibility(marker)
-						mod.fade_icon_not_in_los(marker, ui_renderer)
-					end
-
-					mod.adjust_scale(self, marker, ui_renderer, t)
-
-					-- apply marker distance text if enabled
-					local widget = marker.widget
-					if
-						marker.markers_aio_type
-						and widget.style.marker_distance_text
-						and widget.content.marker_distance_text ~= nil
-						and marker.distance
-						and widget.style.background
-						and widget.style.icon
-					then
-						-- adjust based on if the setting is on or not...
-						if fs.distance_text_enable then
-							widget.content.marker_distance_text = tostring(math.floor(marker.distance) .. "m")
-						else
-							widget.content.marker_distance_text = ""
-						end
-
-						local distance_text_pos = fs.distance_text_position
-						local distance_text_scale = fs.distance_text_scale / 100
-						widget.style.marker_distance_text.font_size = (widget.style.icon.size[2] / 2)
-							* distance_text_scale
-
-						if distance_text_pos == "Top" then
-							widget.style.marker_distance_text.offset[2] = -widget.style.background.size[2]
-								/ 2
-								* distance_text_scale
-							widget.style.marker_distance_text.offset[1] = 0
-						elseif distance_text_pos == "Left" then
-							widget.style.marker_distance_text.offset[1] = -widget.style.background.size[1]
-									/ 2
-									* distance_text_scale
-								- 8
-							widget.style.marker_distance_text.offset[2] = 0
-						elseif distance_text_pos == "Right" then
-							widget.style.marker_distance_text.offset[1] = widget.style.background.size[1]
-									/ 2
-									* distance_text_scale
-								+ 8
-							widget.style.marker_distance_text.offset[2] = 0
-						elseif distance_text_pos == "Center" then
-							widget.style.marker_distance_text.offset[2] = 0
-							widget.style.marker_distance_text.offset[1] = 0
-							widget.style.marker_distance_text.offset[3] = widget.style.ring.offset[3] + 1
-							widget.style.icon.color[1] = 150
-							widget.style.marker_distance_text.font_size = (widget.style.icon.size[2] / 2.4)
-								* distance_text_scale
-						else
-							-- default to  Bottom if errors/nil
-							widget.style.marker_distance_text.offset[2] = widget.style.background.size[2]
-								/ 2
-								* distance_text_scale
-							widget.style.marker_distance_text.offset[1] = 0
-						end
-					end
-				end
-			end
-		end
-	else
-		self._player_camera = self._parent:player_camera()
-	end
-
-	local markers_to_remove = #temp_array_markers_to_remove
-
-	if markers_to_remove > 0 then
-		for i = 1, markers_to_remove do
-			local marker = temp_array_markers_to_remove[i]
-			self:_unregister_marker(marker)
-		end
-
-		table.clear(temp_array_markers_to_remove)
-	end
+    local update_interval = 20
+    self._update_time = (self._update_time or 0) + dt
+    self._total_update_time = (self._total_update_time or 0) + dt
+
+    if self._update_time > update_interval then
+        self._update_time = 0
+        mod.build_frame_settings()
+    end
+
+    local fs = mod.frame_settings
+
+    if mod._needs_totem_scan then
+        mod._needs_totem_scan = false
+        mod.scan_for_existing_totems()
+    end
+
+    local raycasts_allowed = self._raycast_frame_counter == 0
+
+    self._raycast_frame_counter = (self._raycast_frame_counter + 1)
+        % HudElementWorldMarkersSettings.raycasts_frame_delay
+
+    local camera = self:_get_camera()
+
+    if camera then
+        local scale = ui_renderer.scale
+        local inverse_scale = ui_renderer.inverse_scale
+        local camera_position = Camera.local_position(camera)
+        local camera_rotation = Camera.local_rotation(camera)
+        local camera_forward = Quaternion.forward(camera_rotation)
+        local camera_direction = Quaternion.forward(camera_rotation)
+        local camera_position_center = camera_position + camera_forward
+        local camera_pose = Camera.local_pose(camera)
+        local camera_position_right = Matrix4x4.right(camera_pose)
+        local camera_position_left = -camera_position_right
+        local camera_position_up = Matrix4x4.up(camera_pose)
+        local camera_position_down = -camera_position_up
+        local root_size = UIScenegraph.size_scaled(self._ui_scenegraph, "screen")
+        local markers_by_id = self._markers_by_id
+        local markers_by_type = self._markers_by_type
+        local ALIVE = ALIVE
+
+        table.clear(temp_marker_raycast_queue)
+
+        for marker_type, markers in pairs(markers_by_type) do
+            for i = 1, #markers do
+                -- DEFAULT STUFF
+                local marker = markers[i]
+                local id = marker.id
+                local template = marker.template
+                local update = markers_by_id[id] ~= nil
+                local remove = marker.remove
+                local widget = marker.widget
+
+                if widget then
+                    local content = widget.content
+                    local screen_clamp = template.screen_clamp and not marker.block_screen_clamp
+                    local screen_margins = template.screen_margins
+
+                    local max_distance = template.max_distance
+                    if marker.markers_aio_type then
+                        local pt = fs.per_type
+                        max_distance = pt[marker.markers_aio_type] and pt[marker.markers_aio_type].max_distance
+                    end
+
+                    -- Never distance-cull base game objective markers
+                    if
+                        not fs.enable.objective
+                        and (marker.type == "objective" or (template and template.name == "objective"))
+                    then
+                        max_distance = nil
+                    end
+
+                    if marker.block_max_distance then
+                        max_distance = math.huge
+                    end
+
+                    local life_time = template.life_time
+                    local check_line_of_sight = template.check_line_of_sight
+                    local marker_position
+
+                    if update then
+                        local world_position = marker.world_position
+
+                        if world_position then
+                            marker_position = world_position:unbox()
+                        else
+                            local unit = marker.unit
+
+                            if ALIVE[unit] then
+                                local unit_node = template.unit_node
+                                local node = unit_node and Unit.has_node(unit, unit_node) and Unit.node(unit, unit_node)
+                                    or 1
+                                marker_position = Unit.world_position(unit, node)
+                            else
+                                remove = true
+                            end
+                        end
+
+                        if life_time then
+                            local duration = marker.duration or 0
+                            duration = math.min(duration + dt, life_time)
+
+                            if life_time <= duration then
+                                remove = true
+                            else
+                                marker.duration = duration
+                            end
+                        end
+                    end
+
+                    if remove then
+                        update = false
+                        temp_array_markers_to_remove[#temp_array_markers_to_remove + 1] = marker
+                    end
+
+                    if update then
+                        local position_offset = template.position_offset
+
+                        if position_offset then
+                            marker_position.x = marker_position.x + position_offset[1]
+                            marker_position.y = marker_position.y + position_offset[2]
+                            marker_position.z = marker_position.z + position_offset[3]
+                        end
+
+                        if marker.data and marker.data._active_interaction_type == "health_station" then
+                            marker_position.z = marker_position.z
+                        end
+
+                        Vector3Box.store(marker.position, marker_position)
+
+                        local distance = Vector3.distance(marker_position, camera_position)
+
+                        content.distance = distance
+                        marker.distance = distance
+
+                        local out_of_reach = max_distance and max_distance < distance
+                        local draw = not out_of_reach
+
+                        if not out_of_reach then
+                            local marker_direction = Vector3.normalize(marker_position - camera_position)
+                            marker_direction = Vector3.normalize(marker_direction)
+
+                            local forward_dot_dir = Vector3.dot(camera_direction, marker_direction)
+                            local is_inside_frustum = Camera.inside_frustum(camera, marker_position) > 0
+                            local camera_left = Vector3.cross(camera_direction, Vector3.up())
+                            local left_dot_dir = Vector3.dot(camera_left, marker_direction)
+                            local angle = math.atan2(left_dot_dir, forward_dot_dir)
+                            local is_behind = forward_dot_dir < 0 and true or false
+                            local is_under = marker_position.z < camera_position.z
+                            local x, y = self:_convert_world_to_screen_position(camera, marker_position)
+                            local pixel_offset = template.pixel_offset
+
+                            if pixel_offset then
+                                x = x + pixel_offset[1]
+                                y = y + pixel_offset[2]
+                            end
+
+                            local screen_x, screen_y = self:_get_screen_offset(scale)
+
+                            x = x - screen_x
+                            y = y - screen_y
+
+                            local is_clamped, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down =
+                                false, false, false, false, false
+
+                            if screen_clamp then
+                                local clamped_x, clamped_y
+
+                                clamped_x, clamped_y, is_clamped_left, is_clamped_right, is_clamped_up, is_clamped_down =
+                                    self:_clamp_to_screen(
+                                        x,
+                                        y,
+                                        screen_margins,
+                                        is_behind,
+                                        is_under,
+                                        marker_position,
+                                        camera_position_center,
+                                        camera_position_left,
+                                        camera_position_right,
+                                        camera_position_up,
+                                        camera_position_down
+                                    )
+                                is_clamped = is_clamped_left or is_clamped_right or is_clamped_up or is_clamped_down
+                                x = clamped_x
+                                y = clamped_y
+                            end
+
+                            if not is_clamped then
+                                if is_behind then
+                                    draw = false
+                                elseif not is_inside_frustum then
+                                    local vertical_pixel_overlap, horizontal_pixel_overlap
+
+                                    if x < 0 then
+                                        horizontal_pixel_overlap = math.abs(x)
+                                    elseif x > root_size[1] then
+                                        horizontal_pixel_overlap = x - root_size[1]
+                                    end
+
+                                    if y < 0 then
+                                        vertical_pixel_overlap = math.abs(y)
+                                    elseif y > root_size[2] then
+                                        vertical_pixel_overlap = y - root_size[2]
+                                    end
+
+                                    if vertical_pixel_overlap or horizontal_pixel_overlap then
+                                        draw = false
+
+                                        local check_widget_visible = template.check_widget_visible
+
+                                        if check_widget_visible then
+                                            draw = check_widget_visible(
+                                                widget,
+                                                vertical_pixel_overlap,
+                                                horizontal_pixel_overlap
+                                            )
+                                        end
+                                    else
+                                        draw = false
+                                    end
+                                end
+                            elseif is_clamped_left or is_clamped_right then
+                                if is_clamped_left then
+                                    angle = 0
+                                elseif is_clamped_right then
+                                    angle = math.pi
+                                end
+                            elseif is_clamped_up then
+                                angle = math.pi * 0.5
+                            elseif is_clamped_down then
+                                angle = -math.pi * 0.5
+                            end
+
+                            content.is_inside_frustum = is_inside_frustum
+                            content.is_clamped = is_clamped
+                            content.is_under = is_under
+                            content.distance = distance
+                            content.angle = angle
+                            marker.is_inside_frustum = is_inside_frustum
+                            marker.is_clamped = is_clamped
+                            marker.is_under = is_under
+                            marker.distance = distance
+                            marker.angle = angle
+
+                            local offset = widget.offset
+
+                            offset[1] = x * inverse_scale
+                            offset[2] = y * inverse_scale
+
+                            marker.raycast_frame_count = (marker.raycast_frame_count or 0) + 1
+
+                            if raycasts_allowed then
+                                temp_marker_raycast_queue[#temp_marker_raycast_queue + 1] = marker
+                            end
+                        end
+
+                        marker.draw = draw
+                    end
+
+                    marker.update = update
+                end
+            end
+        end
+
+        if raycasts_allowed then
+            self:_raycast_markers(temp_marker_raycast_queue)
+            table.clear(temp_marker_raycast_queue)
+        end
+
+        -- MARKERS AIO
+        for marker_type, markers in pairs(markers_by_type) do
+            for i = 1, #markers do
+                local marker = markers[i]
+
+                if marker and marker.update then
+                    marker.markers_aio_type = nil
+
+                    local template = marker.template
+                    local update_function = template.update_function
+
+                    if update_function then
+                        update_function(self, ui_renderer, marker.widget, marker, template, dt, t)
+                    end
+
+                    if marker.type == "objective" and marker.widget then
+                        local unit = marker.unit
+                        if unit and type(unit) == "userdata" and Unit.alive(unit) then
+                            local decoder_ext = ScriptUnit.has_extension(unit, "decoder_device_system")
+                            if decoder_ext and decoder_ext:unit_is_enabled() and not decoder_ext:is_finished() then
+                                marker.widget.content.text = ""
+                            end
+                        end
+                    end
+
+                    if fs.enable.objective then
+                        mod.update_objective_markers(self, marker)
+                    end
+
+                    if fs.enable.tome then
+                        mod.update_tome_markers(self, marker)
+                    end
+                    if fs.enable.material then
+                        mod.update_material_markers(self, marker)
+                    end
+                    if fs.enable.ammo_med then
+                        mod.update_ammo_med_markers(self, marker)
+                    end
+                    if fs.enable.stimm then
+                        mod.update_stimm_markers(self, marker)
+                    end
+                    if fs.enable.chest then
+                        mod.update_chest_markers(self, marker)
+                    end
+                    if fs.enable.heretical_idol then
+                        mod.update_marker_icon(self, marker)
+                    end
+                    if fs.enable.luggable then
+                        mod.update_luggable_markers(self, marker)
+                    end
+                    if fs.enable.martyrs_skull then
+                        mod.update_martyrs_skull_markers(self, marker)
+                    end
+                    if fs.enable.expedition then
+                        mod.update_expedition_markers(self, marker)
+                    end
+                    if fs.enable.servo_skull and marker.type ~= "objective" and marker.type ~= "player_assistance" then
+                        mod.update_servo_skull_markers(self, marker)
+                    end
+                    if
+                        fs.enable.player_assistance
+                        and marker.type ~= "objective"
+                        and marker.type ~= "player_assistance"
+                    then
+                        mod.update_player_assistance_markers(self, marker)
+                    end
+                    if fs.enable.event then
+                        mod.update_tainted_skull_markers(self, marker)
+                        mod.update_TaintedDevices_markers(self, marker)
+                        mod.update_stolenrations_markers(self, marker)
+                        mod.update_atonement_markers(self, marker)
+                    end
+
+                    if not marker.markers_aio_type and fs.enable.unknown then
+                        mod.update_unknown_markers(self, marker)
+                    end
+
+                    --[[
+                    if marker.widget and marker.distance and not marker.markers_aio_type then
+                    local template = marker.template
+                    local max_distance = template and template.max_distance
+                    or (marker.markers_aio_type and mod:get(marker.markers_aio_type .. "_max_distance"))
+
+                    if max_distance then
+                        local dist_alpha = compute_distance_alpha(marker, max_distance)
+
+                        marker.widget.alpha_multiplier = (marker.widget.alpha_multiplier or 1) * dist_alpha
+                    end
+                    end]]
+
+                    if marker.markers_aio_type then
+                        mod.adjust_los_requirement(marker)
+                        mod.adjust_distance_visibility(marker)
+                        mod.fade_icon_not_in_los(marker, ui_renderer)
+                    end
+
+                    mod.adjust_scale(self, marker, ui_renderer, t)
+
+                    local widget = marker.widget
+                    if
+                        marker.markers_aio_type
+                        and widget.style.marker_distance_text
+                        and widget.content.marker_distance_text ~= nil
+                        and marker.distance
+                        and widget.style.background
+                        and widget.style.icon
+                        and marker.markers_aio_type ~= "objective"
+                        and marker.type ~= "objective"
+                        and marker.type ~= "hub_objective"
+                    then
+                        if fs.distance_text_enable then
+                            widget.content.marker_distance_text = tostring(math.floor(marker.distance) .. "m")
+                        else
+                            widget.content.marker_distance_text = ""
+                        end
+
+                        local distance_text_pos = fs.distance_text_position
+                        local distance_text_scale = fs.distance_text_scale / 100
+                        widget.style.marker_distance_text.font_size = (widget.style.icon.size[2] / 2)
+                            * distance_text_scale
+
+                        if distance_text_pos == "Top" then
+                            widget.style.marker_distance_text.offset[2] = -widget.style.background.size[2]
+                                / 2
+                                * distance_text_scale
+                            widget.style.marker_distance_text.offset[1] = 0
+                        elseif distance_text_pos == "Left" then
+                            widget.style.marker_distance_text.offset[1] = -widget.style.background.size[1]
+                                / 2
+                                * distance_text_scale
+                                - 8
+                            widget.style.marker_distance_text.offset[2] = 0
+                        elseif distance_text_pos == "Right" then
+                            widget.style.marker_distance_text.offset[1] = widget.style.background.size[1]
+                                / 2
+                                * distance_text_scale
+                                + 8
+                            widget.style.marker_distance_text.offset[2] = 0
+                        elseif distance_text_pos == "Center" then
+                            widget.style.marker_distance_text.offset[2] = 0
+                            widget.style.marker_distance_text.offset[1] = 0
+                            widget.style.marker_distance_text.offset[3] = widget.style.ring.offset[3] + 1
+                            widget.style.icon.color[1] = 150
+                            widget.style.marker_distance_text.font_size = (widget.style.icon.size[2] / 2.4)
+                                * distance_text_scale
+                        else
+                            -- default to  Bottom if errors/nil
+                            widget.style.marker_distance_text.offset[2] = widget.style.background.size[2]
+                                / 2
+                                * distance_text_scale
+                            widget.style.marker_distance_text.offset[1] = 0
+                        end
+                    end
+                end
+            end
+        end
+    else
+        self._player_camera = self._parent:player_camera()
+    end
+
+    local markers_to_remove = #temp_array_markers_to_remove
+
+    if markers_to_remove > 0 then
+        for i = 1, markers_to_remove do
+            local marker = temp_array_markers_to_remove[i]
+            self:_unregister_marker(marker)
+        end
+
+        table.clear(temp_array_markers_to_remove)
+    end
 end
 
 local HudElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
 local HudElementInteraction = require("scripts/ui/hud/elements/interaction/hud_element_interaction")
 
 HudElementInteraction._update_interactee_data = function(self, interactee_unit, extension)
-	local parent = self._parent
-	local player = parent:player()
-	local player_unit = player.player_unit
-	local camera = parent:player_camera()
-	local camera_position = camera and Camera.local_position(camera)
-	local render_marker = extension:active() and extension:show_marker(player_unit) and interactee_unit ~= player_unit
-	local interaction_units = self._interaction_units
-	local marker = nil
+    local parent = self._parent
+    local player = parent:player()
+    local player_unit = player.player_unit
+    local camera = parent:player_camera()
+    local camera_position = camera and Camera.local_position(camera)
+    local render_marker = extension:active() and extension:show_marker(player_unit) and interactee_unit ~= player_unit
 
-	-- MARKERS AIO OVERRIDE
-	-- Keep markers alive for decoder devices as long as the device is enabled
-	-- and not finished, even while the skull is actively hacking (show_marker
-	-- returns false when the minigame is active). Use the decoder extension
-	-- directly instead of interaction_type since the interaction may change or
-	-- deactivate during the skull's hacking cycle.
-	local decoder_ext = ScriptUnit.has_extension(interactee_unit, "decoder_device_system")
-	local is_decoder_device = decoder_ext and decoder_ext:unit_is_enabled() and not decoder_ext:is_finished()
+    if interactee_unit ~= player_unit and extension:active() and not render_marker and not extension._active_interaction_type then
+        local health_station_extension = ScriptUnit.has_extension(interactee_unit, "health_station_system")
 
-	local max_spawn_distance_sq = 10000 -- 100m
+        if health_station_extension then
+            local has_charges = health_station_extension._charge_amount and health_station_extension._charge_amount > 0
+            local battery_plugged = health_station_extension.battery_in_slot ~= nil and health_station_extension:battery_in_slot()
+            render_marker = has_charges or not battery_plugged
+        end
+    end
 
-	if interactee_unit ~= player_unit and render_marker and camera_position then
-		local interactee_position = Unit.world_position(interactee_unit, 1)
-		local distance_sq = Vector3.distance_squared(interactee_position, camera_position)
+    local interaction_units = self._interaction_units
+    local marker = nil
+    local decoder_ext = ScriptUnit.has_extension(interactee_unit, "decoder_device_system")
+    local is_decoder_device = decoder_ext and decoder_ext:unit_is_enabled() and not decoder_ext:is_finished()
 
-		--render_marker = distance_sq <= HudElementInteractionSettings.max_spawn_distance_sq
-		render_marker = distance_sq <= max_spawn_distance_sq
-	end
+    local max_spawn_distance_sq = 10000 -- 100m
 
-	if render_marker then
-		if not interaction_units[interactee_unit] then
-			interaction_units[interactee_unit] = {
-				extension = nil,
-				marker_id = nil,
-				requested = true,
-				extension = extension,
-			}
+    if interactee_unit ~= player_unit and render_marker and camera_position then
+        local interactee_position = Unit.world_position(interactee_unit, 1)
+        local distance_sq = Vector3.distance_squared(interactee_position, camera_position)
 
-			local marker_callback = callback(self, "_on_interaction_marker_spawned", interactee_unit)
-			local marker_type = "interaction"
+        --render_marker = distance_sq <= HudElementInteractionSettings.max_spawn_distance_sq
+        render_marker = distance_sq <= max_spawn_distance_sq
+    end
 
-			Managers.event:trigger("add_world_marker_unit", marker_type, interactee_unit, marker_callback, extension)
-		end
-	elseif interaction_units[interactee_unit] and not is_decoder_device then
-		local marker_id = interaction_units[interactee_unit].marker_id
+    if render_marker then
+        if not interaction_units[interactee_unit] then
+            interaction_units[interactee_unit] = {
+                extension = nil,
+                marker_id = nil,
+                requested = true,
+                extension = extension,
+            }
 
-		if marker_id then
-			Managers.event:trigger("remove_world_marker", marker_id)
-			interaction_units[interactee_unit] = nil
-		end
-	end
+            local marker_callback = callback(self, "_on_interaction_marker_spawned", interactee_unit)
+            local marker_type = "interaction"
+
+            Managers.event:trigger("add_world_marker_unit", marker_type, interactee_unit, marker_callback, extension)
+        end
+    elseif interaction_units[interactee_unit] and not is_decoder_device then
+        local marker_id = interaction_units[interactee_unit].marker_id
+
+        if marker_id then
+            Managers.event:trigger("remove_world_marker", marker_id)
+            interaction_units[interactee_unit] = nil
+        end
+    end
 end
+
 mod.auspex_active = false
 mod:hook_safe(CLASS.AuspexEffects, "wield", function(self)
-	if self._is_husk then
-		return
-	end
-	mod.auspex_active = true
+    if self._is_husk then
+        return
+    end
+    mod.auspex_active = true
 end)
+
 mod:hook_safe(CLASS.AuspexEffects, "unwield", function(self)
-	if self._is_husk then
-		return
-	end
-	mod.auspex_active = false
+    if self._is_husk then
+        return
+    end
+    mod.auspex_active = false
 end)
 
--- Fade out markers that are behind objects, depending on the set "los_opacity"
 mod.fade_icon_not_in_los = function(marker, ui_renderer)
-	if not marker.markers_aio_type then
-		return
-	end
+    if not marker.markers_aio_type then
+        return
+    end
 
-	local widget = marker.widget
-	if not widget then
-		return
-	end
+    local widget = marker.widget
+    if not widget then
+        return
+    end
 
-	local fs = mod.frame_settings
-	local pt = fs.per_type[marker.markers_aio_type]
-	local mod_alpha = pt and pt.alpha or 1
-	local mod_max_distance = pt and pt.max_distance or 30
+    local fs = mod.frame_settings
+    local pt = fs.per_type[marker.markers_aio_type]
+    local mod_alpha = pt and pt.alpha or 1
+    local mod_max_distance = pt and pt.max_distance or 30
 
-	-- force increase max distance of marker if tagged
-	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
-	if is_tagged then
-		mod_max_distance = 100
-	end
+    -- force increase max distance of marker if tagged
+    local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
+    if is_tagged then
+        mod_max_distance = 100
+    end
 
-	-- No raycast yet = assume blocked LOS
-	local has_raycast = marker.raycast_result ~= nil
+    -- No raycast yet = assume blocked LOS
+    local has_raycast = marker.raycast_result ~= nil
 
-	local base_alpha = mod_alpha
-	local los_alpha
+    local base_alpha = mod_alpha
+    local los_alpha
 
-	if fs.is_ads then
-		los_alpha = fs.ads_los_opacity or fs.los_opacity or 1
-	else
-		los_alpha = fs.los_opacity or 1
-	end
-	local ads_alpha = math.lerp(1, fs.ads_los_opacity or 1, fs.ads_blend)
+    if fs.is_ads then
+        los_alpha = fs.ads_los_opacity or fs.los_opacity or 1
+    else
+        los_alpha = fs.los_opacity or 1
+    end
+    local ads_alpha = math.lerp(1, fs.ads_los_opacity or 1, fs.ads_blend)
 
-	------------------------------------------------
-	-- Distance-based alpha (ONLY for IN-LOS markers)
-	------------------------------------------------
-	local distance_factor = 1
+    ------------------------------------------------
+    -- Distance-based alpha (ONLY for IN-LOS markers)
+    ------------------------------------------------
+    local distance_factor = 1
 
-	if mod_max_distance and marker.distance then
-		local d = math.clamp(marker.distance / mod_max_distance, 0, 1)
+    if mod_max_distance and marker.distance then
+        local d = math.clamp(marker.distance / mod_max_distance, 0, 1)
 
-		-- Remap [0.75 → 1.0] → [1 → 0]
-		if d >= 0.75 then
-			local t = (d - 0.75) / 0.25 -- 0 → 1
-			t = math.clamp(t, 0, 1)
+        -- Remap [0.75 → 1.0] → [1 → 0]
+        if d >= 0.75 then
+            local t = (d - 0.75) / 0.25 -- 0 → 1
+            t = math.clamp(t, 0, 1)
 
-			-- Smoothstep (no pop-in)
-			t = t * t * (3 - 2 * t)
+            -- Smoothstep (no pop-in)
+            t = t * t * (3 - 2 * t)
 
-			distance_factor = 1 - t
-		else
-			distance_factor = 1
-		end
-	end
+            distance_factor = 1 - t
+        else
+            distance_factor = 1
+        end
+    end
 
-	------------------------------------------------
-	-- LOS logic
-	------------------------------------------------
-	local target_alpha = base_alpha or 1
+    ------------------------------------------------
+    -- LOS logic
+    ------------------------------------------------
+    local target_alpha = base_alpha or 1
 
-	-- Apply ADS opacity globally (both LOS and non-LOS)
-	if fs.is_ads and (marker.raycast_result == false) then
-		-- In LOS: ADS dim applies
-		--target_alpha = target_alpha * ads_alpha
-		target_alpha = (target_alpha * distance_factor) * ads_alpha
-	end
+    -- Apply ADS opacity globally (both LOS and non-LOS)
+    if fs.is_ads and (marker.raycast_result == false) then
+        -- In LOS: ADS dim applies
+        --target_alpha = target_alpha * ads_alpha
+        target_alpha = (target_alpha * distance_factor) * ads_alpha
+    end
 
-	if fs.los_enabled then
-		-- Out of LOS OR no raycast yet
-		if not has_raycast or marker.raycast_result == true then
-			--target_alpha = target_alpha * los_alpha
-			target_alpha = (target_alpha * distance_factor) * los_alpha
-		else
-			-- In LOS → distance-shaped opacity
-			target_alpha = target_alpha * distance_factor
-		end
-	end
+    if fs.los_enabled then
+        -- Out of LOS OR no raycast yet
+        if not has_raycast or marker.raycast_result == true then
+            --target_alpha = target_alpha * los_alpha
+            target_alpha = (target_alpha * distance_factor) * los_alpha
+        else
+            -- In LOS → distance-shaped opacity
+            target_alpha = target_alpha * distance_factor
+        end
+    end
 
-	if mod.auspex_active then
-		target_alpha = 0.05
-	end
+    if mod.auspex_active then
+        target_alpha = 0.05
+    end
 
-	------------------------------------------------
-	-- Init + smoothing
-	------------------------------------------------
+    ------------------------------------------------
+    -- Init + smoothing
+    ------------------------------------------------
 
-	local current = widget.alpha_multiplier or target_alpha
-	widget.alpha_multiplier = math.lerp(current, target_alpha, 0.8)
+    local current = widget.alpha_multiplier or target_alpha
+    widget.alpha_multiplier = math.lerp(current, target_alpha, 0.8)
 
-	return target_alpha
+    return target_alpha
 end
 
 local do_draw = function(marker)
-	marker.draw = true
+    marker.draw = true
 end
 
 local dont_draw = function(marker)
-	if not marker then
-		return
-	end
-	local fs = mod.frame_settings
-	local pt = fs.per_type[marker.markers_aio_type]
-	local mod_keep_on_screen = pt and pt.keep_on_screen
-	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
+    if not marker then
+        return
+    end
+    local fs = mod.frame_settings
+    local pt = fs.per_type[marker.markers_aio_type]
+    local mod_keep_on_screen = pt and pt.keep_on_screen
+    local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
 
-	if marker.is_inside_frustum then
-		if is_tagged then
-			marker.draw = true
-		else
-			marker.draw = false
-		end
-	elseif is_tagged and mod_keep_on_screen then
-		marker.draw = true
-	else
-		marker.draw = false
-	end
+    if marker.is_inside_frustum then
+        if is_tagged then
+            marker.draw = true
+        else
+            marker.draw = false
+        end
+    elseif is_tagged and mod_keep_on_screen then
+        marker.draw = true
+    else
+        marker.draw = false
+    end
 end
 
 mod.adjust_los_requirement = function(marker)
-	if not marker.markers_aio_type then
-		return
-	end
+    if not marker.markers_aio_type then
+        return
+    end
 
-	local fs = mod.frame_settings
-	local pt = fs.per_type[marker.markers_aio_type]
-	local mod_require_los = marker.aio_check_line_of_sight
-	if mod_require_los == nil then
-		mod_require_los = pt and pt.require_line_of_sight
-	end
-	local mod_keep_on_screen = pt and pt.keep_on_screen
-	local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
-	local is_blocked = not marker.raycast_result
+    local fs = mod.frame_settings
+    local pt = fs.per_type[marker.markers_aio_type]
+    local mod_require_los = marker.aio_check_line_of_sight
+    if mod_require_los == nil then
+        mod_require_los = pt and pt.require_line_of_sight
+    end
+    local mod_keep_on_screen = pt and pt.keep_on_screen
+    local is_tagged = marker.widget and marker.widget.content and marker.widget.content.tagged
+    local is_blocked = not marker.raycast_result
 
-	if mod_require_los then
-		if marker.is_inside_frustum then
-			if is_blocked or is_tagged then
-				do_draw(marker)
-			else
-				dont_draw(marker)
-			end
-		elseif (is_blocked and mod_keep_on_screen) or (is_tagged and mod_keep_on_screen) then
-			do_draw(marker)
-		else
-			dont_draw(marker)
-		end
-	else
-		if (marker.is_inside_frustum or mod_keep_on_screen) or (marker.is_inside_frustum and is_tagged) then
-			do_draw(marker)
-		else
-			dont_draw(marker)
-		end
-	end
+    if mod_require_los then
+        if marker.is_inside_frustum then
+            if is_blocked or is_tagged then
+                do_draw(marker)
+            else
+                dont_draw(marker)
+            end
+        elseif (is_blocked and mod_keep_on_screen) or (is_tagged and mod_keep_on_screen) then
+            do_draw(marker)
+        else
+            dont_draw(marker)
+        end
+    else
+        if (marker.is_inside_frustum or mod_keep_on_screen) or (marker.is_inside_frustum and is_tagged) then
+            do_draw(marker)
+        else
+            dont_draw(marker)
+        end
+    end
 end
 
 -- Adjust the scale of markers, according to their percentage scale setting.
 mod.adjust_scale = function(self, marker, ui_renderer, t)
-	marker.scale_original = marker.scale
+    marker.scale_original = marker.scale
 
-	local widget = marker.widget
-	local content = widget.content
-	local distance = content.distance
-	local template = marker.template
-	local scale_settings = template.scale_settings
+    local widget = marker.widget
+    local content = widget.content
+    local distance = content.distance
+    local template = marker.template
+    local scale_settings = template.scale_settings
 
-	if not scale_settings then
-		return
-	end
+    if not scale_settings then
+        return
+    end
 
-	local scale = 1
-	local mod_scale = scale
+    local scale = 1
+    local mod_scale = scale
 
-	if marker.markers_aio_type then
-		local fs = mod.frame_settings
-		local pt = fs.per_type[marker.markers_aio_type]
-		local mod_scale = pt and pt.scale or 100
-		mod_scale = mod_scale / 100
-		scale = mod_scale
-	end
+    if marker.markers_aio_type then
+        local fs = mod.frame_settings
+        local pt = fs.per_type[marker.markers_aio_type]
+        local mod_scale = pt and pt.scale or 100
+        mod_scale = mod_scale / 100
+        scale = mod_scale
+    end
 
-	marker.scale = self:_get_scale(scale_settings, distance)
-	local new_scale = marker.ignore_scale and 1 or marker.scale * scale
+    marker.scale = self:_get_scale(scale_settings, distance)
+    local new_scale = marker.ignore_scale and 1 or marker.scale * scale
 
-	if marker.servo_skull_pulse and t then
-		local pulse_speed = 2
-		local pulse_amplitude = 0.2
-		local pulse = (math.sin(t * pulse_speed * math.pi * 2) + 1) / 2
-		new_scale = new_scale * (1 + pulse * pulse_amplitude)
-	end
+    if marker.servo_skull_pulse and t then
+        local pulse_speed = 2
+        local pulse_amplitude = 0.2
+        local pulse = (math.sin(t * pulse_speed * math.pi * 2) + 1) / 2
+        new_scale = new_scale * (1 + pulse * pulse_amplitude)
+    end
 
-	marker.scale = new_scale
+    marker.scale = new_scale
 
-	self:_apply_scale(widget, new_scale)
+    self:_apply_scale(widget, new_scale)
 
-	--[[if marker.data and marker.data.type == "medical_crate_deployable" then
-		local style = widget.style
-		local lerp_multiplier = 1
+    --[[if marker.data and marker.data.type == "medical_crate_deployable" then
+        local style = widget.style
+        local lerp_multiplier = 1
 
-		for _, pass_style in pairs(style) do
-			local current_size = pass_style.area_size or pass_style.texture_size or pass_style.size
-			if current_size then
-				local default_size = 96
+        for _, pass_style in pairs(style) do
+        local current_size = pass_style.area_size or pass_style.texture_size or pass_style.size
+        if current_size then
+            local default_size = 96
 
-				if _ == "background" or _ == "ping" or _ == "ring" then
-					default_size = 96
-				else
-					default_size = 48
-				end
+            if _ == "background" or _ == "ping" or _ == "ring" then
+            default_size = 96
+            else
+            default_size = 48
+            end
 
-				current_size[1] = math.lerp(current_size[1], default_size * new_scale, lerp_multiplier)
-				current_size[2] = math.lerp(current_size[2], default_size * new_scale, lerp_multiplier)
-			end
+            current_size[1] = math.lerp(current_size[1], default_size * new_scale, lerp_multiplier)
+            current_size[2] = math.lerp(current_size[2], default_size * new_scale, lerp_multiplier)
+        end
 
-			if pass_style.font_size then
-				local font_size = math.lerp(pass_style.font_size, 16 * new_scale, lerp_multiplier)
-				marker.widget.style.marker_text.font_size = font_size
-			end
-		end
-	end]]
+        if pass_style.font_size then
+            local font_size = math.lerp(pass_style.font_size, 16 * new_scale, lerp_multiplier)
+            marker.widget.style.marker_text.font_size = font_size
+        end
+        end
+        end]]
 end
 
 HudElementWorldMarkers._apply_scale = function(self, widget, scale)
-	local style = widget.style
-	local lerp_multiplier = 0.2
+    local style = widget.style
+    local lerp_multiplier = 0.2
 
-	for _, pass_style in pairs(style) do
-		local default_size = pass_style.default_size
+    for _, pass_style in pairs(style) do
+        local default_size = pass_style.default_size
 
-		if default_size then
-			local current_size = pass_style.area_size or pass_style.texture_size or pass_style.size
+        if default_size then
+            local current_size = pass_style.area_size or pass_style.texture_size or pass_style.size
 
-			current_size[1] = math.lerp(current_size[1], default_size[1] * scale, lerp_multiplier)
-			current_size[2] = math.lerp(current_size[2], default_size[2] * scale, lerp_multiplier)
-		end
+            current_size[1] = math.lerp(current_size[1], default_size[1] * scale, lerp_multiplier)
+            current_size[2] = math.lerp(current_size[2], default_size[2] * scale, lerp_multiplier)
+        end
 
-		local default_offset = pass_style.default_offset
+        local default_offset = pass_style.default_offset
 
-		if default_offset then
-			local offset = pass_style.offset
+        if default_offset then
+            local offset = pass_style.offset
 
-			offset[1] = math.lerp(offset[1], default_offset[1] * scale, lerp_multiplier)
-			offset[2] = math.lerp(offset[2], default_offset[2] * scale, lerp_multiplier)
-		end
+            offset[1] = math.lerp(offset[1], default_offset[1] * scale, lerp_multiplier)
+            offset[2] = math.lerp(offset[2], default_offset[2] * scale, lerp_multiplier)
+        end
 
-		local default_pivot = pass_style.default_pivot
+        local default_pivot = pass_style.default_pivot
 
-		if default_pivot then
-			local pivot = pass_style.pivot
+        if default_pivot then
+            local pivot = pass_style.pivot
 
-			pivot[1] = math.lerp(pivot[1], default_pivot[1] * scale, lerp_multiplier)
-			pivot[2] = math.lerp(pivot[2], default_pivot[2] * scale, lerp_multiplier)
-		end
-	end
+            pivot[1] = math.lerp(pivot[1], default_pivot[1] * scale, lerp_multiplier)
+            pivot[2] = math.lerp(pivot[2], default_pivot[2] * scale, lerp_multiplier)
+        end
+    end
 end
 
 -- force hide the markers if the distance is greater than their max. (Helps ensure markers wont be "stuck" on the screen on rare occurances)
 mod.adjust_distance_visibility = function(marker)
-	if not marker.markers_aio_type then
-		return
-	end
+    if not marker.markers_aio_type then
+        return
+    end
 
-	local fs = mod.frame_settings
-	local pt = fs.per_type[marker.markers_aio_type]
-	local mod_max_distance = pt and pt.max_distance
+    local fs = mod.frame_settings
+    local pt = fs.per_type[marker.markers_aio_type]
+    local mod_max_distance = pt and pt.max_distance
 
-	if mod_max_distance and marker.distance > mod_max_distance then
-		dont_draw(marker)
-	end
+    if mod_max_distance and marker.distance > mod_max_distance then
+        dont_draw(marker)
+    end
 end
 
 -- override to let you tag any vanilla item marker that you can see.
 HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit, marker, distance)
-	local template = marker.template
+    local template = marker.template
 
-	if template.using_smart_tag_system and not template.get_smart_tag_id then
-		return false
-	end
+    if template.using_smart_tag_system and not template.get_smart_tag_id then
+        return false
+    end
 
-	if not template.using_smart_tag_system then
-		local unit = marker.unit
-		if unit and type(unit) == "userdata" and Unit.alive(unit) then
-			local ie = ScriptUnit.has_extension(unit, "interactee_system")
-			if not (ie and ie:interaction_type() == "decoding") then
-				return false
-			end
-		else
-			return false
-		end
-	end
+    if not template.using_smart_tag_system then
+        local unit = marker.unit
+        if unit and type(unit) == "userdata" and Unit.alive(unit) then
+            local ie = ScriptUnit.has_extension(unit, "interactee_system")
+            if not (ie and ie:interaction_type() == "decoding") then
+                return false
+            end
+        else
+            return false
+        end
+    end
 
-	local marker_unit = marker.unit
-	local smart_tag_extension = marker_unit and ScriptUnit.has_extension(marker_unit, "smart_tag_system")
-	local tag_id = template.get_smart_tag_id and template.get_smart_tag_id(marker)
+    local marker_unit = marker.unit
+    local smart_tag_extension = marker_unit and ScriptUnit.has_extension(marker_unit, "smart_tag_system")
+    local tag_id = template.get_smart_tag_id and template.get_smart_tag_id(marker)
 
-	-- Allow AIO custom markers (chest, heretical idol, ammo/med, servo skull) without smart_tag_extension or tag_id
-	if marker_unit and not smart_tag_extension and not tag_id then
-		if marker.markers_aio_type then
-			-- AIO marker without native smart tag support: allow through, tag_id stays nil
-		else
-			-- Also allow hackable terminals (servo skull targets) even before markers_aio_type is set
-			local ie = ScriptUnit.has_extension(marker_unit, "interactee_system")
-			if not (ie and ie:interaction_type() == "decoding") then
-				return false
-			end
-		end
-	end
+    -- Allow AIO custom markers (chest, heretical idol, ammo/med, servo skull) without smart_tag_extension or tag_id
+    if marker_unit and not smart_tag_extension and not tag_id then
+        if marker.markers_aio_type then
+            -- AIO marker without native smart tag support: allow through, tag_id stays nil
+        else
+            -- Also allow hackable terminals (servo skull targets) even before markers_aio_type is set
+            local ie = ScriptUnit.has_extension(marker_unit, "interactee_system")
+            if not (ie and ie:interaction_type() == "decoding") then
+                return false
+            end
+        end
+    end
 
-	local in_line_of_sight = not marker.raycast_result
+    local in_line_of_sight = not marker.raycast_result
 
-	-- For AIO markers, only require LOS if the per-marker/aio-type LOS setting says so.
-	-- Allows interaction prompts (and tagging) through walls when LOS is toggled off.
-	if not tag_id and not in_line_of_sight then
-		if marker.markers_aio_type then
-			local check_los = marker.aio_check_line_of_sight
-			if check_los == nil then
-				local fs = mod.frame_settings
-				local pt = fs.per_type[marker.markers_aio_type]
-				check_los = pt and pt.require_line_of_sight
-			end
-			if check_los ~= false then
-				return false
-			end
-		else
-			local ie = ScriptUnit.has_extension(marker_unit, "interactee_system")
-			if not (ie and ie:interaction_type() == "decoding") then
-				return false
-			end
-		end
-	end
+    -- For AIO markers, only require LOS if the per-marker/aio-type LOS setting says so.
+    -- Allows interaction prompts (and tagging) through walls when LOS is toggled off.
+    if not tag_id and not in_line_of_sight then
+        if marker.markers_aio_type then
+            local check_los = marker.aio_check_line_of_sight
+            if check_los == nil then
+                local fs = mod.frame_settings
+                local pt = fs.per_type[marker.markers_aio_type]
+                check_los = pt and pt.require_line_of_sight
+            end
+            if check_los ~= false then
+                return false
+            end
+        else
+            local ie = ScriptUnit.has_extension(marker_unit, "interactee_system")
+            if not (ie and ie:interaction_type() == "decoding") then
+                return false
+            end
+        end
+    end
 
-	if not marker.is_inside_frustum or marker.is_clamped then
-		return false
-	end
+    if not marker.is_inside_frustum or marker.is_clamped then
+        return false
+    end
 
-	if not tag_id then
-		if smart_tag_extension and not smart_tag_extension:can_tag(player_unit) then
-			return false
-		end
+    if not tag_id then
+        if smart_tag_extension and not smart_tag_extension:can_tag(player_unit) then
+            return false
+        end
 
-		local max_distance = template.max_distance
+        local max_distance = template.max_distance
 
-		if max_distance and distance and max_distance <= distance then
-			return false
-		end
-	end
+        if max_distance and distance and max_distance <= distance then
+            return false
+        end
+    end
 
-	return true
+    return true
 end
 
 HudElementSmartTagging._handle_selected_marker = function(self, marker)
-	local marker_template = marker.template
-	local tag_id = marker_template.get_smart_tag_id and marker_template.get_smart_tag_id(marker)
-	if tag_id then
-		self:_trigger_smart_tag_interaction(tag_id)
-	else
-		local marker_unit = marker.unit
-		if marker_unit then
-			self:_trigger_smart_tag_unit_contextual(marker_unit)
-		end
-	end
+    local marker_template = marker.template
+    local tag_id = marker_template.get_smart_tag_id and marker_template.get_smart_tag_id(marker)
+    if tag_id then
+        self:_trigger_smart_tag_interaction(tag_id)
+    else
+        local marker_unit = marker.unit
+        if marker_unit then
+            self:_trigger_smart_tag_unit_contextual(marker_unit)
+        end
+    end
 end
 
 HudElementSmartTagging._handle_interaction_draw = function(self, dt, t, input_service, ui_renderer, render_settings)
-	local can_present_tag_interaction = self:_can_present_tag_interaction()
+    local can_present_tag_interaction = self:_can_present_tag_interaction()
 
-	if not can_present_tag_interaction then
-		self._active_interaction_data = nil
+    if not can_present_tag_interaction then
+        self._active_interaction_data = nil
 
-		return
-	end
+        return
+    end
 
-	if self._interaction_scan_delay_duration > 0 then
-		self._interaction_scan_delay_duration = self._interaction_scan_delay_duration - dt
-	else
-		local force_update_targets = false
-		local best_marker, best_unit, _ =
-			self:_find_best_smart_tag_interaction(ui_renderer, render_settings, force_update_targets)
-		local parent = self._parent
-		local player = parent:player()
-		local player_unit = player.player_unit
-		local smart_tag_system = Managers.state.extension:system("smart_tag_system")
-		local previous_active_interaction_data = self._active_interaction_data
+    if self._interaction_scan_delay_duration > 0 then
+        self._interaction_scan_delay_duration = self._interaction_scan_delay_duration - dt
+    else
+        local force_update_targets = false
+        local best_marker, best_unit, _ =
+            self:_find_best_smart_tag_interaction(ui_renderer, render_settings, force_update_targets)
+        local parent = self._parent
+        local player = parent:player()
+        local player_unit = player.player_unit
+        local smart_tag_system = Managers.state.extension:system("smart_tag_system")
+        local previous_active_interaction_data = self._active_interaction_data
 
-		if not best_marker and best_unit then
-			local marker = self:_find_marker_by_unit(best_unit)
+        if not best_marker and best_unit then
+            local marker = self:_find_marker_by_unit(best_unit)
 
-			best_marker = marker
-		end
+            best_marker = marker
+        end
 
-		if best_marker then
-			if not previous_active_interaction_data or previous_active_interaction_data.marker ~= best_marker then
-				local marker_id = best_marker.id
-				local smart_tag_presentation_data = self._presented_smart_tags_by_marker_id[marker_id]
-				local tag_id = smart_tag_presentation_data and smart_tag_presentation_data.tag_id
-				local tag_template, display_name
+        if best_marker then
+            if not previous_active_interaction_data or previous_active_interaction_data.marker ~= best_marker then
+                local marker_id = best_marker.id
+                local smart_tag_presentation_data = self._presented_smart_tags_by_marker_id[marker_id]
+                local tag_id = smart_tag_presentation_data and smart_tag_presentation_data.tag_id
+                local tag_template, display_name
 
-				if tag_id then
-					local tag = smart_tag_system:tag_by_id(tag_id)
+                if tag_id then
+                    local tag = smart_tag_system:tag_by_id(tag_id)
 
-					if tag then
-						display_name = tag:display_name()
-						tag_template = tag:template()
-					end
-				end
+                    if tag then
+                        display_name = tag:display_name()
+                        tag_template = tag:template()
+                    end
+                end
 
-				-- Treat "n/a" as unresolved (common for custom markers with game tags that lack proper display_name)
-				if display_name == "n/a" then
-					display_name = nil
-				end
+                -- Treat "n/a" as unresolved (common for custom markers with game tags that lack proper display_name)
+                if display_name == "n/a" then
+                    display_name = nil
+                end
 
-				if not display_name then
-					local marker_unit = best_marker.unit
-					local smart_tag_extension = marker_unit
-						and ScriptUnit.has_extension(marker_unit, "smart_tag_system")
+                if not display_name then
+                    local marker_unit = best_marker.unit
+                    local smart_tag_extension = marker_unit
+                        and ScriptUnit.has_extension(marker_unit, "smart_tag_system")
 
-					if smart_tag_extension then
-						tag_template = smart_tag_extension:contextual_tag_template(player_unit)
-						display_name = smart_tag_extension:display_name(player_unit)
-					elseif best_marker.markers_aio_type then
-						local aio_type = best_marker.markers_aio_type
+                    if smart_tag_extension then
+                        tag_template = smart_tag_extension:contextual_tag_template(player_unit)
+                        display_name = smart_tag_extension:display_name(player_unit)
 
-						if aio_type == "chest" then
-							display_name = mod:localize("mod_marker_chest_name")
-						elseif aio_type == "ammo_med" then
-							if best_marker.data and best_marker.data._active_interaction_type == "health_station" then
-								display_name = mod:localize("mod_marker_medicae_station_name")
-							else
-								display_name = mod:localize("mod_marker_item_name")
-							end
-						elseif aio_type == "heretical_idol" then
-							display_name = mod:localize("mod_marker_heretical_idol_name")
-						elseif aio_type == "stimm" then
-							local pickup_type = mod.get_marker_pickup_type(best_marker)
-								or (best_marker.data and best_marker.data.type)
+                        -- display_name() falls back to the raw loca key "n/a" when there is neither
+                        -- a stored description nor a contextual tag template (e.g. deployed crates).
+                        if display_name == "n/a" then
+                            display_name = nil
+                        end
+                    end
 
-							if pickup_type == "syringe_power_boost_pocketable" then
-								display_name = mod:localize("mod_marker_power_stimm_name")
-							elseif pickup_type == "syringe_speed_boost_pocketable" then
-								display_name = mod:localize("mod_marker_speed_stimm_name")
-							elseif pickup_type == "syringe_ability_boost_pocketable" then
-								display_name = mod:localize("mod_marker_boost_stimm_name")
-							elseif pickup_type == "syringe_corruption_pocketable" then
-								display_name = mod:localize("mod_marker_medic_stimm_name")
-							elseif pickup_type == "syringe_broker_pocketable" then
-								display_name = mod:localize("mod_marker_broker_stimm_name")
-							else
-								display_name = mod:localize("mod_marker_stimm_name")
-							end
-						elseif aio_type == "martyrs_skull" then
-							display_name = best_marker.guide_step_text or mod:localize("mod_marker_item_name")
-						elseif aio_type == "tome" then
-							display_name = mod:localize("mod_marker_tome_name")
-						elseif aio_type == "material" then
-							display_name = mod:localize("mod_marker_material_name")
-						elseif aio_type == "luggable" then
-							display_name = mod:localize("mod_marker_luggable_name")
-						elseif aio_type == "expedition" then
-							display_name = mod:localize("mod_marker_expedition_name")
-						elseif aio_type == "event" then
-							display_name = mod:localize("mod_marker_event_name")
-						elseif aio_type == "servo_skull" then
-							display_name = mod:localize("mod_marker_servo_skull_name")
-						elseif aio_type == "unknown" then
-							display_name = mod:localize("mod_marker_unknown_name")
-						else
-							display_name = mod:localize("mod_marker_item_name")
-						end
+                    if not display_name and best_marker.markers_aio_type then
+                        local aio_type = best_marker.markers_aio_type
 
-						tag_template = {}
-					end
-				end
+                        if aio_type == "chest" then
+                            display_name = "mod_marker_chest_name"
+                        elseif aio_type == "ammo_med" then
+                            if
+                                best_marker.data and best_marker.data._active_interaction_type == "health_station"
+                                or best_marker.unit and ScriptUnit.has_extension(best_marker.unit, "health_station_system")
+                            then
+                                display_name = "mod_marker_medicae_station_name"
+                            else
+                                local pickup_type = mod.get_marker_pickup_type(best_marker)
+                                    or (best_marker.data and best_marker.data.type)
 
-				if not display_name then
-					display_name = "Item"
-				end
+                                -- Reuse the pocketable medcrate's vanilla display name so the deployed
+                                -- crate tag reads "Medical Crate", same as the non-deployed one.
+                                if pickup_type == "medical_crate_deployable" then
+                                    display_name = "loc_pickup_pocketable_medical_crate_01"
+                                else
+                                    display_name = "mod_marker_item_name"
+                                end
+                            end
+                        elseif aio_type == "heretical_idol" then
+                            display_name = "mod_marker_heretical_idol_name"
+                        elseif aio_type == "stimm" then
+                            local pickup_type = mod.get_marker_pickup_type(best_marker)
+                                or (best_marker.data and best_marker.data.type)
 
-				self._active_interaction_data = {
-					display_name = display_name,
-					intro_anim_duration = 0.2,
-					intro_anim_progress = 0,
-					intro_anim_time = 0,
-					marker = best_marker,
-					marker_id = best_marker.id,
-					tag_id = tag_id,
-					tag_template = tag_template,
-					unit = best_unit or best_marker.unit,
-				}
-			end
-		else
-			self._active_interaction_data = nil
-		end
+                            if pickup_type == "syringe_power_boost_pocketable" then
+                                display_name = "mod_marker_power_stimm_name"
+                            elseif pickup_type == "syringe_speed_boost_pocketable" then
+                                display_name = "mod_marker_speed_stimm_name"
+                            elseif pickup_type == "syringe_ability_boost_pocketable" then
+                                display_name = "mod_marker_boost_stimm_name"
+                            elseif pickup_type == "syringe_corruption_pocketable" then
+                                display_name = "mod_marker_medic_stimm_name"
+                            elseif pickup_type == "syringe_broker_pocketable" then
+                                display_name = "mod_marker_broker_stimm_name"
+                            else
+                                display_name = "mod_marker_stimm_name"
+                            end
+                        elseif aio_type == "martyrs_skull" then
+                            display_name = best_marker.guide_step_text or "mod_marker_item_name"
+                        elseif aio_type == "tome" then
+                            display_name = "mod_marker_tome_name"
+                        elseif aio_type == "material" then
+                            display_name = "mod_marker_material_name"
+                        elseif aio_type == "luggable" then
+                            display_name = "mod_marker_luggable_name"
+                        elseif aio_type == "expedition" then
+                            display_name = "mod_marker_expedition_name"
+                        elseif aio_type == "event" then
+                            display_name = "mod_marker_event_name"
+                        elseif aio_type == "servo_skull" then
+                            display_name = "mod_marker_servo_skull_name"
+                        elseif aio_type == "unknown" then
+                            display_name = "mod_marker_unknown_name"
+                        else
+                            display_name = "mod_marker_item_name"
+                        end
 
-		self._interaction_scan_delay_duration = self._interaction_scan_delay
-	end
+                        tag_template = {}
+                    end
+                end
 
-	self:_update_tags_interaction_hover_status()
+                if not display_name then
+                    display_name = "mod_marker_item_name"
+                end
 
-	local active_interaction_data = self._active_interaction_data
-	local marker = active_interaction_data and active_interaction_data.marker
+                self._active_interaction_data = {
+                    display_name = display_name,
+                    intro_anim_duration = 0.2,
+                    intro_anim_progress = 0,
+                    intro_anim_time = 0,
+                    marker = best_marker,
+                    marker_id = best_marker.id,
+                    tag_id = tag_id,
+                    tag_template = tag_template,
+                    unit = best_unit or best_marker.unit,
+                }
+            end
+        else
+            self._active_interaction_data = nil
+        end
 
-	if marker and marker.deleted then
-		self._active_interaction_data = nil
-	elseif marker then
-		self:_update_tag_interaction_information(active_interaction_data)
-		self:_update_tag_interaction_animation(dt, t)
-		self:_draw_active_interaction_line(dt, t, input_service, ui_renderer, render_settings)
-	end
+        self._interaction_scan_delay_duration = self._interaction_scan_delay
+    end
+
+    self:_update_tags_interaction_hover_status()
+
+    local active_interaction_data = self._active_interaction_data
+    local marker = active_interaction_data and active_interaction_data.marker
+
+    if marker and marker.deleted then
+        self._active_interaction_data = nil
+    elseif marker then
+        self:_update_tag_interaction_information(active_interaction_data)
+        self:_update_tag_interaction_animation(dt, t)
+        self:_draw_active_interaction_line(dt, t, input_service, ui_renderer, render_settings)
+    end
 end
 
--- Override widget text after base game's _update_tag_interaction_information to avoid
--- "unlocalized" errors. The base game re-localizes display_name through Localize(),
--- but our AIO marker names are resolved strings that aren't valid localization keys.
--- Only override when display_name is a mod-resolved string (doesn't start with "loc_");
--- game localization keys are already properly resolved by Localize() in the base function.
+
 mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", function(self, data)
-	if data and data.marker then
-		local widget = self._interaction_line_widget
-		if widget and widget.content then
-			if data.marker.guide_step_text then
-				widget.content.description_text = data.marker.guide_step_text
-			elseif data.marker.markers_aio_type and data.display_name then
-				if not string.find(data.display_name, "^loc_") then
-					widget.content.description_text = data.display_name
-				end
-			end
-			-- Set word wrap and max width on description text so long guide text wraps
-			local style = widget.style and widget.style.description_text
+    if data and data.marker then
+        local widget = self._interaction_line_widget
+        if widget and widget.content then
+            local ammo_fs = mod.frame_settings
+            local status = data.marker.ammo_status
+            local show_ammo_info = data.marker.markers_aio_type == "ammo_med"
+                and status
+                and ammo_fs
+                and ammo_fs.ammo_status_enable
+                and ammo_fs.ammo_status_numeric_enable
+                and ammo_fs.ammo_status_popup_text_enable
+                and (ammo_fs.ammo_status_show_gain or ammo_fs.ammo_status_show_waste)
 
-			if style and not style.word_wrap then
-				style.size = { 500, 100 }
-				style.word_wrap = true
-			end
+            local description_style = widget.style and widget.style.description_text
 
-			if not data.tag_template or data.tag_template == {} or not data.tag_template.name then
-				widget.content.input_text = ""
-			end
-		end
-	end
+            if show_ammo_info and status.colour and description_style and description_style.text_color then
+                if not mod._tag_description_default_colour then
+                    mod._tag_description_default_colour = table.clone(description_style.text_color)
+                end
+
+                local color = description_style.text_color
+                --color[1] = 255
+                --color[2] = status.colour[1]
+                --color[3] = status.colour[2]
+                --color[4] = status.colour[3]
+            elseif
+                not show_ammo_info
+                and mod._tag_description_default_colour
+                and description_style
+                and description_style.text_color
+            then
+                local color = description_style.text_color
+                local default_colour = mod._tag_description_default_colour
+
+                for i = 2, math.min(#color, #default_colour) do
+                    --color[i] = default_colour[i]
+                end
+            end
+
+            if data.marker.guide_step_text then
+                widget.content.description_text = data.marker.guide_step_text
+            elseif data.marker.markers_aio_type and data.display_name then
+                if show_ammo_info then
+                    local description_text = Localize(data.display_name)
+
+                    local numeric_parts = {}
+
+                    if status.status == "teammate" and status.needy_player then
+                        local needy = status.needy_player
+                        local needy_slot = needy.player and needy.player:slot() or needy.slot
+                        local needy_colour = UISettings.player_slot_colors[needy_slot]
+
+                        numeric_parts[#numeric_parts + 1] = string.format(
+                            "{#color(%d,%d,%d)}%s{#reset()}",
+                            needy_colour and needy_colour[2] or 255,
+                            needy_colour and needy_colour[3] or 255,
+                            needy_colour and needy_colour[4] or 255,
+                            needy.icon
+                        ) .. " (+" .. math.ceil((needy.percentage or 0) * 100) .. "%)"
+                    end
+
+                    if ammo_fs.ammo_status_show_gain and status.gain then
+                        numeric_parts[#numeric_parts + 1] = mod.ammo_status_colour_markup("+" .. status.gain, "gain")
+                    end
+
+                    if ammo_fs.ammo_status_show_waste and status.waste then
+                        numeric_parts[#numeric_parts + 1] =
+                            mod.ammo_status_colour_markup("(-" .. status.waste .. ")", "waste")
+                    end
+
+                    if #numeric_parts > 0 then
+                        description_text = description_text .. "  " .. table.concat(numeric_parts, " ")
+                    end
+
+                    local marker_distance = data.marker and data.marker.distance
+                    local distance_text = marker_distance
+                        and marker_distance > 1
+                        and tostring(math.floor(marker_distance)) .. "m"
+                        or ""
+
+                    widget.content.description_text = Localize("loc_smart_tag_description_format_key", true, {
+                        distance = distance_text,
+                        description = description_text,
+                    })
+                end
+            end
+
+            local style = widget.style and widget.style.description_text
+
+            if style and not style.word_wrap then
+                style.size = { 500, 100 }
+                style.word_wrap = true
+            end
+
+            if not data.tag_template or data.tag_template == {} or not data.tag_template.name then
+                widget.content.input_text = ""
+            end
+        end
+    end
 end)
 
 HudElementSmartTagging._can_present_tag_interaction = function(self)
-	local parent = self._parent
-	local player = parent:player()
+    local parent = self._parent
+    local player = parent:player()
 
-	if not player then
-		return false
-	end
+    if not player then
+        return false
+    end
 
-	local player_unit = player.player_unit
+    local player_unit = player.player_unit
 
-	if not ALIVE[player_unit] then
-		return false
-	end
+    if not ALIVE[player_unit] then
+        return false
+    end
 
-	local interactor_extension = ScriptUnit.has_extension(player_unit, "interactor_system")
+    local interactor_extension = ScriptUnit.has_extension(player_unit, "interactor_system")
 
-	if interactor_extension then
-		local interactee_unit = interactor_extension:target_unit()
-		local focus_unit = interactor_extension:focus_unit()
+    if interactor_extension then
+        local interactee_unit = interactor_extension:target_unit()
+        local focus_unit = interactor_extension:focus_unit()
 
-		if ALIVE[focus_unit] and interactor_extension:hud_block_text() then
-			return false
-		end
+        if ALIVE[focus_unit] and interactor_extension:hud_block_text() then
+            return false
+        end
 
-		if ALIVE[interactee_unit] and interactor_extension:can_interact(interactee_unit) then
-			if ScriptUnit.has_extension(interactee_unit, "smart_tag_system") then
-				if self._world_markers_list then
-					for i = 1, #self._world_markers_list do
-						local marker = self._world_markers_list[i]
+        if ALIVE[interactee_unit] and interactor_extension:can_interact(interactee_unit) then
+            if ScriptUnit.has_extension(interactee_unit, "smart_tag_system") then
+                if self._world_markers_list then
+                    for i = 1, #self._world_markers_list do
+                        local marker = self._world_markers_list[i]
 
-						if marker.unit == interactee_unit and marker.markers_aio_type then
-							return true
-						end
-					end
-				end
+                        if marker.unit == interactee_unit and marker.markers_aio_type then
+                            return true
+                        end
+                    end
+                end
 
-				return false
-			end
-		end
-	end
+                return false
+            end
+        end
+    end
 
-	return true
+    return true
 end
 
 mod.ammo_med_toggle_los = function()
-	mod.toggle_los("ammo_med")
+    mod.toggle_los("ammo_med")
 end
 
 mod.chest_toggle_los = function()
-	mod.toggle_los("chest")
+    mod.toggle_los("chest")
 end
 
 mod.heretical_idol_toggle_los = function()
-	mod.toggle_los("heretical_idol")
+    mod.toggle_los("heretical_idol")
 end
 
 mod.material_toggle_los = function()
-	mod.toggle_los("material")
+    mod.toggle_los("material")
 end
 
 mod.stimm_toggle_los = function()
-	mod.toggle_los("stimm")
+    mod.toggle_los("stimm")
 end
 
 mod.tome_toggle_los = function()
-	mod.toggle_los("tome")
+    mod.toggle_los("tome")
 end
 
 mod.event_toggle_los = function()
-	mod.toggle_los("event")
+    mod.toggle_los("event")
 end
 
 mod.luggable_toggle_los = function()
-	mod.toggle_los("luggable")
+    mod.toggle_los("luggable")
 end
 
 mod.martyrs_skull_toggle_los = function()
-	mod.toggle_los("martyrs_skull")
+    mod.toggle_los("martyrs_skull")
 end
 
 mod.servo_skull_toggle_los = function()
-	mod.toggle_los("servo_skull")
+    mod.toggle_los("servo_skull")
+end
+
+mod.objective_toggle_los = function()
+    mod.toggle_los("objective")
 end
 
 mod.toggle_los = function(marker_type)
-	if marker_type then
-		if mod:get(marker_type .. "_require_line_of_sight") == false then
-			mod:set(marker_type .. "_require_line_of_sight", true)
-		else
-			mod:set(marker_type .. "_require_line_of_sight", false)
-		end
-	end
+    if marker_type then
+        if mod:get(marker_type .. "_require_line_of_sight") == false then
+            mod:set(marker_type .. "_require_line_of_sight", true)
+        else
+            mod:set(marker_type .. "_require_line_of_sight", false)
+        end
+    end
 end
 
--- UPDATE COLOURS IN SETTINGS PAGE IN REAL TIME (OH YES)
 mod.on_setting_changed = function(setting_id)
-	mod._frame_settings_dirty = true
+    mod._frame_settings_dirty = true
 
-	if not setting_id then
-		return
-	end
+    if not setting_id then
+        return
+    end
 
-	if setting_id == "martyrs_skull_guide_x_offset" or setting_id == "martyrs_skull_guide_y_offset" then
-		local hud = Managers.ui and Managers.ui:get_hud()
-		if not hud then
-			return
-		end
-		local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
-		if element then
-			element:set_guide_offset(
-				mod:get("martyrs_skull_guide_x_offset") or 0,
-				mod:get("martyrs_skull_guide_y_offset") or 0
-			)
-		end
-		return
-	end
+    if setting_id == "martyrs_skull_guide_x_offset" or setting_id == "martyrs_skull_guide_y_offset" then
+        local hud = Managers.ui and Managers.ui:get_hud()
+        if not hud then
+            return
+        end
+        local element = hud._elements and hud._elements["MartyrsSkullGuideElement"]
+        if element then
+            element:set_guide_offset(
+                mod:get("martyrs_skull_guide_x_offset") or 0,
+                mod:get("martyrs_skull_guide_y_offset") or 0
+            )
+        end
+        return
+    end
 
-	-- Only trigger for color settings
-	if
-		string.find(setting_id, "_colour_R")
-		or string.find(setting_id, "_colour_G")
-		or string.find(setting_id, "_colour_B")
-	then
-		local dmf = get_mod("DMF")
-		local mod_name = mod:get_name()
+    -- Only trigger for color settings
+    if
+        string.find(setting_id, "_colour_R")
+        or string.find(setting_id, "_colour_G")
+        or string.find(setting_id, "_colour_B")
+    then
+        local dmf = get_mod("DMF")
+        local mod_name = mod:get_name()
 
-		-- extract base key (e.g. "marker_colour")
-		local base_key = string.gsub(setting_id, "_R$", "")
-		base_key = string.gsub(base_key, "_G$", "")
-		base_key = string.gsub(base_key, "_B$", "")
+        -- extract base key (e.g. "marker_colour")
+        local base_key = string.gsub(setting_id, "_R$", "")
+        base_key = string.gsub(base_key, "_G$", "")
+        base_key = string.gsub(base_key, "_B$", "")
 
-		local old_title = mod:localize(base_key)
-		local new_title = nil
+        local old_title = mod:localize(base_key)
+        local new_title = nil
 
-		-- Recompute localization table
-		local updated_localization = mod.apply_colours()
+        -- Recompute localization table
+        local updated_localization = mod.apply_colours()
 
-		-- GET CURRENT UPDATED VALUE FROM UPDATED_LOCALIZATION
-		for id, data in pairs(updated_localization) do
-			if id == base_key then
-				local lang = Managers.localization:language()
-				local text = data[lang] or data.en
+        -- GET CURRENT UPDATED VALUE FROM UPDATED_LOCALIZATION
+        for id, data in pairs(updated_localization) do
+            if id == base_key then
+                local lang = Managers.localization:language()
+                local text = data[lang] or data.en
 
-				new_title = text
-			end
-		end
+                new_title = text
+            end
+        end
 
-		if not new_title then
-			return
-		end
+        if not new_title then
+            return
+        end
 
-		-- OVERRIDE CURRENT DISPLAYED TEXT VALUES ON THE SETTINGS PAGES IN DMF
-		for i, mod_data in ipairs(dmf.options_widgets_data) do
-			if mod_data[1] and mod_data[1].mod_name == mod_name then
-				for j = 1, #mod_data do
-					if mod_data[j].setting_id == base_key then
-						mod_data[j].title = new_title
-						break
-					end
-				end
-			end
-		end
+        -- OVERRIDE CURRENT DISPLAYED TEXT VALUES ON THE SETTINGS PAGES IN DMF
+        for i, mod_data in ipairs(dmf.options_widgets_data) do
+            if mod_data[1] and mod_data[1].mod_name == mod_name then
+                for j = 1, #mod_data do
+                    if mod_data[j].setting_id == base_key then
+                        mod_data[j].title = new_title
+                        break
+                    end
+                end
+            end
+        end
 
-		local view = Managers.ui:view_instance("dmf_options_view")
+        local view = Managers.ui:view_instance("dmf_options_view")
 
-		if view and view._settings_category_widgets and view._settings_category_widgets[mod:localize("mod_name")] then
-			for _, data in ipairs(view._settings_category_widgets[mod:localize("mod_name")]) do
-				local widget = data.widget
-				if not widget or not widget.content.text then
-					break
-				end
+        if view and view._settings_category_widgets and view._settings_category_widgets[mod:localize("mod_name")] then
+            for _, data in ipairs(view._settings_category_widgets[mod:localize("mod_name")]) do
+                local widget = data.widget
+                if not widget or not widget.content.text then
+                    break
+                end
 
-				local clean = string.gsub(new_title, "{#.-}", "")
-				local clean2 = string.gsub(widget.content.text, "{#.-}", "")
+                local clean = string.gsub(new_title, "{#.-}", "")
+                local clean2 = string.gsub(widget.content.text, "{#.-}", "")
 
-				if clean == clean2 then
-					if widget.content.entry then
-						widget.content.entry.display_name = new_title
-					end
-					widget.content.text = new_title
-					break
-				end
-			end
-		end
-	end
+                if clean == clean2 then
+                    if widget.content.entry then
+                        widget.content.entry.display_name = new_title
+                    end
+                    widget.content.text = new_title
+                    break
+                end
+            end
+        end
+    end
 end
 
 -- save scroll position
@@ -2120,42 +2273,42 @@ local last_scroll_amount = 0
 local last_category = nil
 
 local function is_my_category(self)
-	return self._selected_category == mod:localize("mod_name")
-		or self._selected_category == mod:localize("mod_name_pizazz")
+    return self._selected_category == mod:localize("mod_name")
+        or self._selected_category == mod:localize("mod_name_pizazz")
 end
 
 mod:hook_safe(CLASS.BaseView, "on_exit", function(self)
-	last_category = nil
+    last_category = nil
 end)
 
 mod:hook_safe(CLASS.BaseView, "update", function(self)
-	if self.view_name ~= "dmf_options_view" then
-		return
-	end
+    if self.view_name ~= "dmf_options_view" then
+        return
+    end
 
-	local grid = self._navigation_grids
-	if not (grid and grid[2] and grid[2]._scrollbar_widget) then
-		return
-	end
+    local grid = self._navigation_grids
+    if not (grid and grid[2] and grid[2]._scrollbar_widget) then
+        return
+    end
 
-	local scrollbar_widget = grid[2]._scrollbar_widget
-	local current_category = self._selected_category
-	local in_my_category = is_my_category(self)
+    local scrollbar_widget = grid[2]._scrollbar_widget
+    local current_category = self._selected_category
+    local in_my_category = is_my_category(self)
 
-	--  Detect category switch into my mod
-	if in_my_category and (last_category ~= current_category or last_category == nil) then
-		scrollbar_widget.content.scroll_value = last_scroll_amount
-		scrollbar_widget.content.value = last_scroll_amount
-	end
+    --  Detect category switch into my mod
+    if in_my_category and (last_category ~= current_category or last_category == nil) then
+        scrollbar_widget.content.scroll_value = last_scroll_amount
+        scrollbar_widget.content.value = last_scroll_amount
+    end
 
-	--  Always track scroll while inside my mod
-	if in_my_category then
-		if grid[2]._scroll_progress and last_scroll_amount ~= grid[2]._scroll_progress then
-			last_scroll_amount = grid[2]._scroll_progress
-		end
-	end
+    --  Always track scroll while inside my mod
+    if in_my_category then
+        if grid[2]._scroll_progress and last_scroll_amount ~= grid[2]._scroll_progress then
+            last_scroll_amount = grid[2]._scroll_progress
+        end
+    end
 
-	last_category = current_category
+    last_category = current_category
 end)
 
 mod._needs_totem_scan = true
