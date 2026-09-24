@@ -213,6 +213,7 @@ mod.build_frame_settings = function()
     fs.objective_require_line_of_sight = pt.objective.require_line_of_sight
 
     fs.ammo_status_colours_enable = mod:get("ammo_status_colours_enable")
+    fs.ammo_status_dim_unwanted_enable = mod:get("ammo_status_dim_unwanted_enable") ~= false
     fs.ammo_status_numeric_enable = mod:get("ammo_status_numeric_enable")
     fs.ammo_status_show_most_needy = mod:get("ammo_status_show_most_needy")
     fs.ammo_status_show_gain = mod:get("ammo_status_show_gain")
@@ -1526,6 +1527,10 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
 
     if mod.auspex_active then
         target_alpha = 0.05
+    end
+
+    if marker.ammo_status_dim then
+        target_alpha = target_alpha * 0.3
     end
 
     ------------------------------------------------

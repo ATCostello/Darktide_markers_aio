@@ -191,7 +191,7 @@ local loc = {
     },
 
     ammo_status_settings = {
-        en = mod_name["AMMO WASTAGE INDICATORS"],
+        en = "AMMO WASTAGE INDICATORS",
     },
 
     -- Tab names (used in settings UI)
@@ -280,7 +280,7 @@ local loc = {
         ["zh-cn"] = "活动",
     },
     tab_objective = {
-        en = "Objectives",
+        en = "OBJECTIVE MARKERS",
         fr = "Objectifs",
         ru = "Задачи",
         ["zh-tw"] = "目標",
@@ -533,7 +533,7 @@ local loc = {
 
     -- General Settings
     aio_settings = {
-        en = "{#color(" .. colours.title .. ")}" .. "Global Marker Settings" .. "{#reset()}",
+        en = "GENERAL MARKER SETTINGS",
         fr = "MARKERS IMPROVED AIO SETTINGS",
         ru = "НАСТРОЙКИ УЛУЧШЕННЫХ МЕТОК",
         ["zh-tw"] = "圖標改善設定",
@@ -4003,7 +4003,8 @@ local loc = {
         "Show the live estimated charge percentage left on a deployed medcrate (crates placed by other players in multiplayer, where the exact reserve is not shared). Estimates are shown as approximate ranges like ~60-80%% to reflect that they cannot be exact, and they already account for the crate lifetime. Disabling this hides only the estimated percentage; the exact percentage still shows when it is known (e.g. solo lobbies/psykhanium).",
         ru =
         "Показывает живую оценку оставшегося процента заряда развёрнутого медящика (ящиков, поставленных другими игроками в сетевой игре, где точное значение резерва не передаётся). Оценки показываются приблизительными диапазонами, например ~60-80%%, и уже учитывают время жизни ящика. Отключение скрывает только оценку; точный процент остаётся видимым, когда он известен (например, когда вы хост).",
-        ["zh-cn"] = "显示已部署医疗箱的实时预估剩余百分比（联机游戏中由其他玩家放置的医疗箱无法获取精确值）。预估以近似范围显示（如 ~60-80%），并已计入医疗箱寿命。关闭后仅隐藏预估百分比；已知精确值时（如作为主机）仍会显示精确值。",
+        ["zh-cn"] =
+        "显示已部署医疗箱的实时预估剩余百分比（联机游戏中由其他玩家放置的医疗箱无法获取精确值）。预估以近似范围显示（如 ~60-80%），并已计入医疗箱寿命。关闭后仅隐藏预估百分比；已知精确值时（如作为主机）仍会显示精确值。",
     },
     ammo_status_colours_enable_tooltip = {
         en =
@@ -4011,6 +4012,14 @@ local loc = {
         ru =
         "Окрашивает метки подбора боеприпасов в зависимости от пользы для вас: зелёный = можно забрать всё, оранжевый = союзнику нужнее, красный = часть боеприпасов будет потрачена впустую.",
         ["zh-cn"] = "根据弹药拾取对您的用处着色：绿色=可全部拾取，橙色=队友更需要，红色=会有浪费。",
+    },
+    ammo_status_dim_unwanted_enable_tooltip = {
+        en =
+        "Dim the marker to 50%% opacity when the ammo status is wasted or a teammate needs it more than you, so useful pickups stand out. Full opacity is kept when you can take it all.",
+        ru =
+        "Затемняет метку до 50%% непрозрачности, когда боеприпасы тратятся впустую или союзнику они нужнее, чем вам, чтобы полезные подборы выделялись. Полная непрозрачность сохраняется, когда вы можете забрать всё.",
+        ["zh-cn"] =
+        "当弹药状态为浪费、或队友比你更需要时，将标记淡化至 50%% 不透明度，使有用的拾取更醒目；可全部拾取时保持完全不透明。",
     },
     ammo_status_numeric_enable_tooltip = {
         en =
@@ -4049,6 +4058,13 @@ local loc = {
         ru = "Цвета кольца статуса",
         ["zh-tw"] = "狀態環顏色",
         ["zh-cn"] = "状态环颜色",
+    },
+    ammo_status_dim_unwanted_enable = {
+        en = "Dim wasted/unneeded markers",
+        fr = "Atténuer les marqueurs gaspillés/inutiles",
+        ru = "Затемнять бесполезные метки",
+        ["zh-tw"] = "淡化無用標記",
+        ["zh-cn"] = "淡化无用标记",
     },
     ammo_status_numeric_enable = {
         en = "Show gain/waste numbers",

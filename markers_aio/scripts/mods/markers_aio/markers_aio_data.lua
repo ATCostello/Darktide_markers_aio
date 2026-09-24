@@ -739,6 +739,12 @@ return {
                         default_value = true,
                         tooltip = "ammo_status_colours_enable_tooltip",
                     },
+                    {
+                        setting_id = "ammo_status_dim_unwanted_enable",
+                        type = "checkbox",
+                        default_value = true,
+                        tooltip = "ammo_status_dim_unwanted_enable_tooltip",
+                    },
 
                     {
                         setting_id = "ammo_status_show_most_needy",
@@ -749,7 +755,7 @@ return {
                     {
                         setting_id = "ammo_status_margin",
                         type = "numeric",
-                        default_value = 10,
+                        default_value = 20,
                         range = { 1, 100 },
                         step_size_value = 1,
                         tooltip = "ammo_status_margin_tooltip",

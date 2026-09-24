@@ -267,11 +267,17 @@ local function apply_ammo_status_marker_visuals(marker)
     local status = marker.ammo_status
     local widget = marker.widget
 
+    marker.ammo_status_dim = false
+
     if not status or not widget or not widget.style then
         return
     end
 
     local status_fs = mod.frame_settings
+
+    if status_fs.ammo_status_dim_unwanted_enable and status.status ~= "takeall" then
+        marker.ammo_status_dim = true
+    end
 
     if status_fs.ammo_status_colours_enable and widget.style.ring then
         if status.status == "wasted" then
@@ -559,7 +565,7 @@ local function estimate_medcrate_consumption(unit, dt)
     local radius_squared = proximity_radius * proximity_radius
     local heal_rate_percentage = (
         medical_crate_config.proximity_init_data and medical_crate_config.proximity_init_data.heal_rate_percentage
-    ) or 0.06
+    ) or 0.05
     local heal_amount_modifier = improved_medical_crate_modifier()
     local total_consumed = 0
 
@@ -636,7 +642,7 @@ mod.update_med_crate_estimates = function(unit)
 
     if consumption and consumption > 0 then
         estimate_data.amount_healed =
-            math.min(medical_crate_config.optional_heal_reserve or 500, estimate_data.amount_healed + consumption)
+            math.min(medical_crate_config.optional_heal_reserve or 600, estimate_data.amount_healed + consumption)
     end
 end
 
@@ -1157,7 +1163,7 @@ mod.update_ammo_med_markers = function(self, marker)
                             -- infinite
                         else
                             -- Show charges (healing left)
-                            local max_heal_reserve = medical_crate_config.optional_heal_reserve or 500
+                            local max_heal_reserve = medical_crate_config.optional_heal_reserve or 600
                             local percentage = math.max(0, math.min(100, (charges / max_heal_reserve) * 100))
                             local percentage_text = ""
 
@@ -1165,8 +1171,10 @@ mod.update_ammo_med_markers = function(self, marker)
                                 percentage_text = tostring(string.format("%.0f", percentage)) .. "%"
                             elseif fs.display_med_crate_estimate == true then
                                 local range_low = math.floor(percentage / 20) * 20
-                                percentage_text =
-                                    "~" .. tostring(range_low) .. "-" .. tostring(math.min(100, range_low + 20)) .. "%"
+                                --percentage_text = "~" ..
+                                --tostring(range_low) .. "-" .. tostring(math.min(100, range_low + 20)) .. "%"
+                                percentage_text = "~" ..
+                                    tostring(math.min(100, range_low + 20)) .. "%"
                             end
 
                             marker.widget.content.marker_text = percentage_text
@@ -1426,7 +1434,7 @@ mod.get_proximityheal_medcrate_charges = function(unit)
     local estimate_data = med_crate_estimates[unit]
 
     if estimate_data and estimate_data.amount_healed ~= nil then
-        local max_heal_reserve = medical_crate_config.optional_heal_reserve or 500
+        local max_heal_reserve = medical_crate_config.optional_heal_reserve or 600
         local remaining = math.max(0, max_heal_reserve - estimate_data.amount_healed)
 
         local heal_time = medical_crate_config.optional_heal_time
