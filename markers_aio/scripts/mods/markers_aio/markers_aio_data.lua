@@ -745,6 +745,12 @@ return {
                         default_value = true,
                         tooltip = "ammo_status_dim_unwanted_enable_tooltip",
                     },
+                    {
+                        setting_id = "ammo_status_circle_enable",
+                        type = "checkbox",
+                        default_value = false,
+                        tooltip = "ammo_status_circle_enable_tooltip",
+                    },
 
                     {
                         setting_id = "ammo_status_show_most_needy",
@@ -787,7 +793,7 @@ return {
                     {
                         setting_id = "ammo_status_text_font_size",
                         type = "numeric",
-                        default_value = 22,
+                        default_value = 18,
                         range = { 12, 60 },
                         step_size_value = 1,
                         tooltip = "ammo_status_text_font_size_tooltip",

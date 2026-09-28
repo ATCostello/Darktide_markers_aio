@@ -1,5 +1,6 @@
 local mod = get_mod("markers_aio")
-local HereticalIdolTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/heretical_idols/heretical_idol_markers_template")
+local HereticalIdolTemplate = mod:io_dofile(
+    "markers_aio/scripts/mods/markers_aio/modules/heretical_idols/heretical_idol_markers_template")
 
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")

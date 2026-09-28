@@ -22,6 +22,11 @@ local STATIC_WEAPON_SLOTS = {
     "slot_secondary",
 }
 
+local AMMO_STATUS_CIRCLE_SIZE = {
+    30,
+    30,
+}
+
 mod.ammo_status_colour_markup = function(text, kind)
     local ammo_fs = mod.frame_settings
     local r, g, b
@@ -178,6 +183,10 @@ local function update_ammo_status(marker, unit, player_unit)
         marker.widget.content.ammo_needy_icon = ""
     end
 
+    if marker.widget and marker.widget.style and marker.widget.style.ammo_status_circle then
+        marker.widget.content.ammo_status_circle_visible = false
+    end
+
     if marker.widget and marker.widget.style and marker.widget.style.marker_text_ammo_med then
         marker.widget.content.marker_text_ammo_med = ""
     end
@@ -192,6 +201,7 @@ local function update_ammo_status(marker, unit, player_unit)
         not status_fs.ammo_status_colours_enable
         and not status_fs.ammo_status_numeric_enable
         and not status_fs.ammo_status_show_most_needy
+        and not status_fs.ammo_status_circle_enable
     then
         return
     end
@@ -220,11 +230,15 @@ local function update_ammo_status(marker, unit, player_unit)
 
     local margin = (status_fs.ammo_status_margin or 0) / 100
 
-    if status_fs.ammo_status_show_most_needy then
+    local neediness_enabled = status_fs.ammo_status_show_most_needy or status_fs.ammo_status_circle_enable
+
+    if neediness_enabled then
         needy_player = find_most_needy_teammate(player_unit, local_percentage)
     end
 
-    if needy_player and local_percentage and needy_player.percentage > margin then
+    local teammate_more_needy = needy_player and local_percentage and needy_player.percentage > margin
+
+    if status_fs.ammo_status_show_most_needy and teammate_more_needy then
         status = "teammate"
     elseif waste > 0 then
         status = "wasted"
@@ -258,6 +272,7 @@ local function update_ammo_status(marker, unit, player_unit)
         potential = potential,
         status = status,
         needy_player = needy_player,
+        teammate_more_needy = teammate_more_needy,
         local_percentage = local_percentage,
         colour = status_colour,
     }
@@ -304,6 +319,91 @@ local function apply_ammo_status_marker_visuals(marker)
                 status_fs.ammo_status_green_colour_G,
                 status_fs.ammo_status_green_colour_B
             )
+        end
+    end
+
+    local circle_style = widget.style.ammo_status_circle
+    local needy_icon_style = widget.style.ammo_needy_icon
+
+    if circle_style then
+        widget.content.ammo_needy_icon = ""
+
+        if status_fs.ammo_status_circle_enable then
+            local circle_status = status.teammate_more_needy and "teammate" or status.status
+            local teammate_status = status_fs.ammo_status_show_most_needy and circle_status == "teammate"
+            local circle_colour
+
+            if circle_status == "wasted" then
+                circle_colour = {
+                    status_fs.ammo_status_red_colour_R,
+                    status_fs.ammo_status_red_colour_G,
+                    status_fs.ammo_status_red_colour_B,
+                }
+            elseif circle_status == "teammate" then
+                circle_colour = {
+                    status_fs.ammo_status_orange_colour_R,
+                    status_fs.ammo_status_orange_colour_G,
+                    status_fs.ammo_status_orange_colour_B,
+                }
+            else
+                circle_colour = {
+                    status_fs.ammo_status_green_colour_R,
+                    status_fs.ammo_status_green_colour_G,
+                    status_fs.ammo_status_green_colour_B,
+                }
+            end
+
+            mod.set_colour_argb(circle_style.color, 255, circle_colour[1], circle_colour[2], circle_colour[3])
+            widget.content.ammo_status_circle_visible = true
+
+            local circle_size = AMMO_STATUS_CIRCLE_SIZE[1] * marker.scale
+            local bg_size = widget.style.background and widget.style.background.size or {
+                128,
+                128,
+            }
+            local circle_offset_x = bg_size[1] * 0.4 - circle_size * 0.5
+            local circle_offset_y = -bg_size[2] * 0.4 + circle_size * 0.5
+
+            circle_style.offset[1] = circle_offset_x
+            circle_style.offset[2] = circle_offset_y
+            circle_style.offset[3] = 12
+
+            local glow_style = widget.style.ammo_status_circle_glow
+            if glow_style then
+                glow_style.offset[1] = circle_offset_x
+                glow_style.offset[2] = circle_offset_y
+                glow_style.offset[3] = 11
+                glow_style.visible = not teammate_status
+            end
+
+            local shadow_style = widget.style.ammo_status_circle_shadow
+            if shadow_style then
+                shadow_style.offset[1] = circle_offset_x
+                shadow_style.offset[2] = circle_offset_y
+                shadow_style.offset[3] = 13
+                shadow_style.visible = not teammate_status
+            end
+
+            local needy = status.needy_player
+
+            if status_fs.ammo_status_show_most_needy and teammate_status and needy and needy.icon and needy.icon ~= "" and needy_icon_style then
+                local player_colour = UISettings.player_slot_colors[needy.slot]
+
+                if player_colour then
+                    mod.set_colour(needy_icon_style.text_color, player_colour)
+                end
+
+                needy_icon_style.size[1] = circle_size
+                needy_icon_style.size[2] = circle_size
+                needy_icon_style.font_size = circle_size * 0.7
+                needy_icon_style.offset[1] = circle_offset_x
+                needy_icon_style.offset[2] = circle_offset_y
+                needy_icon_style.offset[3] = 13
+
+                widget.content.ammo_status_circle = "content/ui/materials/hud/interactions/frames/mission_back"
+            end
+        else
+            widget.content.ammo_status_circle_visible = false
         end
     end
 
@@ -1314,6 +1414,125 @@ mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, na
     definition.passes[#definition.passes + 1] = table.clone(field_improv_pass)
     definition.style.field_improv_ammo_med = table.clone(field_improv_style)
     definition.content.field_improv_ammo_med = ""
+
+    local ammo_status_circle_glow_style = {
+        horizontal_alignment = "center",
+        vertical_alignment = "center",
+        size = {
+            AMMO_STATUS_CIRCLE_SIZE[1],
+            AMMO_STATUS_CIRCLE_SIZE[2],
+        },
+        default_size = {
+            AMMO_STATUS_CIRCLE_SIZE[1],
+            AMMO_STATUS_CIRCLE_SIZE[2],
+        },
+        offset = {
+            0,
+            0,
+            11,
+        },
+        color = {
+            0,
+            255,
+            255,
+            255,
+        },
+    }
+
+    local ammo_status_circle_glow_pass = {
+        pass_type = "texture",
+        style_id = "ammo_status_circle_glow",
+        value = "content/ui/materials/frames/inner_shadow_thin",
+        value_id = "ammo_status_circle_glow",
+        style = ammo_status_circle_glow_style,
+        visibility_function = function(content, style)
+            return content.ammo_status_circle_visible == true
+        end,
+    }
+
+    local ammo_status_circle_style = {
+        horizontal_alignment = "center",
+        vertical_alignment = "center",
+        size = {
+            AMMO_STATUS_CIRCLE_SIZE[1],
+            AMMO_STATUS_CIRCLE_SIZE[2],
+        },
+        default_size = {
+            AMMO_STATUS_CIRCLE_SIZE[1],
+            AMMO_STATUS_CIRCLE_SIZE[2],
+        },
+        offset = {
+            0,
+            0,
+            12,
+        },
+        color = {
+            255,
+            255,
+            255,
+            255,
+        },
+    }
+
+    local ammo_status_circle_pass = {
+        pass_type = "texture",
+        style_id = "ammo_status_circle",
+        value = "content/ui/materials/hud/interactions/frames/mission_back",
+        value_id = "ammo_status_circle",
+        style = ammo_status_circle_style,
+        visibility_function = function(content, style)
+            return content.ammo_status_circle_visible == true
+        end,
+    }
+
+    local ammo_status_circle_shadow_style = {
+        horizontal_alignment = "center",
+        vertical_alignment = "center",
+        size = {
+            AMMO_STATUS_CIRCLE_SIZE[1] * 0.5,
+            AMMO_STATUS_CIRCLE_SIZE[2] * 0.5,
+        },
+        default_size = {
+            AMMO_STATUS_CIRCLE_SIZE[1] * 0.5,
+            AMMO_STATUS_CIRCLE_SIZE[2] * 0.5,
+        },
+        offset = {
+            0,
+            0,
+            13,
+        },
+        color = {
+            120,
+            0,
+            0,
+            0,
+        },
+    }
+
+    local ammo_status_circle_shadow_pass = {
+        pass_type = "texture",
+        style_id = "ammo_status_circle_shadow",
+        value = "content/ui/materials/gradients/gradient_circular",
+        value_id = "ammo_status_circle_shadow",
+        style = ammo_status_circle_shadow_style,
+        visibility_function = function(content, style)
+            return content.ammo_status_circle_visible == true
+        end,
+    }
+
+    definition.passes[#definition.passes + 1] = table.clone(ammo_status_circle_glow_pass)
+    definition.style.ammo_status_circle_glow = table.clone(ammo_status_circle_glow_style)
+    definition.content.ammo_status_circle_glow =
+    "content/ui/materials/frames/achievements/wintrack_claimed_reward_display_background_glow"
+
+    definition.passes[#definition.passes + 1] = table.clone(ammo_status_circle_pass)
+    definition.style.ammo_status_circle = table.clone(ammo_status_circle_style)
+    definition.content.ammo_status_circle = "content/ui/materials/hud/interactions/frames/mission_back"
+    definition.content.ammo_status_circle_visible = false
+
+    definition.passes[#definition.passes + 1] = table.clone(ammo_status_circle_shadow_pass)
+    definition.style.ammo_status_circle_shadow = table.clone(ammo_status_circle_shadow_style)
+    definition.content.ammo_status_circle_shadow = "content/ui/materials/gradients/gradient_circular"
 
     -- add text pass for the "most needy teammate" class icon (text glyph, tinted with the teammate's colour)
     local needy_icon_style = table.clone(UIFontSettings.header_2)

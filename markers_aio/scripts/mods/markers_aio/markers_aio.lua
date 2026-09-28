@@ -214,6 +214,7 @@ mod.build_frame_settings = function()
 
     fs.ammo_status_colours_enable = mod:get("ammo_status_colours_enable")
     fs.ammo_status_dim_unwanted_enable = mod:get("ammo_status_dim_unwanted_enable") ~= false
+    fs.ammo_status_circle_enable = mod:get("ammo_status_circle_enable")
     fs.ammo_status_numeric_enable = mod:get("ammo_status_numeric_enable")
     fs.ammo_status_show_most_needy = mod:get("ammo_status_show_most_needy")
     fs.ammo_status_show_gain = mod:get("ammo_status_show_gain")
@@ -1387,7 +1388,8 @@ HudElementInteraction._update_interactee_data = function(self, interactee_unit, 
 
         if health_station_extension then
             local has_charges = health_station_extension._charge_amount and health_station_extension._charge_amount > 0
-            local battery_plugged = health_station_extension.battery_in_slot ~= nil and health_station_extension:battery_in_slot()
+            local battery_plugged = health_station_extension.battery_in_slot ~= nil and
+                health_station_extension:battery_in_slot()
             render_marker = has_charges or not battery_plugged
         end
     end
@@ -1530,7 +1532,7 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer)
     end
 
     if marker.ammo_status_dim then
-        target_alpha = target_alpha * 0.3
+        target_alpha = target_alpha * 0.5
     end
 
     ------------------------------------------------

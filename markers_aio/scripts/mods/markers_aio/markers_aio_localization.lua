@@ -4021,6 +4021,25 @@ local loc = {
         ["zh-cn"] =
         "当弹药状态为浪费、或队友比你更需要时，将标记淡化至 50%% 不透明度，使有用的拾取更醒目；可全部拾取时保持完全不透明。",
     },
+    ammo_status_circle_enable = {
+        en = "Corner status circle",
+        fr = "Cercle d'état en coin",
+        ru = "Круг статуса в углу",
+        ["zh-tw"] = "角落狀態圓",
+        ["zh-cn"] = "角落状态圆",
+    },
+    ammo_status_circle_enable_tooltip = {
+        en =
+        "Show a small circle in the top-right corner of ammo pickup markers, tinted with the ammo status colour (green = take it all, orange = a teammate needs it more, red = would waste ammo). A teammate's class icon in their colour is drawn on the circle when they need it more.",
+        fr =
+        "Affiche un petit cercle dans le coin supérieur droit des marqueurs de munitions, coloré selon l'état (vert = tout prendre, orange = un coéquipier en a plus besoin, rouge = perte de munitions). L'icône de classe d'un coéquipier dans sa couleur est dessinée sur le cercle quand il en a plus besoin.",
+        ru =
+        "Показывает маленький круг в правом верхнем углу метки боеприпасов, окрашенный по статусу (зелёный = можно забрать всё, оранжевый = союзнику нужнее, красный = будет потеря). Когда союзнику нужнее, на круге отображается иконка его класса в цвете команды.",
+        ["zh-tw"] =
+        "在彈藥拾取標記的右上角顯示小圓圈，按彈藥狀態著色（綠=可全拿、橘=隊友更需要、紅=會浪費彈藥）。當隊友更需要時，圓上顯示其職業圖示與隊友顏色。",
+        ["zh-cn"] =
+        "在弹药拾取标记的右上角显示小圆点，按弹药状态着色（绿=可全拿、橙=队友更需要、红=会浪费）。当队友更需要时，圆上叠加其职业图标并显示队友颜色。",
+    },
     ammo_status_numeric_enable_tooltip = {
         en =
         "Master toggle for the gain (+G) and waste (-W) numbers. When enabled you can pick where they appear: on the world marker, in the interact prompt, or both.",
