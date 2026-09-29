@@ -30,7 +30,7 @@ end
 
 mod:hook_safe(CLASS.DestructibleExtension, "set_collectible_data", function(self, data)
 	mod.add_heretical_idol_marker(self, data.unit, data.section_id)
-	self._owner_system:enable_update_function(self.__class_name, "update", data.unit, self)
+	self._owner_system:enable_update_function(data.unit, "update")
 end)
 
 DestructibleExtension.update = function(self, unit, dt, t)
