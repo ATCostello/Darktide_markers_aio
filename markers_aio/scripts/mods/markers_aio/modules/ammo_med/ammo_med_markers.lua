@@ -27,6 +27,8 @@ local AMMO_STATUS_CIRCLE_SIZE = {
 	30,
 }
 
+local FIELD_IMPROV_ICON = "content/ui/materials/hud/interactions/icons/cosmetics_store"
+
 mod.ammo_status_colour_markup = function(text, kind)
 	local ammo_fs = mod.frame_settings
 	local r, g, b
@@ -607,6 +609,34 @@ end)
 
 local med_crate_estimates = mod:persistent_table("med_crate_estimates")
 
+local DEFAULT_MED_CRATE_HEAL_RESERVE = 500
+local DEFAULT_MED_CRATE_HEAL_TIME = 300
+
+local function get_med_crate_init_data_value(key, fallback)
+	local init_data = medical_crate_config.proximity_init_data
+	local value = init_data and init_data[key]
+
+	if value == nil then
+		value = medical_crate_config[key]
+	end
+
+	if value == nil then
+		return fallback
+	end
+
+	return value
+end
+
+-- The crate's actual max health pool, i.e. how much healing it has to give out in total.
+local function get_med_crate_heal_reserve()
+	return get_med_crate_init_data_value("optional_heal_reserve", DEFAULT_MED_CRATE_HEAL_RESERVE)
+end
+
+-- How long the crate stays alive, which caps the contents it can actually give out.
+local function get_med_crate_heal_time()
+	return get_med_crate_init_data_value("optional_heal_time", DEFAULT_MED_CRATE_HEAL_TIME)
+end
+
 local function improved_medical_crate_modifier()
 	if mod.check_players_talents_for_Field_Improvisation() then
 		local improved_settings = BuffSettings.keyword_settings[BuffSettings.keywords.improved_medical_crate]
@@ -635,8 +665,8 @@ local function player_heal_multipliers(player_unit)
 		and character_state_component
 		and PlayerUnitStatus.is_knocked_down(character_state_component)
 	then
-		return (medical_crate_config.knock_down_player_heal_speed_multiplier or 0.1),
-			(medical_crate_config.knock_down_player_heal_cost_multiplier or 0.3),
+		return get_med_crate_init_data_value("knock_down_player_heal_speed_multiplier", 0.1),
+			get_med_crate_init_data_value("knock_down_player_heal_cost_multiplier", 0.3),
 			true
 	end
 
@@ -651,8 +681,6 @@ local function player_heal_multipliers(player_unit)
 	return 1, 1, true
 end
 
--- The deployable settings moved proximity_radius into proximity_check_params, so read
--- both layouts to stay compatible with either game version.
 local function get_med_crate_proximity_radius()
 	local check_params = medical_crate_config.proximity_check_params
 
@@ -683,9 +711,7 @@ local function estimate_medcrate_consumption(unit, dt)
 
 	local proximity_radius = get_med_crate_proximity_radius()
 	local radius_squared = proximity_radius * proximity_radius
-	local heal_rate_percentage = (
-		medical_crate_config.proximity_init_data and medical_crate_config.proximity_init_data.heal_rate_percentage
-	) or 0.05
+	local heal_rate_percentage = get_med_crate_init_data_value("heal_rate_percentage", 0.05)
 	local heal_amount_modifier = improved_medical_crate_modifier()
 	local total_consumed = 0
 
@@ -761,8 +787,7 @@ mod.update_med_crate_estimates = function(unit)
 	local consumption = estimate_medcrate_consumption(unit, dt)
 
 	if consumption and consumption > 0 then
-		estimate_data.amount_healed =
-			math.min(medical_crate_config.optional_heal_reserve or 600, estimate_data.amount_healed + consumption)
+		estimate_data.amount_healed = math.min(get_med_crate_heal_reserve(), estimate_data.amount_healed + consumption)
 	end
 end
 
@@ -840,20 +865,95 @@ mod.add_medkit_marker_and_proximity = function(self, unit)
 	end
 end
 
-mod.check_players_talents_for_Field_Improvisation = function()
-	local alive_players = Managers.state.player_unit_spawn:alive_players()
+local FIELD_IMPROV_TALENT = "veteran_better_deployables"
 
-	if alive_players then
-		for _, player in pairs(alive_players) do
-			if player and player._profile and player._profile.talents then
-				for talent, boolean in pairs(player._profile.talents) do
-					if talent == "veteran_better_deployables" and boolean == 1 then
+-- Talents used to be stored as a plain 1, they are now { tier, target_slot, node_name }
+-- tables, so only the presence of the entry can be relied on.
+local function has_field_improv_talent(player)
+	local profile = player and player._profile
+	local talents = profile and profile.talents
+	local talent_data = talents and talents[FIELD_IMPROV_TALENT]
+
+	return talent_data ~= nil and talent_data ~= false
+end
+
+mod.check_players_talents_for_Field_Improvisation = function()
+	local player_unit_spawn = Managers.state.player_unit_spawn
+	local alive_players = player_unit_spawn and player_unit_spawn:alive_players()
+
+	if not alive_players then
+		return false
+	end
+
+	-- Matches how the game itself decides this, see ProximityHeal.init
+	local buff_keywords = {
+		BuffSettings.keywords.improved_medical_crate,
+		BuffSettings.keywords.improved_ammo_pickups,
+	}
+
+	for _, player in pairs(alive_players) do
+		if player then
+			if has_field_improv_talent(player) then
+				return true
+			end
+
+			local player_unit = player.player_unit
+			local buff_extension = player_unit and ScriptUnit.has_extension(player_unit, "buff_system")
+
+			if buff_extension and buff_extension._keywords then
+				for _, keyword in pairs(buff_keywords) do
+					if buff_extension:has_keyword(keyword) then
 						return true
 					end
 				end
 			end
 		end
 	end
+
+	return false
+end
+
+local function field_improv_pass_id(marker)
+	return marker.type == MarkerTemplate.name and "field_improv" or "field_improv_ammo_med"
+end
+
+-- Applies the Field Improvisation highlight: the border recolour plus the extra icon.
+local function apply_field_improv_visuals(marker, field_improv_active)
+	local widget = marker and marker.widget
+	local style = widget and widget.style
+
+	if not style then
+		return
+	end
+
+	local status_fs = mod.frame_settings
+
+	if field_improv_active and status_fs.display_field_improv_colour == true and style.ring then
+		local r = fs.field_improv_colour_R
+		local g = fs.field_improv_colour_G
+		local b = fs.field_improv_colour_B
+		mod.set_colour_argb(style.ring.color, 255, r, g, b)
+	end
+
+	local pass_id = field_improv_pass_id(marker)
+	local pass_style = style[pass_id]
+
+	if not pass_style then
+		return
+	end
+
+	-- The med marker template scales and offsets its own pass in its update function
+	if pass_id == "field_improv_ammo_med" then
+		if style.icon then
+			pass_style.size[1] = style.icon.size[1]
+			pass_style.size[2] = style.icon.size[2]
+		end
+
+		pass_style.offset[1] = 30 * marker.scale
+	end
+
+	widget.content[pass_id] = field_improv_active and status_fs.display_field_improv_icon == true and FIELD_IMPROV_ICON
+		or ""
 end
 
 mod.update_ammo_med_markers = function(self, marker)
@@ -894,10 +994,10 @@ mod.update_ammo_med_markers = function(self, marker)
 			return
 		end
 
-        local pickup_type = mod.get_marker_pickup_type(marker)
+		local pickup_type = mod.get_marker_pickup_type(marker)
 
-        if
-            pickup_type and pickup_type == "small_clip"
+		if
+			pickup_type and pickup_type == "small_clip"
 			or pickup_type and pickup_type == "large_clip"
 			or pickup_type and pickup_type == "small_grenade"
 			or pickup_type and pickup_type == "ammo_cache_pocketable"
@@ -1150,26 +1250,8 @@ mod.update_ammo_med_markers = function(self, marker)
 					fs.ammo_crate_colour_G,
 					fs.ammo_crate_colour_B
 				)
-				if field_improv_active then
-					if fs.display_field_improv_colour == true then
-						mod.set_colour(marker.widget.style.ring.color, Color.citadel_wild_rider_red(nil, true))
-					end
-					if fs.display_field_improv_icon == true then
-						marker.widget.content.field_improv_ammo_med =
-							"content/ui/materials/hud/interactions/icons/cosmetics_store"
-					else
-						marker.widget.content.field_improv_ammo_med = ""
-					end
-				else
-					marker.widget.content.field_improv_ammo_med = ""
-				end
 
-				if marker.widget.style.field_improv_ammo_med then
-					marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
-					marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
-
-					marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
-				end
+				apply_field_improv_visuals(marker, field_improv_active)
 			elseif
 				pickup_type == "ammo_cache_deployable"
 				or marker.data and marker.data.type == "ammo_cache_deployable"
@@ -1179,30 +1261,11 @@ mod.update_ammo_med_markers = function(self, marker)
 				end
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_ammo"
 
-				if field_improv_active then
-					if fs.display_field_improv_colour == true and marker.widget.style.ring then
-						mod.set_colour(marker.widget.style.ring.color, Color.citadel_wild_rider_red(nil, true))
-					end
-					if fs.display_field_improv_icon == true then
-						marker.widget.content.field_improv_ammo_med =
-							"content/ui/materials/hud/interactions/icons/cosmetics_store"
-					else
-						marker.widget.content.field_improv_ammo_med = ""
-					end
-				else
-					marker.widget.content.field_improv_ammo_med = ""
-				end
+				apply_field_improv_visuals(marker, field_improv_active)
 
 				if marker.widget.style.marker_text_ammo_med then
 					marker.widget.style.marker_text_ammo_med.font_size = 40 * marker.scale
 					marker.widget.style.marker_text_ammo_med.default_font_size = 40 * marker.scale
-				end
-
-				if marker.widget.style.field_improv_ammo_med then
-					marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
-					marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
-
-					marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
 				end
 			elseif
 				pickup_type == "medical_crate_pocketable"
@@ -1220,26 +1283,7 @@ mod.update_ammo_med_markers = function(self, marker)
 					fs.med_crate_colour_G,
 					fs.med_crate_colour_B
 				)
-				if field_improv_active then
-					if fs.display_field_improv_colour == true and marker.widget.style.ring then
-						mod.set_colour(marker.widget.style.ring.color, Color.citadel_wild_rider_red(nil, true))
-					end
-					if fs.display_field_improv_icon == true then
-						marker.widget.content.field_improv_ammo_med =
-							"content/ui/materials/hud/interactions/icons/cosmetics_store"
-					else
-						marker.widget.content.field_improv_ammo_med = ""
-					end
-				else
-					marker.widget.content.field_improv_ammo_med = ""
-				end
-
-				if marker.widget.style.field_improv_ammo_med and marker.widget.style.icon then
-					marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
-					marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
-
-					marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
-				end
+				apply_field_improv_visuals(marker, field_improv_active)
 			elseif
 				pickup_type == "medical_crate_deployable"
 				or marker.type == MarkerTemplate.name
@@ -1250,19 +1294,7 @@ mod.update_ammo_med_markers = function(self, marker)
 				end
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_medkit"
 
-				if field_improv_active then
-					if fs.display_field_improv_colour == true and marker.widget.style.ring then
-						mod.set_colour(marker.widget.style.ring.color, Color.citadel_wild_rider_red(nil, true))
-					end
-					if fs.display_field_improv_icon == true then
-						marker.widget.content.field_improv =
-							"content/ui/materials/hud/interactions/icons/cosmetics_store"
-					else
-						marker.widget.content.field_improv = ""
-					end
-				else
-					marker.widget.content.field_improv = ""
-				end
+				apply_field_improv_visuals(marker, field_improv_active)
 
 				if fs.display_med_charges == true then
 					local is_crate = pickup_type == "medical_crate_deployable"
@@ -1270,7 +1302,6 @@ mod.update_ammo_med_markers = function(self, marker)
 						or marker.type == MarkerTemplate.name
 
 					if is_crate then
-						-- Advance client-side estimate for crates without a local ProximityHeal logic
 						mod.update_med_crate_estimates(unit)
 
 						if not marker.data then
@@ -1286,7 +1317,7 @@ mod.update_ammo_med_markers = function(self, marker)
 							-- infinite
 						else
 							-- Show charges (healing left)
-							local max_heal_reserve = medical_crate_config.optional_heal_reserve or 600
+							local max_heal_reserve = get_med_crate_heal_reserve()
 							local percentage = math.max(0, math.min(100, (charges / max_heal_reserve) * 100))
 							local percentage_text = ""
 
@@ -1299,9 +1330,9 @@ mod.update_ammo_med_markers = function(self, marker)
 								percentage_text = "~" .. tostring(math.min(100, range_low + 20)) .. "%"
 							end
 
-						marker.widget.content.marker_text = percentage_text
+							marker.widget.content.marker_text = percentage_text
 
-						mod.set_colour_argb(
+							mod.set_colour_argb(
 								marker.widget.style.icon.color,
 								100,
 								fs.med_crate_colour_R,
@@ -1408,7 +1439,7 @@ mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, na
 		vertical_alignment = "center",
 		size = icon_size,
 		offset = {
-			50,
+			30,
 			0,
 			0,
 		},
@@ -1673,10 +1704,10 @@ mod.get_proximityheal_medcrate_charges = function(unit)
 	local estimate_data = med_crate_estimates[unit]
 
 	if estimate_data and estimate_data.amount_healed ~= nil then
-		local max_heal_reserve = medical_crate_config.optional_heal_reserve or 600
+		local max_heal_reserve = get_med_crate_heal_reserve()
 		local remaining = math.max(0, max_heal_reserve - estimate_data.amount_healed)
 
-		local heal_time = medical_crate_config.optional_heal_time
+		local heal_time = get_med_crate_heal_time()
 		local deployed_at = estimate_data.deployed_at
 
 		if heal_time and deployed_at then
