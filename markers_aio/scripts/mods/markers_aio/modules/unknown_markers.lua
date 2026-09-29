@@ -3,59 +3,59 @@ local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hu
 local Pickups = require("scripts/settings/pickup/pickups")
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
 local WorldMarkerTemplateInteraction =
-    require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
+	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local fs = mod.frame_settings
 mod.update_unknown_markers = function(self, marker)
-    if marker and marker.type and marker.type == "interaction" and not marker.markers_aio_type then
-        -- filter out unwanted
-        if marker.ui_interaction_type and (marker.ui_interaction_type == "player_interaction") then
-            return
-        end
+	if marker and marker.type and marker.type == "interaction" and not marker.markers_aio_type then
+		-- filter out unwanted
+		if marker.ui_interaction_type and (marker.ui_interaction_type == "player_interaction") then
+			return
+		end
 
-        -- Toggle to allow unwanted markers to be affected.
-        if not fs.unknown_markers_extra_allowed then
-            if
-                marker.ui_interaction_type
-                and (marker.ui_interaction_type == "default" or marker.ui_interaction_type == "point_of_interest")
-            then
-                mod.set_colour_argb(
-                    marker.widget.style.icon.color,
-                    255,
-                    fs.unknown_colour_R,
-                    fs.unknown_colour_G,
-                    fs.unknown_colour_B
-                )
-                mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-                mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.unknown_border_colour))
+		-- Toggle to allow unwanted markers to be affected.
+		if not fs.unknown_markers_extra_allowed then
+			if
+				marker.ui_interaction_type
+				and (marker.ui_interaction_type == "default" or marker.ui_interaction_type == "point_of_interest")
+			then
+				mod.set_colour_argb(
+					marker.widget.style.icon.color,
+					255,
+					fs.unknown_colour_R,
+					fs.unknown_colour_G,
+					fs.unknown_colour_B
+				)
+				mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.unknown_border_colour))
 
-                return
-            end
-        end
+				return
+			end
+		end
 
-        marker.draw = false
-        marker.widget.alpha_multiplier = 0
+		marker.draw = false
+		marker.widget.alpha_multiplier = 0
 
-        marker.markers_aio_type = "unknown"
+		marker.markers_aio_type = "unknown"
 
-        mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-        marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+		mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+		marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
 
-        local max_distance = fs.per_type[marker.markers_aio_type].max_distance
-        marker.template.max_distance = max_distance
-        self.max_distance = max_distance
+		local max_distance = fs.per_type[marker.markers_aio_type].max_distance
+		marker.template.max_distance = max_distance
+		self.max_distance = max_distance
 
-        marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
-        marker.block_screen_clamp = false
+		marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
+		marker.block_screen_clamp = false
 
-        mod.set_colour_argb(
-            marker.widget.style.icon.color,
-            255,
-            fs.unknown_colour_R,
-            fs.unknown_colour_G,
-            fs.unknown_colour_B
-        )
+		mod.set_colour_argb(
+			marker.widget.style.icon.color,
+			255,
+			fs.unknown_colour_R,
+			fs.unknown_colour_G,
+			fs.unknown_colour_B
+		)
 
-        mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.unknown_border_colour))
-    end
+		mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.unknown_border_colour))
+	end
 end

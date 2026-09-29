@@ -49,259 +49,259 @@ template.screen_margins = { down = 0.23148148148148148, left = 0.234375, right =
 template.using_smart_tag_system = true
 
 template.get_smart_tag_id = function(marker)
-    local marker_unit = marker.unit
+	local marker_unit = marker.unit
 
-    if marker_unit then
-        local extension = ScriptUnit.extension(marker_unit, "smart_tag_system")
+	if marker_unit then
+		local extension = ScriptUnit.extension(marker_unit, "smart_tag_system")
 
-        if extension and extension.get_smart_tag_id then
-            return extension:get_smart_tag_id()
-        end
-    end
+		if extension and extension.get_smart_tag_id then
+			return extension:get_smart_tag_id()
+		end
+	end
 
-    return nil
+	return nil
 end
 
 template.scale_settings = {
-    scale_from = 0.4,
-    scale_to = 0.9,
-    distance_max = template.max_distance,
-    distance_min = template.evolve_distance,
-    easing_function = math.easeCubic,
+	scale_from = 0.4,
+	scale_to = 0.9,
+	distance_max = template.max_distance,
+	distance_min = template.evolve_distance,
+	easing_function = math.easeCubic,
 }
 
 template.fade_settings = {
-    default_fade = 1,
-    fade_from = 0,
-    fade_to = 1,
-    distance_max = template.max_distance,
-    distance_min = template.max_distance - template.evolve_distance * 2,
-    easing_function = math.easeCubic,
+	default_fade = 1,
+	fade_from = 0,
+	fade_to = 1,
+	distance_max = template.max_distance,
+	distance_min = template.max_distance - template.evolve_distance * 2,
+	easing_function = math.easeCubic,
 }
 
 template.create_widget_defintion = function(template, scenegraph_id)
-    local size = template.size
+	local size = template.size
 
-    return UIWidget.create_definition({
-        {
-            pass_type = "texture",
-            style_id = "background",
-            value = "content/ui/materials/hud/interactions/frames/point_of_interest_back",
-            value_id = "background",
-            style = {
-                horizontal_alignment = "center",
-                vertical_alignment = "center",
-                size = background_size,
-                offset = { 0, 0, 1 },
-                color = { 150, 80, 80, 80 },
-            },
-            visibility_function = function(content, style)
-                return content.background ~= nil
-            end,
-        },
-        {
-            pass_type = "texture",
-            style_id = "ring",
-            value = "content/ui/materials/hud/interactions/frames/point_of_interest_top",
-            value_id = "ring",
-            style = {
-                horizontal_alignment = "center",
-                vertical_alignment = "center",
-                size = size,
-                offset = { 0, 0, 5 },
-                color = { 255, 255, 255, 255 },
-            },
-            visibility_function = function(content, style)
-                return content.ring ~= nil
-            end,
-        },
-        {
-            pass_type = "rotated_texture",
-            style_id = "ping",
-            value = "content/ui/materials/hud/interactions/frames/point_of_interest_tag",
-            value_id = "ping",
-            style = {
-                horizontal_alignment = "center",
-                vertical_alignment = "center",
-                size = ping_size,
-                offset = { 0, 0, 0 },
-                color = { 255, 255, 255, 255 },
-            },
-            visibility_function = function(content, style)
-                return content.tagged
-            end,
-        },
-        {
-            pass_type = "texture",
-            style_id = "icon",
-            value = "content/ui/materials/hud/interactions/icons/enemy",
-            value_id = "icon",
-            style = {
-                horizontal_alignment = "center",
-                vertical_alignment = "center",
-                size = icon_size,
-                offset = { 0, 0, 3 },
-                color = { 255, 200, 175, 0 },
-            },
-            visibility_function = function(content, style)
-                return content.icon ~= nil
-            end,
-        },
-        {
-            pass_type = "rotated_texture",
-            style_id = "arrow",
-            value = "content/ui/materials/hud/interactions/frames/direction",
-            value_id = "arrow",
-            style = {
-                horizontal_alignment = "center",
-                vertical_alignment = "center",
-                size = arrow_size,
-                offset = { 0, 0, 2 },
-                color = Color.ui_hud_green_super_light(255, true),
-            },
-            visibility_function = function(content, style)
-                return content.is_clamped and content.arrow ~= nil
-            end,
-            change_function = function(content, style)
-                style.angle = content.angle
-            end,
-        },
-    }, scenegraph_id)
+	return UIWidget.create_definition({
+		{
+			pass_type = "texture",
+			style_id = "background",
+			value = "content/ui/materials/hud/interactions/frames/point_of_interest_back",
+			value_id = "background",
+			style = {
+				horizontal_alignment = "center",
+				vertical_alignment = "center",
+				size = background_size,
+				offset = { 0, 0, 1 },
+				color = { 150, 80, 80, 80 },
+			},
+			visibility_function = function(content, style)
+				return content.background ~= nil
+			end,
+		},
+		{
+			pass_type = "texture",
+			style_id = "ring",
+			value = "content/ui/materials/hud/interactions/frames/point_of_interest_top",
+			value_id = "ring",
+			style = {
+				horizontal_alignment = "center",
+				vertical_alignment = "center",
+				size = size,
+				offset = { 0, 0, 5 },
+				color = { 255, 255, 255, 255 },
+			},
+			visibility_function = function(content, style)
+				return content.ring ~= nil
+			end,
+		},
+		{
+			pass_type = "rotated_texture",
+			style_id = "ping",
+			value = "content/ui/materials/hud/interactions/frames/point_of_interest_tag",
+			value_id = "ping",
+			style = {
+				horizontal_alignment = "center",
+				vertical_alignment = "center",
+				size = ping_size,
+				offset = { 0, 0, 0 },
+				color = { 255, 255, 255, 255 },
+			},
+			visibility_function = function(content, style)
+				return content.tagged
+			end,
+		},
+		{
+			pass_type = "texture",
+			style_id = "icon",
+			value = "content/ui/materials/hud/interactions/icons/enemy",
+			value_id = "icon",
+			style = {
+				horizontal_alignment = "center",
+				vertical_alignment = "center",
+				size = icon_size,
+				offset = { 0, 0, 3 },
+				color = { 255, 200, 175, 0 },
+			},
+			visibility_function = function(content, style)
+				return content.icon ~= nil
+			end,
+		},
+		{
+			pass_type = "rotated_texture",
+			style_id = "arrow",
+			value = "content/ui/materials/hud/interactions/frames/direction",
+			value_id = "arrow",
+			style = {
+				horizontal_alignment = "center",
+				vertical_alignment = "center",
+				size = arrow_size,
+				offset = { 0, 0, 2 },
+				color = Color.ui_hud_green_super_light(255, true),
+			},
+			visibility_function = function(content, style)
+				return content.is_clamped and content.arrow ~= nil
+			end,
+			change_function = function(content, style)
+				style.angle = content.angle
+			end,
+		},
+	}, scenegraph_id)
 end
 
 template.on_enter = function(widget)
-    local content = widget.content
+	local content = widget.content
 
-    content.spawn_progress_timer = 0
+	content.spawn_progress_timer = 0
 end
 
 template.update_function = function(parent, ui_renderer, widget, marker, template, dt, t)
-    local content = widget.content
-    local distance = content.distance
-    local data = marker.data
+	local content = widget.content
+	local distance = content.distance
+	local data = marker.data
 
-    local evolve_distance = template.evolve_distance
-    local style = widget.style
+	local evolve_distance = template.evolve_distance
+	local style = widget.style
 
-    local can_interact = false
+	local can_interact = false
 
-    local scale_speed = 8
-    local scale_progress = content.scale_progress or 0
-    local line_of_sight_progress = content.line_of_sight_progress or 0
+	local scale_speed = 8
+	local scale_progress = content.scale_progress or 0
+	local line_of_sight_progress = content.line_of_sight_progress or 0
 
-    if distance <= evolve_distance and can_interact then
-        scale_progress = math.min(scale_progress + dt * scale_speed, 1)
-    else
-        scale_progress = math.max(scale_progress - dt * scale_speed, 0)
-    end
+	if distance <= evolve_distance and can_interact then
+		scale_progress = math.min(scale_progress + dt * scale_speed, 1)
+	else
+		scale_progress = math.max(scale_progress - dt * scale_speed, 0)
+	end
 
-    marker.ignore_scale = false
+	marker.ignore_scale = false
 
-    local global_scale = marker.ignore_scale and 1 or marker.scale
+	local global_scale = marker.ignore_scale and 1 or marker.scale
 
-    local check_los = marker.aio_check_line_of_sight
-    if check_los == nil then
-        check_los = template.check_line_of_sight
-    end
+	local check_los = marker.aio_check_line_of_sight
+	if check_los == nil then
+		check_los = template.check_line_of_sight
+	end
 
-    if marker.raycast_initialized then
-        local raycast_result = marker.raycast_result
-        local line_of_sight_speed = 8
+	if marker.raycast_initialized then
+		local raycast_result = marker.raycast_result
+		local line_of_sight_speed = 8
 
-        if raycast_result and not can_interact then
-            line_of_sight_progress = math.max(line_of_sight_progress - dt * line_of_sight_speed, 0)
-        else
-            line_of_sight_progress = math.min(line_of_sight_progress + dt * line_of_sight_speed, 1)
-        end
-    elseif not check_los then
-        line_of_sight_progress = 1
-    end
+		if raycast_result and not can_interact then
+			line_of_sight_progress = math.max(line_of_sight_progress - dt * line_of_sight_speed, 0)
+		else
+			line_of_sight_progress = math.min(line_of_sight_progress + dt * line_of_sight_speed, 1)
+		end
+	elseif not check_los then
+		line_of_sight_progress = 1
+	end
 
-    local default_size = template.min_size
-    local max_size = template.max_size
-    local ring_size = style.ring.size
+	local default_size = template.min_size
+	local max_size = template.max_size
+	local ring_size = style.ring.size
 
-    ring_size[1] = (default_size[1] + (max_size[1] - default_size[1]) * scale_progress) * global_scale
-    ring_size[2] = (default_size[2] + (max_size[2] - default_size[2]) * scale_progress) * global_scale
+	ring_size[1] = (default_size[1] + (max_size[1] - default_size[1]) * scale_progress) * global_scale
+	ring_size[2] = (default_size[2] + (max_size[2] - default_size[2]) * scale_progress) * global_scale
 
-    local ping_min_size = template.ping_min_size
-    local ping_max_size = template.ping_max_size
-    local ping_style = style.ping
-    local ping_size = ping_style.size
-    local ping_speed = 7
-    local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
-    local ping_pulse_size_increase = ping_anim_progress * 15
+	local ping_min_size = template.ping_min_size
+	local ping_max_size = template.ping_max_size
+	local ping_style = style.ping
+	local ping_size = ping_style.size
+	local ping_speed = 7
+	local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
+	local ping_pulse_size_increase = ping_anim_progress * 15
 
-    ping_size[1] = (
-        ping_min_size[1]
-        + (ping_max_size[1] - ping_min_size[1]) * scale_progress
-        + ping_pulse_size_increase
-    ) * global_scale
-    ping_size[2] = (
-        ping_min_size[2]
-        + (ping_max_size[2] - ping_min_size[2]) * scale_progress
-        + ping_pulse_size_increase
-    ) * global_scale
+	ping_size[1] = (
+		ping_min_size[1]
+		+ (ping_max_size[1] - ping_min_size[1]) * scale_progress
+		+ ping_pulse_size_increase
+	) * global_scale
+	ping_size[2] = (
+		ping_min_size[2]
+		+ (ping_max_size[2] - ping_min_size[2]) * scale_progress
+		+ ping_pulse_size_increase
+	) * global_scale
 
-    local ping_pivot = ping_style.pivot
+	local ping_pivot = ping_style.pivot
 
-    ping_pivot[1] = ping_size[1] * 0.5
-    ping_pivot[2] = ping_size[2] * 0.5
+	ping_pivot[1] = ping_size[1] * 0.5
+	ping_pivot[2] = ping_size[2] * 0.5
 
-    local icon_max_size = template.icon_max_size
-    local icon_min_size = template.icon_min_size
-    local background_max_size = template.background_max_size
-    local background_min_size = template.background_min_size
-    local icon_size = style.icon.size
-    local icon_style_size = style.icon.size
-    local bg_style_size = style.background.size
+	local icon_max_size = template.icon_max_size
+	local icon_min_size = template.icon_min_size
+	local background_max_size = template.background_max_size
+	local background_min_size = template.background_min_size
+	local icon_size = style.icon.size
+	local icon_style_size = style.icon.size
+	local bg_style_size = style.background.size
 
-    local i_sx = icon_min_size[1] + (icon_max_size[1] - icon_min_size[1]) * scale_progress
-    local i_sy = icon_min_size[2] + (icon_max_size[2] - icon_min_size[2]) * scale_progress
-    icon_style_size[1] = i_sx * marker.scale
-    icon_style_size[2] = i_sy * marker.scale
+	local i_sx = icon_min_size[1] + (icon_max_size[1] - icon_min_size[1]) * scale_progress
+	local i_sy = icon_min_size[2] + (icon_max_size[2] - icon_min_size[2]) * scale_progress
+	icon_style_size[1] = i_sx * marker.scale
+	icon_style_size[2] = i_sy * marker.scale
 
-    local background_size = style.background.size
+	local background_size = style.background.size
 
-    local b_sx = background_min_size[1] + (background_max_size[1] - background_min_size[1]) * scale_progress
-    local b_sy = background_min_size[2] + (background_max_size[2] - background_min_size[2]) * scale_progress
-    bg_style_size[1] = b_sx * marker.scale
-    bg_style_size[2] = b_sy * marker.scale
+	local b_sx = background_min_size[1] + (background_max_size[1] - background_min_size[1]) * scale_progress
+	local b_sy = background_min_size[2] + (background_max_size[2] - background_min_size[2]) * scale_progress
+	bg_style_size[1] = b_sx * marker.scale
+	bg_style_size[2] = b_sy * marker.scale
 
-    local ring_size = style.ring.size
+	local ring_size = style.ring.size
 
-    ring_size[1] = b_sx * marker.scale
-    ring_size[2] = b_sy * marker.scale
+	ring_size[1] = b_sx * marker.scale
+	ring_size[2] = b_sy * marker.scale
 
-    ping_size[1] = (b_sx + ping_pulse_size_increase) * marker.scale
-    ping_size[2] = (b_sy + ping_pulse_size_increase) * marker.scale
+	ping_size[1] = (b_sx + ping_pulse_size_increase) * marker.scale
+	ping_size[2] = (b_sy + ping_pulse_size_increase) * marker.scale
 
-    local ping_pivot = ping_style.pivot
+	local ping_pivot = ping_style.pivot
 
-    ping_pivot[1] = ping_size[1] * 0.5
-    ping_pivot[2] = ping_size[2] * 0.5
+	ping_pivot[1] = ping_size[1] * 0.5
+	ping_pivot[2] = ping_size[2] * 0.5
 
-    local animating = scale_progress ~= content.scale_progress
+	local animating = scale_progress ~= content.scale_progress
 
-    content.line_of_sight_progress = line_of_sight_progress
-    content.scale_progress = scale_progress
-    widget.alpha_multiplier = line_of_sight_progress or 1
-    widget.visible = true
+	content.line_of_sight_progress = line_of_sight_progress
+	content.scale_progress = scale_progress
+	widget.alpha_multiplier = line_of_sight_progress or 1
+	widget.visible = true
 
-    if data then
-        data.distance = distance
-    end
+	if data then
+		data.distance = distance
+	end
 
-    local smart_tag_system = Managers.state.extension:system("smart_tag_system")
-    local marker_unit = marker.unit
-    local is_tagged = marker_unit and smart_tag_system:unit_tag_id(marker_unit) ~= nil
+	local smart_tag_system = Managers.state.extension:system("smart_tag_system")
+	local marker_unit = marker.unit
+	local is_tagged = marker_unit and smart_tag_system:unit_tag_id(marker_unit) ~= nil
 
-    content.tagged = is_tagged
-    marker.block_fade_settings = is_tagged
-    marker.block_max_distance = is_tagged
-    marker.block_screen_clamp = not is_tagged
+	content.tagged = is_tagged
+	marker.block_fade_settings = is_tagged
+	marker.block_max_distance = is_tagged
+	marker.block_screen_clamp = not is_tagged
 
-    return animating
+	return animating
 end
 
 return template

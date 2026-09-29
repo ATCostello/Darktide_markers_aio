@@ -1,96 +1,97 @@
 local mod = get_mod("markers_aio")
-local MarkerTemplate = mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/chest_markers/chest_markers_template")
+local MarkerTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/chest_markers/chest_markers_template")
 
 local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hud_element_world_markers")
 local Pickups = require("scripts/settings/pickup/pickups")
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
 local WorldMarkerTemplateInteraction =
-    require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
+	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local ChestExtension = require("scripts/extension_systems/chest/chest_extension")
 
 local fs = mod.frame_settings
 
 local get_max_distance = function()
-    local max_distance = fs.chest_max_distance
+	local max_distance = fs.chest_max_distance
 
-    if max_distance == nil then
-        max_distance = fs.chest_max_distance
-    end
+	if max_distance == nil then
+		max_distance = fs.chest_max_distance
+	end
 
-    return max_distance
+	return max_distance
 end
 
 HudElementWorldMarkers._get_templates = function(self)
-    return self._marker_templates
+	return self._marker_templates
 end
 
 mod.active_chests = {}
 
 mod.check_if_marker_exists_at_pos = function(pos, marker_list)
-    for _, marker in pairs(marker_list) do
-        if marker.world_position then
-            if tostring(marker.world_position:unbox()) == tostring(pos) then
-                return marker
-            end
-        elseif marker.position then
-            if tostring(marker.position:unbox()) == tostring(pos) then
-                return marker
-            end
-        end
-    end
-    return false
+	for _, marker in pairs(marker_list) do
+		if marker.world_position then
+			if tostring(marker.world_position:unbox()) == tostring(pos) then
+				return marker
+			end
+		elseif marker.position then
+			if tostring(marker.position:unbox()) == tostring(pos) then
+				return marker
+			end
+		end
+	end
+	return false
 end
 
 mod.remove_chest_markers = function(chest_unit, marker_list)
-    for _, marker in pairs(marker_list) do
-        -- if Unit.alive(chest_unit) then
-        --    if marker.data and marker.data.chest_unit and marker.data.chest_unit == chest_unit then
-        --    Managers.event:trigger("remove_world_marker", marker.id)
-        --    end
-        -- end
-    end
-    return false
+	for _, marker in pairs(marker_list) do
+		-- if Unit.alive(chest_unit) then
+		--    if marker.data and marker.data.chest_unit and marker.data.chest_unit == chest_unit then
+		--    Managers.event:trigger("remove_world_marker", marker.id)
+		--    end
+		-- end
+	end
+	return false
 end
 
 mod.get_all_items_in_chest = function(self, chest_unit)
-    local unit = chest_unit
-    local pickup_spawner_extension = ScriptUnit.extension(unit, "pickup_system")
-    local containing_pickups = self._chest_extension._containing_pickups
-    local chest_size = pickup_spawner_extension:spawner_count()
+	local unit = chest_unit
+	local pickup_spawner_extension = ScriptUnit.extension(unit, "pickup_system")
+	local containing_pickups = self._chest_extension._containing_pickups
+	local chest_size = pickup_spawner_extension:spawner_count()
 
-    local chest_items = {}
-    for i = 1, chest_size do
-        if containing_pickups[i] or pickup_spawner_extension:request_rubberband_pickup(i) then
-            chest_items[#chest_items + 1] = containing_pickups[i]
-        end
-    end
+	local chest_items = {}
+	for i = 1, chest_size do
+		if containing_pickups[i] or pickup_spawner_extension:request_rubberband_pickup(i) then
+			chest_items[#chest_items + 1] = containing_pickups[i]
+		end
+	end
 
-    return chest_items
+	return chest_items
 end
 
 mod.update_chest_markers = function(self, marker)
-    local max_distance = get_max_distance()
+	local max_distance = get_max_distance()
 
-    for chest_unit, chest in pairs(mod.active_chests) do
-        if not Unit.alive(chest_unit) or (chest and chest._current_state ~= "closed") then
-            if chest then
-                mod.remove_chest_markers(chest._unit, self._markers)
-            end
-            mod.active_chests[chest_unit] = nil
-        end
-    end
+	for chest_unit, chest in pairs(mod.active_chests) do
+		if not Unit.alive(chest_unit) or (chest and chest._current_state ~= "closed") then
+			if chest then
+				mod.remove_chest_markers(chest._unit, self._markers)
+			end
+			mod.active_chests[chest_unit] = nil
+		end
+	end
 
-    if marker and self then
-        local unit = marker.unit
-        if marker.data and marker.data._active_interaction_type == "chest" then
-            self._chest_extension = ScriptUnit.has_extension(unit, "chest_system")
+	if marker and self then
+		local unit = marker.unit
+		if marker.data and marker.data._active_interaction_type == "chest" then
+			self._chest_extension = ScriptUnit.has_extension(unit, "chest_system")
 
-            mod.active_chests[unit] = self._chest_extension
-            local chest_items = {}
+			mod.active_chests[unit] = self._chest_extension
+			local chest_items = {}
 
-            -- Retrieve all items within chests, only works in private lobbies... Disabled for now
-            --[[if self._chest_extension then
+			-- Retrieve all items within chests, only works in private lobbies... Disabled for now
+			--[[if self._chest_extension then
 				chest_items = mod.get_all_items_in_chest(self, unit)
 
 				local local_player = Managers.player:local_player(1)
@@ -201,44 +202,44 @@ mod.update_chest_markers = function(self, marker)
 				end
 			end]]
 
-            marker.markers_aio_type = "chest"
+			marker.markers_aio_type = "chest"
 
-            mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.chest_border_colour))
-            mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-            marker.template.screen_clamp = fs.chest_keep_on_screen
-            marker.block_screen_clamp = false
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.chest_border_colour))
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.screen_clamp = fs.chest_keep_on_screen
+			marker.block_screen_clamp = false
 
-            -- marker.widget.content.is_clamped = false
+			-- marker.widget.content.is_clamped = false
 
-            local max_spawn_distance_sq = max_distance * max_distance
-            HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
+			local max_spawn_distance_sq = max_distance * max_distance
+			HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
 
-            if self.fade_settings then
-                self.fade_settings.distance_max = max_distance
-                self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
-            end
+			if self.fade_settings then
+				self.fade_settings.distance_max = max_distance
+				self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+			end
 
-            marker.template.max_distance = max_distance
-            marker.template.fade_settings.distance_max = max_distance
-            marker.template.fade_settings.distance_min = max_distance - marker.template.evolve_distance * 2
+			marker.template.max_distance = max_distance
+			marker.template.fade_settings.distance_max = max_distance
+			marker.template.fade_settings.distance_min = max_distance - marker.template.evolve_distance * 2
 
-            self.max_distance = max_distance
-            marker.max_distance = max_distance
+			self.max_distance = max_distance
+			marker.max_distance = max_distance
 
-            if self.fade_settings then
-                self.fade_settings.distance_max = max_distance
-                self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
-            end
+			if self.fade_settings then
+				self.fade_settings.distance_max = max_distance
+				self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
+			end
 
-            mod.set_colour_argb(
-                marker.widget.style.icon.color,
-                255,
-                fs.chest_icon_colour_R,
-                fs.chest_icon_colour_G,
-                fs.chest_icon_colour_B
-            )
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
+				255,
+				fs.chest_icon_colour_R,
+				fs.chest_icon_colour_G,
+				fs.chest_icon_colour_B
+			)
 
-            marker.widget.content.icon = fs.chest_icon
-        end
-    end
+			marker.widget.content.icon = fs.chest_icon
+		end
+	end
 end

@@ -3,174 +3,174 @@ local HudElementWorldMarkers = require("scripts/ui/hud/elements/world_markers/hu
 local Pickups = require("scripts/settings/pickup/pickups")
 local HUDElementInteractionSettings = require("scripts/ui/hud/elements/interaction/hud_element_interaction_settings")
 local WorldMarkerTemplateInteraction =
-    require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
+	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local fs = mod.frame_settings
 local expedition_pickup_types = {
-    -- grenades/call-ins
-    "expedition_grenade_airstrike_pocketable",
-    "expedition_grenade_artillery_strike_pocketable",
-    "expedition_grenade_big_pocketable",
-    "expedition_grenade_valkyrie_hover_pocketable",
-    "expedition_deployable_force_field_pocketable",
+	-- grenades/call-ins
+	"expedition_grenade_airstrike_pocketable",
+	"expedition_grenade_artillery_strike_pocketable",
+	"expedition_grenade_big_pocketable",
+	"expedition_grenade_valkyrie_hover_pocketable",
+	"expedition_deployable_force_field_pocketable",
 
-    -- loot crates
-    "expedition_loot_crate_tier_1",
-    "expedition_loot_crate_tier_2",
-    "expedition_loot_crate_tier_3",
+	-- loot crates
+	"expedition_loot_crate_tier_1",
+	"expedition_loot_crate_tier_2",
+	"expedition_loot_crate_tier_3",
 
-    -- TECH REMNANTS
-    "expedition_loot_small_tier_1",
-    "expedition_loot_small_tier_2",
-    "expedition_loot_small_tier_3",
-    "expedition_loot_player_drop",
+	-- TECH REMNANTS
+	"expedition_loot_small_tier_1",
+	"expedition_loot_small_tier_2",
+	"expedition_loot_small_tier_3",
+	"expedition_loot_player_drop",
 
-    -- RELIQUARIES
-    "expedition_loot_heavy_tier_1",
-    "expedition_loot_heavy_tier_2",
-    "expedition_loot_heavy_tier_3",
+	-- RELIQUARIES
+	"expedition_loot_heavy_tier_1",
+	"expedition_loot_heavy_tier_2",
+	"expedition_loot_heavy_tier_3",
 
-    -- SALVAGE
-    "expedition_currency_small_tier_1",
-    "expedition_currency_small_tier_2",
+	-- SALVAGE
+	"expedition_currency_small_tier_1",
+	"expedition_currency_small_tier_2",
 
-    -- SYRINGES
-    "expedition_effective_sprinting",
-    "expedition_max_toughness",
-    "expedition_time_syringe_timed",
+	-- SYRINGES
+	"expedition_effective_sprinting",
+	"expedition_max_toughness",
+	"expedition_time_syringe_timed",
 
-    -- keys
-    "expedition_common_key",
-    "expedition_deadsider_key",
-    "expedition_dataslate_key",
+	-- keys
+	"expedition_common_key",
+	"expedition_deadsider_key",
+	"expedition_dataslate_key",
 }
 
 mod.update_expedition_markers = function(self, marker)
-    if marker and self then
-        local unit = marker.unit
+	if marker and self then
+		local unit = marker.unit
 
-        local pickup_type = mod.get_marker_pickup_type(marker)
+		local pickup_type = mod.get_marker_pickup_type(marker)
 
-        -- filter out unwanted
-        local pickup_found = false
-        for i = 1, #expedition_pickup_types do
-            if pickup_type == expedition_pickup_types[i] then
-                pickup_found = true
-            end
-        end
+		-- filter out unwanted
+		local pickup_found = false
+		for i = 1, #expedition_pickup_types do
+			if pickup_type == expedition_pickup_types[i] then
+				pickup_found = true
+			end
+		end
 
-        if not pickup_found then
-            return
-        end
+		if not pickup_found then
+			return
+		end
 
-        marker.pickup_type = pickup_type
+		marker.pickup_type = pickup_type
 
-        marker.draw = false
-        marker.widget.alpha_multiplier = 0
+		marker.draw = false
+		marker.widget.alpha_multiplier = 0
 
-        marker.markers_aio_type = "expedition"
+		marker.markers_aio_type = "expedition"
 
-        mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+		mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
 
-        marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+		marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
 
-        local max_distance = fs.per_type[marker.markers_aio_type].max_distance
-        marker.template.max_distance = max_distance
-        marker.max_distance = max_distance
-        self.max_distance = max_distance
+		local max_distance = fs.per_type[marker.markers_aio_type].max_distance
+		marker.template.max_distance = max_distance
+		marker.max_distance = max_distance
+		self.max_distance = max_distance
 
-        marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
-        marker.block_screen_clamp = false
+		marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
+		marker.block_screen_clamp = false
 
-        -- set options based on grouping
-        if
-            pickup_type == "expedition_grenade_airstrike_pocketable"
-            or pickup_type == "expedition_grenade_artillery_strike_pocketable"
-            or pickup_type == "expedition_grenade_big_pocketable"
-            or pickup_type == "expedition_grenade_valkyrie_hover_pocketable"
-            or pickup_type == "expedition_deployable_force_field_pocketable"
-        then
-            -- PICKUPS/CALL INS
-            mod.set_colour_argb(
-                marker.widget.style.icon.color,
-                255,
-                fs.expedition_pickups_colour_R,
-                fs.expedition_pickups_colour_G,
-                fs.expedition_pickups_colour_B
-            )
-        elseif
-            pickup_type == "expedition_currency_small_tier_1" or pickup_type == "expedition_currency_small_tier_2"
-        then
-            -- CURRENCY
-            mod.set_colour_argb(
-                marker.widget.style.icon.color,
-                255,
-                fs.expedition_currency_colour_R,
-                fs.expedition_currency_colour_G,
-                fs.expedition_currency_colour_B
-            )
-        elseif
-            pickup_type == "expedition_loot_heavy_tier_1"
-            or pickup_type == "expedition_loot_heavy_tier_2"
-            or pickup_type == "expedition_loot_heavy_tier_3"
-        then
-            -- HEAVY RELIQUARIES
-            mod.set_colour_argb(
-                marker.widget.style.icon.color,
-                255,
-                fs.expedition_reliquary_colour_R,
-                fs.expedition_reliquary_colour_G,
-                fs.expedition_reliquary_colour_B
-            )
-            marker.widget.content.icon = fs.luggable_icon
-        elseif
-            pickup_type == "expedition_loot_small_tier_1"
-            or pickup_type == "expedition_loot_small_tier_2"
-            or pickup_type == "expedition_loot_small_tier_3"
-            or pickup_type == "expedition_loot_player_drop"
-        then
-            -- TECH REMNANTS
-            mod.set_colour_argb(
-                marker.widget.style.icon.color,
-                255,
-                fs.expedition_remnants_colour_R,
-                fs.expedition_remnants_colour_G,
-                fs.expedition_remnants_colour_B
-            )
-        elseif
-            pickup_type == "expedition_loot_crate_tier_1"
-            or pickup_type == "expedition_loot_crate_tier_2"
-            or pickup_type == "expedition_loot_crate_tier_3"
-        then
-            -- LOOT CRATES
-            mod.set_colour_argb(
-                marker.widget.style.icon.color,
-                255,
-                fs.expedition_crate_colour_R,
-                fs.expedition_crate_colour_G,
-                fs.expedition_crate_colour_B
-            )
+		-- set options based on grouping
+		if
+			pickup_type == "expedition_grenade_airstrike_pocketable"
+			or pickup_type == "expedition_grenade_artillery_strike_pocketable"
+			or pickup_type == "expedition_grenade_big_pocketable"
+			or pickup_type == "expedition_grenade_valkyrie_hover_pocketable"
+			or pickup_type == "expedition_deployable_force_field_pocketable"
+		then
+			-- PICKUPS/CALL INS
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
+				255,
+				fs.expedition_pickups_colour_R,
+				fs.expedition_pickups_colour_G,
+				fs.expedition_pickups_colour_B
+			)
+		elseif
+			pickup_type == "expedition_currency_small_tier_1" or pickup_type == "expedition_currency_small_tier_2"
+		then
+			-- CURRENCY
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
+				255,
+				fs.expedition_currency_colour_R,
+				fs.expedition_currency_colour_G,
+				fs.expedition_currency_colour_B
+			)
+		elseif
+			pickup_type == "expedition_loot_heavy_tier_1"
+			or pickup_type == "expedition_loot_heavy_tier_2"
+			or pickup_type == "expedition_loot_heavy_tier_3"
+		then
+			-- HEAVY RELIQUARIES
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
+				255,
+				fs.expedition_reliquary_colour_R,
+				fs.expedition_reliquary_colour_G,
+				fs.expedition_reliquary_colour_B
+			)
+			marker.widget.content.icon = fs.luggable_icon
+		elseif
+			pickup_type == "expedition_loot_small_tier_1"
+			or pickup_type == "expedition_loot_small_tier_2"
+			or pickup_type == "expedition_loot_small_tier_3"
+			or pickup_type == "expedition_loot_player_drop"
+		then
+			-- TECH REMNANTS
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
+				255,
+				fs.expedition_remnants_colour_R,
+				fs.expedition_remnants_colour_G,
+				fs.expedition_remnants_colour_B
+			)
+		elseif
+			pickup_type == "expedition_loot_crate_tier_1"
+			or pickup_type == "expedition_loot_crate_tier_2"
+			or pickup_type == "expedition_loot_crate_tier_3"
+		then
+			-- LOOT CRATES
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
+				255,
+				fs.expedition_crate_colour_R,
+				fs.expedition_crate_colour_G,
+				fs.expedition_crate_colour_B
+			)
 
-            marker.widget.content.icon = fs.chest_icon
-        else
-            mod.set_colour_argb(
-                marker.widget.style.icon.color,
-                255,
-                fs.expedition_colour_R,
-                fs.expedition_colour_G,
-                fs.expedition_colour_B
-            )
-        end
+			marker.widget.content.icon = fs.chest_icon
+		else
+			mod.set_colour_argb(
+				marker.widget.style.icon.color,
+				255,
+				fs.expedition_colour_R,
+				fs.expedition_colour_G,
+				fs.expedition_colour_B
+			)
+		end
 
-        -- set border based on tier
-        if string.find(pickup_type, "tier_1") then
-            mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.expedition_border_colour_1))
-        elseif string.find(pickup_type, "tier_2") then
-            mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.expedition_border_colour_2))
-        elseif string.find(pickup_type, "tier_3") then
-            mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.expedition_border_colour_3))
-        else
-            mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.expedition_border_colour))
-        end
-    end
+		-- set border based on tier
+		if string.find(pickup_type, "tier_1") then
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.expedition_border_colour_1))
+		elseif string.find(pickup_type, "tier_2") then
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.expedition_border_colour_2))
+		elseif string.find(pickup_type, "tier_3") then
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.expedition_border_colour_3))
+		else
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.expedition_border_colour))
+		end
+	end
 end
