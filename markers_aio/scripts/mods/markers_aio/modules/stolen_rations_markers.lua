@@ -22,7 +22,6 @@ mod.update_stolenrations_markers = function(self, marker)
 
 			if pickup then
 				if pickup.name and string_starts(pickup.name, "stolen_rations") then
-					-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 					marker.widget.alpha_multiplier = 0
 					marker.draw = false
 

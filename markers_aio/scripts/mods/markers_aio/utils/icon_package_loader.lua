@@ -3,7 +3,6 @@ local mod = get_mod("markers_aio")
 mod._required_icon_packages = mod._required_icon_packages or {}
 
 mod._required_icon_packages = {
-	-- Core menu and profile surfaces, broad UI atlas coverage
 	"packages/ui/views/main_menu_view/main_menu_view",
 	"packages/ui/views/main_menu_background_view/main_menu_background_view",
 	"packages/ui/views/character_appearance_view/character_appearance_view",
@@ -23,7 +22,6 @@ mod._required_icon_packages = {
 	"packages/ui/views/splash_view/splash_view",
 	"packages/ui/ui_signin_assets",
 
-	-- Inventory, weapon, and generic item icon sources
 	"packages/ui/views/inventory_view/inventory_view",
 	"packages/ui/views/inventory_background_view/inventory_background_view",
 	"packages/ui/views/inventory_weapons_view/inventory_weapons_view",
@@ -37,7 +35,6 @@ mod._required_icon_packages = {
 	"packages/ui/hud/wield_info/wield_info",
 	"packages/ui/hud/weapon_counter/weapon_counter",
 
-	-- Mastery, talent, crafting, and generic item-type placeholders
 	"packages/ui/views/masteries_overview_view/masteries_overview_view",
 	"packages/ui/views/mastery_view/mastery_view",
 	"packages/ui/views/talent_builder_view/talent_builder_view",
@@ -49,7 +46,6 @@ mod._required_icon_packages = {
 	"packages/ui/views/crafting_mechanicus_barter_items_view/crafting_mechanicus_barter_items_view",
 	"packages/ui/views/crafting_mechanicus_modify_view/crafting_mechanicus_modify_view",
 
-	-- Vendors, store, currencies, cosmetics, and appearance-related icons
 	"packages/ui/views/credits_goods_vendor_view/credits_goods_vendor_view",
 	"packages/ui/views/credits_vendor_view/credits_vendor_view",
 	"packages/ui/views/credits_vendor_background_view/credits_vendor_background_view",
@@ -64,7 +60,6 @@ mod._required_icon_packages = {
 	"packages/ui/views/penance_overview_view/penance_overview_view",
 	"packages/ui/material_sets/circumstances",
 
-	-- Mission, contracts, havoc, and player-journey icon families
 	"packages/ui/views/mission_intro_view/mission_intro_view",
 	"packages/ui/views/mission_board_view/mission_board_view",
 	"packages/ui/views/mission_voting_view/mission_voting_view",
@@ -82,7 +77,6 @@ mod._required_icon_packages = {
 	"packages/ui/views/training_grounds_view/training_grounds_view",
 	"packages/ui/views/end_player_view/end_player_view",
 
-	-- HUD packages that commonly carry ability, buff, frame, and flat icon materials
 	"packages/ui/hud/team_player_panel/team_player_panel",
 	"packages/ui/hud/crosshair/crosshair",
 	"packages/ui/hud/tactical_overlay/tactical_overlay",
@@ -106,7 +100,6 @@ mod._required_icon_packages = {
 	"packages/ui/hud/prologue_tutorial_info_box/prologue_tutorial_info_box",
 	"packages/ui/hud/player_buffs/player_buffs",
 
-	-- Inventory and itemization levels, often pull extra material dependencies
 	"content/levels/ui/inventory/inventory",
 	"content/levels/ui/inventory_weapon_view/inventory_weapon_view",
 	"content/levels/ui/crafting_view_itemization/crafting_view_itemization",
@@ -117,7 +110,6 @@ mod._required_icon_packages = {
 	"content/levels/ui/vendor_cosmetics_preview_weapon/vendor_cosmetics_preview_weapon",
 	"content/levels/ui/credits_cosmetics_vendor/credits_cosmetics_vendor",
 
-	-- Mission and event levels, useful for mission-type and event currency icons
 	"content/levels/ui/mission_intro/mission_intro",
 	"content/levels/ui/mission_board_player_journey/mission_board_player_journey",
 	"content/levels/ui/contracts_view/contracts_view",
@@ -125,14 +117,12 @@ mod._required_icon_packages = {
 	"content/levels/ui/penances/world",
 	"content/levels/ui/training_grounds/training_grounds",
 
-	-- Barber and appearance levels, useful for hair/appearance icon families
 	"content/levels/ui/barber/barber",
 	"content/levels/ui/barber_character_appearance/barber_character_appearance",
 	"content/levels/ui/barber_character_mindwipe/barber_character_mindwipe",
 	"content/levels/ui/character_create/character_create",
 	"content/levels/ui/cartel_selection/cartel_selection",
 
-	-- Expedition player-journey level, used by mission_types_pj icon families
 	"content/levels/ui/expedition/world",
 }
 

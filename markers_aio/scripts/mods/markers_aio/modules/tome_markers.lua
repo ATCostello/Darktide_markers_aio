@@ -34,7 +34,6 @@ mod.update_tome_markers = function(self, marker)
 				local is_tome = pickup.is_side_mission_pickup
 				if is_tome then
 					marker.markers_aio_type = "tome"
-					-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 					marker.widget.alpha_multiplier = 0
 					marker.draw = false
 

@@ -68,7 +68,6 @@ mod.update_stimm_markers = function(self, marker)
 			or marker.data and marker.data.type == "syringe_broker_pocketable"
 		then
 			marker.markers_aio_type = "stimm"
-			-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 			marker.widget.alpha_multiplier = 0
 			marker.draw = false
 

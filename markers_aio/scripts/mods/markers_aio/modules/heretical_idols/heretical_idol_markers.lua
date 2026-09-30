@@ -168,7 +168,6 @@ mod.update_marker_icon = function(self, marker)
 
 		if marker.type and (marker.type == "heretical_idol") then
 			marker.markers_aio_type = "heretical_idol"
-			-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 			marker.widget.alpha_multiplier = 0
 			marker.draw = false
 

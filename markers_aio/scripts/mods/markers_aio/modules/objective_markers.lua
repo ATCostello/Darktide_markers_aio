@@ -6,7 +6,6 @@ mod.update_objective_markers = function(self, marker)
 		return
 	end
 
-	-- Only base game objective/hub objective markers are handled here.
 	if marker.type ~= "objective" and marker.type ~= "hub_objective" then
 		local template = marker.template
 		if not (template and (template.name == "objective" or template.name == "hub_objective")) then
@@ -19,7 +18,6 @@ mod.update_objective_markers = function(self, marker)
 		return
 	end
 
-	-- Leave demolition/corruptor objective visuals largely untouched (they already have custom styling)
 	if marker.ui_target_type == "demolition" or marker.ui_target_type == "corruptor" then
 		return
 	end

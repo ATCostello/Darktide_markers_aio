@@ -38,11 +38,9 @@ mod.update_material_markers = function(self, marker)
 			or marker.data and marker.data.type == "large_platinum"
 		then
 			marker.markers_aio_type = "material"
-			-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 			marker.widget.alpha_multiplier = 0
 			marker.draw = false
 
-			-- Adjust colour or outer rim depending on if small or large
 			if
 				pickup_type == "small_metal"
 				or pickup_type == "small_platinum"

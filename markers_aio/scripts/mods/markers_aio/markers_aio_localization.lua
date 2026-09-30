@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.15.4"
+mod.version = "2.15.5"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -157,14 +157,14 @@ local loc = {
 		en = "Enable Name Pizazz",
 		fr = "Activer le nom stylisé",
 		ru = "Включить красочное название",
-		["zh-tw"] = "啟用名稱特效",
+		["zh-tw"] = "啟用名稱顏色效果",
 		["zh-cn"] = "启用名称特效",
 	},
 	mod_name_pizazz_tooltip = {
 		en = "Toggles the rainbow colours effect on the mod name text. Requires a reload.\nIf enabled, you will get a small euphoric experience everytime you scroll through the mod menu, \nIf disabled - you will be a John Darktide and have no rainbow sprinkles (but I'll love you anyway).",
 		fr = "Active l'effet arc-en-ciel sur le nom du mod. Nécessite un rechargement.\nSi activé, vous aurez une petite expérience euphorique à chaque fois que vous ferez défiler le menu du mod.\nSi désactivé, vous serez un John Darktide sans paillettes (mais je vous aimerai quand même).",
 		ru = "Включает радужный эффект для названия мода. Требуется перезагрузка.\nЕсли включено, вы будете испытывать небольшую эйфорию каждый раз при прокрутке меню мода.\nЕсли выключено - вы будете обычным Джоном Дарктайдом без радужных блёсток (но я всё равно буду вас любить).",
-		["zh-tw"] = "切換模組名稱的彩虹顏色效果。需要重新載入。\n啟用後，每次滾動模組選單時你都會獲得小小的愉悅體驗。\n停用後，你將成為一般的黑暗潮汐玩家，失去彩虹點綴（但我仍然愛你）。",
+		["zh-tw"] = "切換模組名稱文字的彩虹顏色效果。需要重新載入。\n啟用後，每次滾動模組選單時你都會獲得小小的愉悅體驗。\n停用後，你將成為一般的黑潮玩家，失去彩虹點綴（但我仍然愛你）。",
 		["zh-cn"] = "切换模组名称的彩虹颜色效果。需要重新加载。\n启用后，每次滚动模组菜单时你都会获得小小的愉悦体验。\n禁用后，你将失去彩虹点缀（但我仍然爱你）。",
 	},
 
@@ -188,6 +188,7 @@ local loc = {
 	},
 
 	ammo_status_settings = {
+		["zh-tw"] = "彈藥浪費提示",
 		en = "AMMO WASTAGE INDICATORS",
 	},
 
@@ -224,7 +225,7 @@ local loc = {
 		en = "Heretical Idol",
 		fr = "Idole Hérétique",
 		ru = "Еретический идол",
-		["zh-tw"] = "異端雕像",
+		["zh-tw"] = "異端神像",
 		["zh-cn"] = "异端神龛",
 	},
 	tab_materials = {
@@ -259,7 +260,7 @@ local loc = {
 		en = "Martyr's Skull",
 		fr = "Crâne du Martyr",
 		ru = "Череп мученика",
-		["zh-tw"] = "殉道者顱骨",
+		["zh-tw"] = "殉道者之顱",
 		["zh-cn"] = "殉道者颅骨",
 	},
 	tab_expedition = {
@@ -280,12 +281,13 @@ local loc = {
 		en = "OBJECTIVE MARKERS",
 		fr = "Objectifs",
 		ru = "Задачи",
-		["zh-tw"] = "目標",
+		["zh-tw"] = "任務目標標記",
 		["zh-cn"] = "目标",
 	},
 	objective_require_line_of_sight_tooltip = {
 		en = "Hide objective markers when they are behind cover. Disabled by default to keep the base game behaviour of showing objectives through walls.",
 		ru = "Скрывать метки задач за укрытием. По умолчанию выключено, чтобы сохранить базовое поведение игры (показ задач сквозь стены).",
+		["zh-tw"] = "任務目標標記被遮蔽物擋住時隱藏。預設關閉，保留原版隔牆顯示任務目標的方式。",
 		["zh-cn"] = "任务标记被遮挡时隐藏。默认关闭以保持原版透视显示任务的特性。",
 	},
 	objective_markers_settings = {
@@ -306,20 +308,20 @@ local loc = {
 		en = "Keep on screen",
 		fr = "Rester à l'écran",
 		ru = "Держать на экране",
-		["zh-tw"] = "保持於螢幕",
+		["zh-tw"] = "保持顯示於螢幕",
 		["zh-cn"] = "保持在屏幕上",
 	},
 	objective_require_line_of_sight = {
 		en = "Require Line of Sight",
 		fr = "Exiger une ligne de vue",
 		ru = "Требовать прямую видимость",
-		["zh-tw"] = "需要視線範圍",
+		["zh-tw"] = "僅顯示視線內的標記",
 		["zh-cn"] = "需要视野",
 	},
 	objective_toggle_los = {
 		en = "Toggle 'Require Line of Sight'",
 		ru = "Переключение «В зоне видимости»",
-		["zh-tw"] = "切換「需要視線範圍」",
+		["zh-tw"] = "切換「僅顯示視線內的標記」",
 		["zh-cn"] = "切换「仅视野内显示」",
 	},
 	objective_max_distance = {
@@ -430,7 +432,7 @@ local loc = {
 		fr = "Idole Hérétique",
 		ru = "Еретический идол",
 		["zh-cn"] = "异端雕像",
-		["zh-tw"] = "異端雕像",
+		["zh-tw"] = "異端神像",
 	},
 	mod_marker_medicae_station_name = {
 		en = "Medicae Station",
@@ -458,21 +460,21 @@ local loc = {
 		fr = "Stimm de vitesse",
 		ru = "Стим скорости",
 		["zh-cn"] = "敏捷兴奋剂",
-		["zh-tw"] = "速度興奮劑",
+		["zh-tw"] = "敏捷興奮劑",
 	},
 	mod_marker_boost_stimm_name = {
 		en = "Boost Stimm",
 		fr = "Stimm de boost",
 		ru = "Стим ускорения",
 		["zh-cn"] = "专注兴奋剂",
-		["zh-tw"] = "增強興奮劑",
+		["zh-tw"] = "專注興奮劑",
 	},
 	mod_marker_medic_stimm_name = {
 		en = "Medic Stimm",
 		fr = "Stimm médical",
 		ru = "Мед стим",
 		["zh-cn"] = "医疗兴奋剂",
-		["zh-tw"] = "治療針",
+		["zh-tw"] = "醫療興奮劑",
 	},
 	mod_marker_broker_stimm_name = {
 		en = "Hive Scum Stimm",
@@ -565,12 +567,14 @@ local loc = {
 		fr = "Choisir un style de police (Global)",
 		ru = "Выберите стиль шрифта (Глобальный)",
 		["zh-cn"] = "选择字体样式（全局）",
+		["zh-tw"] = "選擇字型（所有區域）",
 	},
 	font_type_tooltip = {
 		en = "The global font style to use. This will apply to all text elements from Markers AIO Improved.",
 		fr = "Le style de police global à utiliser. S'appliquera à tous les éléments textuels de Markers AIO Improved.",
 		ru = "Глобальный стиль шрифта. Будет применён ко всем текстовым элементам Улучшенных меток.",
 		["zh-cn"] = "设置使用的全局字体样式，将应用于「标记整合增强版」的所有文本元素。",
+		["zh-tw"] = "設定使用的字型樣式，將套用於「標記改善整合版」的所有文字元素。",
 	},
 
 	distance_text_enable = {
@@ -578,65 +582,70 @@ local loc = {
 		fr = "Activer l'indicateur de distance",
 		ru = "Включить индикатор расстояния",
 		["zh-cn"] = "开启距离指示器",
+		["zh-tw"] = "切換距離指示器",
 	},
 	distance_text_enable_tooltip = {
 		en = "Adds a text-based indicator near the markers that shows their distance from you in meters.",
 		fr = "Ajoute un indicateur textuel près des marqueurs indiquant la distance en mètres.",
 		ru = "Добавляет текстовый индикатор рядом с меткой, показывающий расстояние до него в метрах.",
 		["zh-cn"] = "在标记旁显示文字指示器，以米为单位显示与你的距离。",
+		["zh-tw"] = "在標記旁顯示文字指示器，以公尺為單位顯示與你的距離。",
 	},
 	distance_text_position = {
 		en = "Distance indicator position",
 		fr = "Position de l'indicateur de distance",
 		ru = "Позиция индикатора расстояния",
 		["zh-cn"] = "距离指示器位置",
+		["zh-tw"] = "距離指示器位置",
 	},
 	distance_text_position_tooltip = {
 		en = "Pick where to place the distance indicator in relation to the marker.\nNote: Center positioning will make the icon fade a little so you can always read the text.",
 		fr = "Choisissez où placer l'indicateur de distance par rapport au marqueur.\nNote : Le centrage atténuera légèrement l'icône pour une meilleure lisibilité du texte.",
 		ru = "Выберите расположение индикатора расстояния относительно метки.\nПримечание: при центрировании иконка будет слегка затемнена для лучшей читаемости текста.",
 		["zh-cn"] = "选择距离指示器相对于标记的显示位置。\n注意：选择居中时图标会略微淡化，确保文字清晰可见。",
+		["zh-tw"] = "選擇距離指示器相對於標記的位置。\n注意：選擇居中時圖標會略微淡化，確保文字清晰可見。",
 	},
 	distance_text_scale = {
 		en = "Distance indicator text scale",
 		fr = "Échelle du texte de l'indicateur de distance",
 		ru = "Масштаб текста индикатора расстояния",
 		["zh-cn"] = "距离指示器文字大小",
+		["zh-tw"] = "距離指示器文字大小",
 	},
 
 	Top = {
 		en = "Top",
 		fr = "Haut",
 		ru = "Сверху",
-		["zh-tw"] = "頂部",
+		["zh-tw"] = "上方",
 		["zh-cn"] = "顶部",
 	},
 	Bottom = {
 		en = "Bottom",
 		fr = "Bas",
 		ru = "Снизу",
-		["zh-tw"] = "底部",
+		["zh-tw"] = "下方",
 		["zh-cn"] = "底部",
 	},
 	Left = {
 		en = "Left",
 		fr = "Gauche",
 		ru = "Слева",
-		["zh-tw"] = "左側",
+		["zh-tw"] = "左方",
 		["zh-cn"] = "左侧",
 	},
 	Right = {
 		en = "Right",
 		fr = "Droite",
 		ru = "Справа",
-		["zh-tw"] = "右側",
+		["zh-tw"] = "右方",
 		["zh-cn"] = "右侧",
 	},
 	Center = {
 		en = "Center",
 		fr = "Centre",
 		ru = "По центру",
-		["zh-tw"] = "居中",
+		["zh-tw"] = "中心",
 		["zh-cn"] = "居中",
 	},
 
@@ -743,7 +752,7 @@ local loc = {
 		en = "Display Estimated Medcrate Charge",
 		fr = "Afficher l'estimation de charge des caisses médicales",
 		ru = "Показывать оценку заряда медящиков",
-		["zh-tw"] = "顯示醫療箱估計充能",
+		["zh-tw"] = "顯示醫療箱預估剩餘百分比",
 		["zh-cn"] = "显示医疗箱预估剩余百分比",
 	},
 	display_ammo_charges = {
@@ -793,6 +802,7 @@ local loc = {
 		fr = "Couleur du rayon de proximité du talent Improvisation sur le terrain",
 		ru = "Цвет радиуса таланта «Полевая импровизация»",
 		["zh-cn"] = "如果有老兵装备临场发挥天赋时的邻近范围颜色",
+		["zh-tw"] = "臨場發揮天賦接近範圍顏色",
 	},
 	field_improv_colour_R = {
 		en = "R",
@@ -1131,7 +1141,7 @@ local loc = {
 		en = "HERETICAL IDOL MARKERS",
 		fr = "MARQUEURS D'IDÔLES HÉRÉTIQUES",
 		ru = "МЕТКИ ЕРЕТИЧЕСКИХ ИДОЛОВ",
-		["zh-tw"] = "異端雕像圖標",
+		["zh-tw"] = "異端神像標記",
 		["zh-cn"] = "异端雕像图标",
 	},
 	heretical_idol_enable = {
@@ -1430,28 +1440,28 @@ local loc = {
 		en = "RecolorStimm mod support?",
 		fr = "Support du mod RecolorStimm ?",
 		ru = "Поддержка мода Recolor Stimm?",
-		["zh-tw"] = "支援 RecolorStimm 模組？",
+		["zh-tw"] = "啟用RecolorStimm模組支援？",
 		["zh-cn"] = "支持 RecolorStimm 模组？",
 	},
 	recolor_stimm_compat_enable_tooltip = {
 		en = "Toggles recolour stimm mod support, where if enabled - will adjust the colours of the stimms to the colours from RecolorStimms mod - and ignore the markers AIO stimm colours.",
 		fr = "Active la compatibilité avec le mod RecolorStimm. Si activé, ajuste les couleurs des stimms selon le mod RecolorStimm et ignore les couleurs de Markers AIO.",
 		ru = "Включает поддержку мода Recolor Stimm. Если включено - цвета стимуляторов будут взяты из мода Recolor Stimm, игнорируя цвета Улучшенных меток.",
-		["zh-tw"] = "切換 RecolorStimm 模組支援。啟用後將使用 RecolorStimm 的顏色，忽略標記整合版的興奮劑顏色設定。",
+		["zh-tw"] = "切換RecolorStimm模組支援，如果啟用 - 將把興奮劑的顏色調整為RecolorStimms模組的顏色 - 並忽略AIO標記的興奮劑顏色。",
 		["zh-cn"] = "切换 RecolorStimm 模组支持。启用后将使用 RecolorStimm 的颜色，忽略标记整合版的兴奋剂颜色设置。",
 	},
 	toggle_background_colour = {
 		en = "Colour Background Instead of Icon?",
 		fr = "Colorer l'arrière-plan au lieu de l'icône ?",
 		ru = "Окрашивать фон вместо значка?",
-		["zh-tw"] = "著色背景而非圖示？",
+		["zh-tw"] = "著色背景而不是圖示？",
 		["zh-cn"] = "给背景上色而非图标？",
 	},
 	toggle_background_colour_tooltip = {
 		en = "If enabled, will colour the background instead of the icon. If disabled, will colour the icon instead of the background. Uses the 'Background Colour' setting, as it essentially inverts the colours.",
 		fr = "Si activé, colorera l'arrière-plan au lieu de l'icône. Si désactivé, colorera l'icône. Utilise le paramètre 'Couleur de fond' en inversant les couleurs.",
 		ru = "Если включено, будет окрашивать фон вместо значка. Если выключено - значок вместо фона. По сути инвертирует цвета.",
-		["zh-tw"] = "啟用後將為背景上色而非圖示。停用後則為圖示上色。使用「背景顏色」設定，相當於反轉顏色。",
+		["zh-tw"] = "如果啟用，將著色背景而不是圖示。如果禁用，將著色圖示而不是背景。使用「背景顏色」設置，因為它本質上是顛倒顏色。",
 		["zh-cn"] = "启用后将为背景上色而非图标。禁用后则为图标上色。使用「背景颜色」设置，本质上是反转颜色。",
 	},
 
@@ -1522,7 +1532,7 @@ local loc = {
 		en = "Boost Stimm Icon Colour",
 		fr = "Couleur de l'icône de boost Stimm",
 		ru = "Цвет значка стимулятора усиления",
-		["zh-tw"] = "增強興奮劑圖示顏色",
+		["zh-tw"] = "專注興奮劑圖示顏色",
 		["zh-cn"] = "专注兴奋剂图标颜色",
 	},
 	boost_stimm_icon_colour_R = {
@@ -1557,7 +1567,7 @@ local loc = {
 		en = "Corruption Stimm Icon Colour",
 		fr = "Couleur de l'icône de corruption Stimm",
 		ru = "Цвет значка мед стима",
-		["zh-tw"] = "治療針圖示顏色",
+		["zh-tw"] = "醫療興奮劑圖示顏色",
 		["zh-cn"] = "医疗兴奋剂图标颜色",
 	},
 	corruption_stimm_icon_colour_R = {
@@ -1699,7 +1709,7 @@ local loc = {
 		fr = "Nécessite une ligne de vue (Stimm de boost)",
 		ru = "Требуется прямая видимость (стим ускорения)",
 		["zh-cn"] = "专注兴奋剂仅视野内显示",
-		["zh-tw"] = "增強興奮劑需要視線範圍",
+		["zh-tw"] = "專注興奮劑需要視線範圍",
 	},
 	corruption_stimm_require_line_of_sight = {
 		en = "Require line of sight (Medic Stimm)",
@@ -1736,7 +1746,7 @@ local loc = {
 		fr = "Les marqueurs de stimm de boost nécessitent-ils une ligne de vue ?",
 		ru = "Требуется ли прямая видимость для меток стима ускорения?",
 		["zh-cn"] = "专注兴奋剂标记是否需要视野？",
-		["zh-tw"] = "增強興奮劑標記是否需要視線？",
+		["zh-tw"] = "專注興奮劑標記是否需要視線？",
 	},
 	corruption_stimm_require_line_of_sight_tooltip = {
 		en = "Require line of sight for Medic Stimm markers?",
@@ -1842,7 +1852,7 @@ local loc = {
 		en = "Grimoire Colour",
 		fr = "Couleur du grimoire",
 		ru = "Цвет гримуара",
-		["zh-tw"] = "魔術書顏色",
+		["zh-tw"] = "法術書顏色",
 		["zh-cn"] = "魔法书颜色",
 	},
 	grim_colour_R = {
@@ -1870,7 +1880,7 @@ local loc = {
 		en = "Scripture Colour",
 		fr = "Couleur des textes sacrés",
 		ru = "Цвет писания",
-		["zh-tw"] = "經典顏色",
+		["zh-tw"] = "聖書顏色",
 		["zh-cn"] = "圣经颜色",
 	},
 	script_colour_R = {
@@ -1983,6 +1993,7 @@ local loc = {
 		en = "Tainted Communications Device Colour",
 		ru = "Цвет загрязнённых коммуникационных устройств",
 		["zh-cn"] = "腐化通讯器颜色",
+		["zh-tw"] = "腐化通訊裝置顏色",
 	},
 	tainted_colour_R = {
 		en = "R",
@@ -2011,6 +2022,7 @@ local loc = {
 		en = "TAINTED SKULL MARKERS",
 		ru = "МЕТКИ ЗАГРЯЗНЁННЫХ ЧЕРЕПОВ",
 		["zh-cn"] = "腐化颅骨标记",
+		["zh-tw"] = "腐化顱骨標記",
 	},
 	tainted_skull_enable = {
 		en = "Enable Markers",
@@ -2086,6 +2098,7 @@ local loc = {
 		en = "Tainted Skull Colour",
 		ru = "Цвет загрязнённых черепов",
 		["zh-cn"] = "腐化颅骨颜色",
+		["zh-tw"] = "腐化顱骨顏色",
 	},
 	tainted_skull_colour_R = {
 		en = "R",
@@ -2114,6 +2127,7 @@ local loc = {
 		en = "LUGGABLE MARKERS",
 		ru = "МЕТКИ ПЕРЕНОСИМЫХ",
 		["zh-cn"] = "可搬运物品标记",
+		["zh-tw"] = "可搬運物品標記",
 	},
 	luggable_enable = {
 		en = "Enable Markers",
@@ -2175,6 +2189,7 @@ local loc = {
 		en = "Luggable Colour",
 		ru = "Цвет переносимых",
 		["zh-cn"] = "可搬运物品颜色",
+		["zh-tw"] = "可搬運物品顏色",
 	},
 	luggable_colour_R = {
 		en = "R",
@@ -2210,6 +2225,7 @@ local loc = {
 		en = "MARTYRS SKULL MARKERS",
 		ru = "МЕТКИ ЧЕРЕПОВ МУЧЕНИКОВ",
 		["zh-cn"] = "殉道者颅骨标记",
+		["zh-tw"] = "殉道者之顱標記",
 	},
 	martyrs_skull_enable = {
 		en = "Enable Markers",
@@ -2234,11 +2250,13 @@ local loc = {
 		en = "Guide Widget X Position",
 		ru = "Позиция виджета по X",
 		["zh-cn"] = "指南小工具X位置",
+		["zh-tw"] = "指南小工具X位置",
 	},
 	martyrs_skull_guide_y_offset = {
 		en = "Guide Widget Y Position",
 		ru = "Позиция виджета по Y",
 		["zh-cn"] = "指南小工具Y位置",
+		["zh-tw"] = "指南小工具Y位置",
 	},
 	martyrs_skull_guide_disable_if_collected = {
 		en = "Only show guide if not collected?",
@@ -2299,6 +2317,7 @@ local loc = {
 		en = "Martyrs Skull Colour",
 		ru = "Цвет черепов мучеников",
 		["zh-cn"] = "殉道者颅骨颜色",
+		["zh-tw"] = "殉道者之顱顏色",
 	},
 	martyrs_skull_colour_R = {
 		en = "R",
@@ -2692,7 +2711,7 @@ local loc = {
 	martyrs_skull_objective_dm_propaganda_2 = {
 		en = "Head to the Martyr's Skull door and place the skull weight on the chain",
 		ru = "Направляйтесь к двери с черепами мучеников и повесьте череп-груз на цепь",
-		["zh-tw"] = "前往 Martyr's Skull 門，將顱骨重物放在鏈條上",
+		["zh-tw"] = "前往殉道者之顱門，將顱骨重物放在鏈條上",
 		["zh-cn"] = "前往殉道者颅骨大门，将颅骨配重挂在链条上",
 	},
 	martyrs_skull_objective_fm_resurgence_1 = {
@@ -2746,19 +2765,19 @@ local loc = {
 	martyrs_skull_objective_cm_archives_A4 = {
 		en = "Climb up boxes and jump over to chandelier to grab martyr's skull, once player two has completed the puzzle",
 		ru = "Заберитесь на ящики и перепрыгните на люстру, чтобы схватить череп мученика, как только второй игрок решит головоломку",
-		["zh-tw"] = "爬上箱子，跳到吊燈上拿到 Martyr's Skull，等玩家二完成謎題後",
+		["zh-tw"] = "爬上箱子，跳到吊燈上拿到殉道者之顱，等玩家二完成謎題後",
 		["zh-cn"] = "2号玩家解谜完成后，爬上箱子跳上吊灯拾取殉道者颅骨",
 	},
 	martyrs_skull_objective_collect_skull = {
 		en = "Collect Martyr's Skull!",
 		ru = "Возьмите Череп мученика!",
-		["zh-tw"] = "收集 Martyr's Skull！",
+		["zh-tw"] = "收集殉道者之顱！",
 		["zh-cn"] = "拾取殉道者颅骨！",
 	},
 	martyrs_skull_guide_title = {
 		en = "MARTYR'S SKULL GUIDE",
 		ru = "РУКОВОДСТВО ЧЕРЕПА МУЧЕНИКА",
-		["zh-tw"] = "MARTYR'S SKULL 指南",
+		["zh-tw"] = "殉道者之顱指南",
 		["zh-cn"] = "殉道者颅骨攻略",
 	},
 	martyrs_skull_guide_players_required = {
@@ -2938,6 +2957,7 @@ local loc = {
 		en = "LIVE EVENT MARKERS",
 		ru = "МЕТКИ СОБЫТИЙ",
 		["zh-cn"] = "活动物品标记",
+		["zh-tw"] = "活動物品標記",
 	},
 	event_enable = {
 		en = "Enable Markers",
@@ -3013,12 +3033,13 @@ local loc = {
 		en = "Live Event Markers Colour",
 		ru = "Цвет меток событий",
 		["zh-cn"] = "活动物品标记颜色",
+		["zh-tw"] = "活動物品標記顏色",
 	},
 	objective_colour = {
 		en = "Objective Markers Colour",
 		fr = "Couleur des marqueurs d'objectifs",
 		ru = "Цвет меток задач",
-		["zh-tw"] = "目標標記顏色",
+		["zh-tw"] = "任務目標標記顏色",
 		["zh-cn"] = "目标标记颜色",
 	},
 	objective_colour_R = {
@@ -3075,6 +3096,7 @@ local loc = {
 		en = "EXPEDITION MARKERS",
 		ru = "МЕТКИ ЭКСПЕДИЦИЙ",
 		["zh-cn"] = "远征物资标记",
+		["zh-tw"] = "遠征標記",
 	},
 	expedition_enable = {
 		en = "Enable Markers",
@@ -3171,31 +3193,37 @@ local loc = {
 		en = "Expedition Markers Colour (General)",
 		ru = "Цвет меток экспедиций (основной)",
 		["zh-cn"] = "远征标记颜色（通用）",
+		["zh-tw"] = "遠征標記顏色（通用）",
 	},
 	expedition_pickups_colour = {
 		en = "Expedition Pickup Markers Colour",
 		ru = "Цвет меток подбираемого в экспедициях",
 		["zh-cn"] = "远征拾取物颜色",
+		["zh-tw"] = "遠征拾取物標記顏色",
 	},
 	expedition_currency_colour = {
 		en = "Expedition Salvage Markers Colour",
 		ru = "Цвет меток спасаемого в экспедициях",
 		["zh-cn"] = "远征废料颜色",
+		["zh-tw"] = "遠征廢料標記顏色",
 	},
 	expedition_reliquary_colour = {
 		en = "Expedition Reliquary Markers Colour",
 		ru = "Цвет меток реликвариев в экспедициях",
 		["zh-cn"] = "远征圣骸箱颜色",
+		["zh-tw"] = "遠征聖骸箱標記顏色",
 	},
 	expedition_remnants_colour = {
 		en = "Expedition Tech-Remnant Markers Colour",
 		ru = "Цвет меток остатков технологий в экспедициях",
 		["zh-cn"] = "远征科技残片颜色",
+		["zh-tw"] = "遠征科技殘片標記顏色",
 	},
 	expedition_crate_colour = {
 		en = "Expedition Loot Crate Markers Colour",
 		ru = "Цвет меток ящиков с добычей в экспедициях",
 		["zh-cn"] = "远征战利品箱颜色",
+		["zh-tw"] = "遠征戰利品箱標記顏色",
 	},
 	expedition_colour_R = {
 		en = "R",
@@ -3334,16 +3362,19 @@ local loc = {
 		en = "Hackable Terminal",
 		ru = "Взламываемый терминал",
 		["zh-cn"] = "可破解终端",
+		["zh-tw"] = "可操作終端",
 	},
 	-- Servo Skull Markers
 	servo_skull_settings = {
 		en = "DECODING MARKERS",
 		ru = "МЕТКИ - ДЕКОДИРОВАНИЕ",
 		["zh-cn"] = "伺服颅骨标记（可破解终端）",
+		["zh-tw"] = "伺服頭骨標記（可操作終端）",
 	},
 	Investigation = {
 		en = "Investigation",
 		ru = "Расследование",
+		["zh-tw"] = "調查",
 	},
 	servo_skull_enable = {
 		en = "Enable Markers",
@@ -3356,28 +3387,28 @@ local loc = {
 		en = "Enable Assistance Module",
 		fr = "Activer le module d'assistance",
 		ru = "Включить модуль помощи",
-		["zh-tw"] = "啟用支援模組",
+		["zh-tw"] = "啟用輔助模式",
 		["zh-cn"] = "启用辅助模块",
 	},
 	servo_skull_enable_assistance_module_tooltip = {
 		en = "Toggle the 'assistance' features, including recolouring downed players' markers and showing their downed states.",
 		fr = "Active les fonctionnalités d'assistance, y compris le recoloriage des marqueurs des joueurs à terre et l'affichage de leur état.",
 		ru = "Включает функции помощи, включая перекраску меток упавших игроков и отображение их состояния.",
-		["zh-tw"] = "切換「支援」功能，包括重新著色倒地玩家標記並顯示其倒地狀態。",
+		["zh-tw"] = "切換「輔助」功能，包括重新著色倒下玩家的標記並顯示他們的倒下狀態。",
 		["zh-cn"] = "切换「辅助」功能，包括重新着色倒地队友标记并显示其倒地状态。",
 	},
 	servo_skull_icon = {
 		en = "Servo Skull Icon",
 		fr = "Icône du Crâne Serviteur",
 		ru = "Значок сервочерепа",
-		["zh-tw"] = "伺服顱骨圖示",
+		["zh-tw"] = "伺服頭骨圖示",
 		["zh-cn"] = "伺服颅骨图标",
 	},
 	decoding_icon = {
 		en = "Decoding Icon (No Servo Skull Equipped)",
 		fr = "Icône de décodage (aucun Crâne Serviteur équipé)",
 		ru = "Значок декодирования (сервочереп не экипирован)",
-		["zh-tw"] = "解密圖示（未裝備伺服顱骨）",
+		["zh-tw"] = "破解中圖示（未裝備伺服頭骨）",
 		["zh-cn"] = "解码图标（未装备伺服颅骨）",
 	},
 	servo_skull_keep_on_screen = {
@@ -3419,6 +3450,7 @@ local loc = {
 		en = "Inactive Colour",
 		ru = "Цвет - неактивен",
 		["zh-cn"] = "未激活颜色",
+		["zh-tw"] = "未啟動顏色",
 	},
 	servo_skull_default_colour_R = {
 		en = "R",
@@ -3445,6 +3477,7 @@ local loc = {
 		en = "Stalled (Can Deploy) Colour",
 		ru = "Цвет - застрял (можно развернуть)",
 		["zh-cn"] = "待命（可部署）颜色",
+		["zh-tw"] = "待命（可部署）顏色",
 	},
 	servo_skull_stalled_colour_R = {
 		en = "R",
@@ -3471,6 +3504,7 @@ local loc = {
 		en = "Active (Decoding) Colour",
 		ru = "Цвет - активен (расшифровка)",
 		["zh-cn"] = "激活（破解中）颜色",
+		["zh-tw"] = "啟動（解碼中）顏色",
 	},
 	servo_skull_active_colour_R = {
 		en = "R",
@@ -3497,16 +3531,19 @@ local loc = {
 		en = "Inactive Border Colour",
 		ru = "Цвет границы - неактивен",
 		["zh-cn"] = "未激活边框颜色",
+		["zh-tw"] = "未啟用邊框顏色",
 	},
 	servo_skull_stalled_border_colour = {
 		en = "Stalled Border Colour",
 		ru = "Цвет границы - застрял",
 		["zh-cn"] = "待命边框颜色",
+		["zh-tw"] = "停滯邊框顏色",
 	},
 	servo_skull_active_border_colour = {
 		en = "Active Border Colour",
 		ru = "Цвет границы - активен",
 		["zh-cn"] = "激活边框颜色",
+		["zh-tw"] = "啟用邊框顏色",
 	},
 	servo_skull_toggle_los = {
 		en = "Toggle 'Require Line of Sight'",
@@ -3518,14 +3555,14 @@ local loc = {
 		en = "Pulse When Stalled",
 		fr = "Pulser quand bloqué",
 		ru = "Пульсировать при ожидании",
-		["zh-tw"] = "停滯時脈動",
+		["zh-tw"] = "停滯時閃爍",
 		["zh-cn"] = "卡住时脉冲闪烁",
 	},
 	pulse_when_stalled_tooltip = {
 		en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
 		fr = "Fait doucement pulser la taille du marqueur lorsque le Crâne Serviteur est bloqué (1x à 1,2x)",
 		ru = "Мягко пульсирует размер метка, когда сервочереп ожидает (от 1x до 1,2x)",
-		["zh-tw"] = "當伺服顱骨停滯時，標記大小會輕微脈動（1倍至1.2倍）",
+		["zh-tw"] = "當伺服頭骨停滯時，標記大小會輕微閃爍（1倍至1.2倍）",
 		["zh-cn"] = "当伺服颅骨卡住时，标记大小会轻微脉冲（1倍至1.2倍）",
 	},
 	-- Player Assistance Markers
@@ -3533,7 +3570,7 @@ local loc = {
 		en = "PLAYER ASSISTANCE MARKERS",
 		fr = "MARQUEURS D'ASSISTANCE AU JOUEUR",
 		ru = "МЕТКИ ПОМОЩИ ИГРОКАМ",
-		["zh-tw"] = "玩家支援標記",
+		["zh-tw"] = "玩家輔助標記",
 		["zh-cn"] = "玩家辅助标记",
 	},
 	Investigation = {
@@ -3554,28 +3591,28 @@ local loc = {
 		en = "Enable Assistance Module",
 		fr = "Activer le module d'assistance",
 		ru = "Включить модуль помощи",
-		["zh-tw"] = "啟用支援模組",
+		["zh-tw"] = "啟用輔助模組",
 		["zh-cn"] = "启用辅助模块",
 	},
 	player_assistance_enable_assistance_module_tooltip = {
 		en = "Toggle the 'assistance' features, including recolouring downed players' markers and showing their downed states.",
 		fr = "Active les fonctionnalités d'assistance, y compris le recoloriage des marqueurs des joueurs à terre et l'affichage de leur état.",
 		ru = "Включает функции помощи, включая перекраску меток упавших игроков и отображение их состояния.",
-		["zh-tw"] = "切換「支援」功能，包括重新著色倒地玩家標記並顯示其倒地狀態。",
+		["zh-tw"] = "切換「輔助」功能，包括重新著色倒地玩家標記並顯示其倒地狀態。",
 		["zh-cn"] = "切换「辅助」功能，包括重新着色倒地队友标记并显示其倒地状态。",
 	},
 	player_assistance_servo_skull_icon = {
 		en = "Servo Skull Icon",
 		fr = "Icône du Crâne Serviteur",
 		ru = "Значок сервочерепа",
-		["zh-tw"] = "伺服顱骨圖示",
+		["zh-tw"] = "伺服頭骨圖示",
 		["zh-cn"] = "伺服颅骨图标",
 	},
 	player_assistance_icon = {
 		en = "Assistance Icon (No Servo Skull Equipped)",
 		fr = "Icône d'assistance (aucun Crâne Serviteur équipé)",
 		ru = "Значок помощи (сервочереп не экипирован)",
-		["zh-tw"] = "支援圖示（未裝備伺服顱骨）",
+		["zh-tw"] = "支援圖示（未裝備伺服頭骨）",
 		["zh-cn"] = "辅助图标（未装备伺服颅骨）",
 	},
 	player_assistance_keep_on_screen = {
@@ -3610,13 +3647,14 @@ local loc = {
 		en = "Alpha Multiplier",
 		fr = "Multiplicateur d'alpha",
 		ru = "Прозрачность",
-		["zh-tw"] = "透明度倍增器",
+		["zh-tw"] = "不透明度",
 		["zh-cn"] = "透明度系数",
 	},
 	player_assistance_default_colour = {
 		en = "Inactive Colour",
 		ru = "Цвет - неактивен",
 		["zh-cn"] = "未激活颜色",
+		["zh-tw"] = "未啟用顏色",
 	},
 	player_assistance_default_colour_R = {
 		en = "R",
@@ -3643,6 +3681,7 @@ local loc = {
 		en = "Stalled (Alert) Colour",
 		ru = "Цвет - застрял (внимание)",
 		["zh-cn"] = "待命（可部署）颜色",
+		["zh-tw"] = "待命（警示）顏色",
 	},
 	player_assistance_stalled_colour_R = {
 		en = "R",
@@ -3669,6 +3708,7 @@ local loc = {
 		en = "Active (Helping) Colour",
 		ru = "Цвет - активен (помощь)",
 		["zh-cn"] = "激活（破解中）颜色",
+		["zh-tw"] = "啟動（協助中）顏色",
 	},
 	player_assistance_active_colour_R = {
 		en = "R",
@@ -3695,16 +3735,19 @@ local loc = {
 		en = "Inactive Border Colour",
 		ru = "Цвет границы - неактивен",
 		["zh-cn"] = "未激活边框颜色",
+		["zh-tw"] = "未啟動邊框顏色",
 	},
 	player_assistance_stalled_border_colour = {
 		en = "Stalled Border Colour",
 		ru = "Цвет границы - застрял",
 		["zh-cn"] = "待命边框颜色",
+		["zh-tw"] = "待命邊框顏色",
 	},
 	player_assistance_active_border_colour = {
 		en = "Active Border Colour",
 		ru = "Цвет границы - активен",
 		["zh-cn"] = "激活边框颜色",
+		["zh-tw"] = "啟動邊框顏色",
 	},
 	player_assistance_toggle_los = {
 		en = "Toggle 'Require Line of Sight'",
@@ -3716,14 +3759,14 @@ local loc = {
 		en = "Pulse When Stalled",
 		fr = "Pulser quand bloqué",
 		ru = "Пульсировать при ожидании",
-		["zh-tw"] = "停滯時脈動",
+		["zh-tw"] = "停滯時閃爍",
 		["zh-cn"] = "卡住时脉冲闪烁",
 	},
 	pulse_when_stalled_tooltip = {
 		en = "Gently pulse the marker size when the servo skull is stalled (1x to 1.2x)",
 		fr = "Fait doucement pulser la taille du marqueur lorsque le Crâne Serviteur est bloqué (1x à 1,2x)",
 		ru = "Мягко пульсирует размер метка, когда сервочереп ожидает (от 1x до 1,2x)",
-		["zh-tw"] = "當伺服顱骨停滯時，標記大小會輕微脈動（1倍至1.2倍）",
+		["zh-tw"] = "當伺服頭骨停滯時，標記大小會輕微閃爍（1倍至1.2倍）",
 		["zh-cn"] = "当伺服颅骨卡住时，标记大小会轻微脉冲（1倍至1.2倍）",
 	},
 	-- Unknown Markers
@@ -3731,6 +3774,7 @@ local loc = {
 		en = "UNKNOWN MARKERS (Those not covered elsewhere!)",
 		ru = "НЕИЗВЕТСНЫЕ МЕТКИ (которые не попали в другие разделы!)",
 		["zh-cn"] = "未知物品标记（未归类物品）",
+		["zh-tw"] = "未知物品標記（未歸類物品）",
 	},
 	Help = {
 		en = "Help",
@@ -3743,14 +3787,14 @@ local loc = {
 		en = "Medkit",
 		fr = "Kit médical",
 		ru = "Медпакет",
-		["zh-tw"] = "醫療包",
+		["zh-tw"] = "醫療箱",
 		["zh-cn"] = "医疗包",
 	},
 	Respawn = {
 		en = "Respawn",
 		fr = "Réapparition",
 		ru = "Возрождение",
-		["zh-tw"] = "重生",
+		["zh-tw"] = "復活",
 		["zh-cn"] = "复活",
 	},
 	Stimm = {
@@ -3834,6 +3878,7 @@ local loc = {
 		en = "Unknown Markers Colour",
 		ru = "Цвет неизвестных меток",
 		["zh-cn"] = "未知物品标记颜色",
+		["zh-tw"] = "未知物品標記顏色",
 	},
 	unknown_colour_R = {
 		en = "R",
@@ -3867,149 +3912,176 @@ local loc = {
 		en = "Red RGB value.",
 		ru = "Значение красного цвета в формате RGB.",
 		["zh-cn"] = "红色RGB数值。",
+		["zh-tw"] = "紅色RGB數值。",
 	},
 	colour_G_tooltip = {
 		en = "Green RGB value.",
 		ru = "Значение зелёного цвета в формате RGB.",
 		["zh-cn"] = "绿色RGB数值。",
+		["zh-tw"] = "綠色RGB數值。",
 	},
 	colour_B_tooltip = {
 		en = "Blue RGB value.",
 		ru = "Значение синего цвета в формате RGB.",
 		["zh-cn"] = "蓝色RGB数值。",
+		["zh-tw"] = "藍色RGB數值。",
 	},
 	max_distance_tooltip = {
 		en = "Maximum distance to find, update and draw markers.",
 		ru = "Максимальное расстояние для поиска, обновления и отрисовки меток.",
 		["zh-cn"] = "搜索、更新与显示标记的最大距离。",
+		["zh-tw"] = "搜尋、更新與顯示標記的最大距離。",
 	},
 	scale_tooltip = {
 		en = "Scale multiplier to apply.\ne.g. 100=1x size, 50=0.5x size, 150=1.5x size.",
 		ru = "Применяется множитель масштабирования. Например: 100 = 1x размер, 50 = 0,5x размер, 150 = 1,5x размер.",
 		["zh-cn"] = "标记缩放倍数。\n例如：100=1倍大小，50=0.5倍大小，150=1.5倍大小。",
+		["zh-tw"] = "標記縮放倍數。\n例如：100=1倍大小，50=0.5倍大小，150=1.5倍大小。",
 	},
 	los_fade_enable_tooltip = {
 		en = "Fade out markers that are behind a world object/out of line of sight? Only takes effect if 'Require Line of Sight' is disabled.",
 		ru = "Скрывать метки, находящиеся за объектами в игровом мире/вне прямой видимости? Эффект проявляется только в том случае, если параметр «Требовать прямой видимости» отключён.",
 		["zh-cn"] = "是否淡化墙体后方/视线外的标记？仅在关闭「需要视线」时生效。",
+		["zh-tw"] = "是否淡化牆體後方/視線外的標記？僅在關閉「需要視線」時生效。",
 	},
 	los_opacity_tooltip = {
 		en = "Opacity to apply to markers if line of sight fading is enabled.",
 		ru = "Прозрачность, применяемая к меткам, если включено затухание при прямой видимости.",
 		["zh-cn"] = "启用视线淡化后，标记的不透明度。",
+		["zh-tw"] = "啟用視線淡化後，標記的不透明度。",
 	},
 	ads_los_opacity_tooltip = {
 		en = "Opacity to apply to markers when you aim down sights of your weapon.",
 		ru = "Прозрачность, применяемая к меткам при наведении прицела оружия.",
 		["zh-cn"] = "开镜瞄准状态下标记的不透明度。",
+		["zh-tw"] = "開鏡瞄準狀態下標記的不透明度。",
 	},
 	alpha_tooltip = {
 		en = "General opacity to apply to this marker type.",
 		ru = "Общая прозрачность, применяемая к этому типу метки.",
 		["zh-cn"] = "此类标记的整体不透明度。",
+		["zh-tw"] = "此類標記的整體不透明度。",
 	},
 	border_colour_tooltip = {
 		en = "Select a colour to apply to the 'border' or outer decorative ring of this marker type.",
 		ru = "Выберите цвет, который будет применён к «рамке» или внешнему декоративному кольцу этого типа метки.",
 		["zh-cn"] = "设置此类标记边框或外侧装饰环的颜色。",
+		["zh-tw"] = "設定此類標記邊框或外側裝飾環的顏色。",
 	},
 	marker_background_colour_tooltip = {
 		en = "Background colour to apply to all markers.",
 		ru = "Цвет фона, применяемый ко всем меткам.",
 		["zh-cn"] = "所有标记的背景颜色。",
+		["zh-tw"] = "所有標記的背景顏色。",
 	},
 	font_type_tooltip = {
 		en = "Font type to apply to any text elements of markers adjusted by Markers AIO.",
 		ru = "Тип шрифта, применяемый ко всем текстовым элементам меток, настроенных Улучшенными метками.",
 		["zh-cn"] = "标记整合模组调整的所有标记文本字体。",
+		["zh-tw"] = "標記整合模組調整的所有標記文本字體。",
 	},
 	enable_tooltip = {
 		en = "Enable Markers AIO adjustments to this marker type?",
 		ru = "Включить настройку параметров Улучшенных меток для этого типа меток?",
 		["zh-cn"] = "是否对该类标记启用标记整合模组调整？",
+		["zh-tw"] = "是否對該類標記啟用標記整合模組調整？",
 	},
 	ammo_med_markers_alternate_large_ammo_icon_tooltip = {
 		en = "Use a different icon (Which is more fitting imo) for the large ammo pouches?",
 		ru = "Использовать другую иконку (которая, на мой взгляд, больше подходит) для больших подсумков для патронов?",
 		["zh-cn"] = "为大型弹药包使用更贴合的替代图标。",
+		["zh-tw"] = "為大型彈藥包使用更貼合的替代圖標。",
 	},
 	keep_on_screen_tooltip = {
 		en = "Stick the marker to the edges of the screen if you are not directly looking at it?",
 		ru = "Если вы не смотрите прямо на метку, она прикрепляется к краям экрана.",
 		["zh-cn"] = "未直视目标时，将标记固定在屏幕边缘。",
+		["zh-tw"] = "未直視目標時，將標記固定在螢幕邊緣。",
 	},
 	require_line_of_sight_tooltip = {
 		en = "Require direct line of sight to this marker type?\nIf enabled, markers behind world objects like walls will be hidden. \nIf disabled, you will be able to see markers through world objects.",
 		ru = "Требуется прямая видимость для этого типа меток?\nЕсли включено, метки, находящиеся за объектами игрового мира, такими как стены, будут скрыты.\nЕсли отключено, вы сможете видеть метки сквозь объекты игрового мира.",
 		["zh-cn"] = "此类标记是否需要直接视线？\n启用后，墙体等障碍物后的标记会隐藏。\n关闭后可穿墙看到标记。",
+		["zh-tw"] = "此類標記是否需要直接視線？\n啟用後，牆體等障礙物後的標記會隱藏。\n關閉後可穿牆看到標記。",
 	},
 	toggle_los_tooltip = {
 		en = "Optional: Enter a keybind to toggle the 'Require Line of Sight' functionality for this marker type.",
 		ru = "Опционально: укажите сочетание клавиш для переключения функции «Требуется прямая видимость» для этого ��ипа меток.",
 		["zh-cn"] = "可选：设置快捷键切换此类标记的「需要视线」功能。",
+		["zh-tw"] = "可選：設定快捷鍵切換此類標記的「需要視線」功能。",
 	},
 	display_ammo_charges_tooltip = {
 		en = "Display a text-based numerical counter indicating how many uses an ammo crate has left before it runs out.",
 		ru = "Показывает текстовый числовой счётчик, показывающий, сколько использований осталось у ящика с боеприпасами до того, как он закончится.",
 		["zh-cn"] = "以数字显示弹药箱剩余可使用次数。",
+		["zh-tw"] = "以數字顯示彈藥箱剩餘可使用次數。",
 	},
 	display_med_charges_tooltip = {
 		en = "Display a text-based numerical counter indicating the percentage left on a crate or the charges left on a medical station before it runs out. In multiplayer, crate percentages on other players' screens are estimated (shown with a ~).",
 		ru = "Показывает текстовый числовой счётчик, показывающий процент оставшегося заряда ящика или количество зарядов, оставшихся в медстанции до их полного израсходования. В сетевой игре проценты медящиков на других игроках оцениваются (показываются с ~).",
+		["zh-tw"] = "以數字顯示醫療箱剩餘百分比或醫療站剩餘使用次數。多人遊戲中，其他玩家畫面上的醫療箱百分比為估計值（以 ~ 表示）。",
 		["zh-cn"] = "以数字显示医疗箱剩余百分比或医疗站剩余使用次数。联机游戏中他处的医疗箱百分比为估算值（以 ~ 前缀标示）。",
 	},
 	display_med_crate_estimate_tooltip = {
 		en = "Show the live estimated charge percentage left on a deployed medcrate (crates placed by other players in multiplayer, where the exact reserve is not shared). Estimates are shown as approximate ranges like ~60-80%% to reflect that they cannot be exact, and they already account for the crate lifetime. Disabling this hides only the estimated percentage; the exact percentage still shows when it is known (e.g. solo lobbies/psykhanium).",
 		ru = "Показывает живую оценку оставшегося процента заряда развёрнутого медящика (ящиков, поставленных другими игроками в сетевой игре, где точное значение резерва не передаётся). Оценки показываются приблизительными диапазонами, например ~60-80%%, и уже учитывают время жизни ящика. Отключение скрывает только оценку; точный процент остаётся видимым, когда он известен (например, когда вы хост).",
+		["zh-tw"] = "顯示已放置醫療箱的即時預估剩餘充能百分比。多人遊戲中，其他玩家放置的醫療箱不會同步確切剩餘量，因此以 ~60-80%% 之類的範圍顯示估計值；估算時也已計入醫療箱的持續時間。關閉後只會隱藏估計值；若能取得確切百分比（例如單人房或靈能室），仍會顯示。",
 		["zh-cn"] = "显示已部署医疗箱的实时预估剩余百分比（联机游戏中由其他玩家放置的医疗箱无法获取精确值）。预估以近似范围显示（如 ~60-80%%），并已计入医疗箱寿命。关闭后仅隐藏预估百分比；已知精确值时（如作为主机）仍会显示精确值。",
 	},
 	ammo_status_colours_enable_tooltip = {
 		en = "Tint ammo pickup markers by how useful they are to you",
 		ru = "Окрашивает метки подбора боеприпасов в зависимости от пользы для вас: зелёный = можно забрать всё, оранжевый = союзнику нужнее, красный = часть боеприпасов будет потрачена впустую.",
+		["zh-tw"] = "依拾取彈藥對你的補給效益，為彈藥標記著色。",
 		["zh-cn"] = "根据弹药拾取对您的用处着色：绿色=可全部拾取，橙色=队友更需要，红色=会有浪费。",
 	},
 	ammo_status_dim_unwanted_enable_tooltip = {
 		en = "Dim the marker to 50%% opacity when the ammo status is wasted or a teammate needs it more than you, so useful pickups stand out. Full opacity is kept when you can take it all.",
 		ru = "Затемняет метку до 50%% непрозрачности, когда боеприпасы тратятся впустую или союзнику они нужнее, чем вам, чтобы полезные подборы выделялись. Полная непрозрачность сохраняется, когда вы можете забрать всё.",
+		["zh-tw"] = "當拾取會浪費彈藥，或隊友比你更需要時，將標記透明度降至 50%%，讓值得拾取的彈藥更醒目。若能全數取得，標記則維持完全不透明。",
 		["zh-cn"] = "当弹药状态为浪费、或队友比你更需要时，将标记淡化至 50%% 不透明度，使有用的拾取更醒目；可全部拾取时保持完全不透明。",
 	},
 	ammo_status_circle_enable = {
 		en = "Corner status circle",
 		fr = "Cercle d'état en coin",
 		ru = "Круг статуса в углу",
-		["zh-tw"] = "角落狀態圓",
+		["zh-tw"] = "右上角狀態圓點",
 		["zh-cn"] = "角落状态圆",
 	},
 	ammo_status_circle_enable_tooltip = {
 		en = "Show a small circle in the top-right corner of ammo pickup markers, tinted with the ammo status colour (green = take it all, orange = a teammate needs it more, red = would waste ammo). A teammate's class icon in their colour is drawn on the circle when they need it more.",
 		fr = "Affiche un petit cercle dans le coin supérieur droit des marqueurs de munitions, coloré selon l'état (vert = tout prendre, orange = un coéquipier en a plus besoin, rouge = perte de munitions). L'icône de classe d'un coéquipier dans sa couleur est dessinée sur le cercle quand il en a plus besoin.",
 		ru = "Показывает маленький круг в правом верхнем углу метки боеприпасов, окрашенный по статусу (зелёный = можно забрать всё, оранжевый = союзнику нужнее, красный = будет потеря). Когда союзнику нужнее, на круге отображается иконка его класса в цвете команды.",
-		["zh-tw"] = "在彈藥拾取標記的右上角顯示小圓圈，按彈藥狀態著色（綠=可全拿、橘=隊友更需要、紅=會浪費彈藥）。當隊友更需要時，圓上顯示其職業圖示與隊友顏色。",
+		["zh-tw"] = "在彈藥拾取標記右上角顯示小圓點，並依狀態著色：綠色表示可全數取得、橘色表示隊友更需要、紅色表示拾取會浪費彈藥。隊友更需要時，圓點上會顯示該隊友的職業圖示與對應顏色。",
 		["zh-cn"] = "在弹药拾取标记的右上角显示小圆点，按弹药状态着色（绿=可全拿、橙=队友更需要、红=会浪费）。当队友更需要时，圆上叠加其职业图标并显示队友颜色。",
 	},
 	ammo_status_numeric_enable_tooltip = {
 		en = "Master toggle for the gain (+G) and waste (-W) numbers. When enabled you can pick where they appear: on the world marker, in the interact prompt, or both.",
 		ru = "Главный переключатель чисел +G и -W. Когда включено, вы можете выбрать, где они отображаются: на мировой метке, в окне взаимодействия или в обоих местах.",
+		["zh-tw"] = "獲得量（+G）與浪費量（-W）數字的總開關。啟用後可選擇顯示在場景中的拾取標記、互動提示，或兩處都顯示。",
 		["zh-cn"] = "获得(+G)与浪费(-W)数字的主开关。开启后可选择显示位置：显示标记上、互动提示中或两者都显示。",
 	},
 	ammo_status_show_gain_tooltip = {
 		en = "Show the number of ammo rounds that will be added to your reserve.",
 		ru = "Показывать число патронов, которое будет добавлено к вашему запасу.",
+		["zh-tw"] = "顯示拾取後會加入備用彈藥的發數。",
 		["zh-cn"] = "显示将补充到后备弹药的数量。",
 	},
 	ammo_status_show_waste_tooltip = {
 		en = "Show how many ammo rounds would be wasted because your reserve is too full.",
 		ru = "Показывать число патронов, которые будут потеряны из-за слишком полного запаса.",
+		["zh-tw"] = "顯示因備用彈藥太滿而會浪費的發數。",
 		["zh-cn"] = "显示因后备弹药过满而浪费的数量。",
 	},
 	ammo_status_show_most_needy_tooltip = {
 		en = "When a teammate needs the ammo more than you, show their class icon with their team colour to mark who should take this pickup.",
 		ru = "Если союзнику нужно больше боеприпасов, чем вам, показывает иконку его класса в цвете его команды, чтобы отметить, кому следует забрать этот предмет.",
+		["zh-tw"] = "當隊友比你更需要這份彈藥時，顯示該隊友的職業圖示與對應顏色，標示應由誰拾取。",
 		["zh-cn"] = "当队友比您更需要弹药时，以队友职业图标与队友颜色标示谁应该拾取。",
 	},
 	ammo_status_margin_tooltip = {
 		en = "How much lower (in %%) a teammate's ammo must be than yours before they are considered more needy than you.",
 		ru = "На сколько процентов запас боеприпасов союзника должен быть ниже вашего, чтобы он считался более нуждающимся в них.",
+		["zh-tw"] = "設定隊友的彈藥百分比須比你低多少個百分點（%%），才會被視為更需要彈藥。",
 		["zh-cn"] = "队友弹药百分比比您低多少(%%)才会判定为比您更需要。",
 	},
 	ammo_status_colours_enable = {
@@ -4023,28 +4095,28 @@ local loc = {
 		en = "Dim wasted/unneeded markers",
 		fr = "Atténuer les marqueurs gaspillés/inutiles",
 		ru = "Затемнять бесполезные метки",
-		["zh-tw"] = "淡化無用標記",
+		["zh-tw"] = "淡化不宜拾取的彈藥標記",
 		["zh-cn"] = "淡化无用标记",
 	},
 	ammo_status_numeric_enable = {
 		en = "Show gain/waste numbers",
 		fr = "Afficher les nombres de gain/perte",
 		ru = "Показывать числа +G/-W",
-		["zh-tw"] = "顯示獲得/浪費數字",
+		["zh-tw"] = "顯示獲得量／浪費量數字",
 		["zh-cn"] = "显示获得/浪费数字",
 	},
 	ammo_status_show_gain = {
 		en = "Show ammo gained",
 		fr = "Afficher les munitions gagnées",
 		ru = "Показывать полученные патроны",
-		["zh-tw"] = "顯示獲得彈藥",
+		["zh-tw"] = "顯示可獲得的彈藥量",
 		["zh-cn"] = "显示获得弹药",
 	},
 	ammo_status_show_waste = {
 		en = "Show ammo wasted",
 		fr = "Afficher les munitions perdues",
 		ru = "Показывать потерянные патроны",
-		["zh-tw"] = "顯示浪費彈藥",
+		["zh-tw"] = "顯示會浪費的彈藥量",
 		["zh-cn"] = "显示浪费弹药",
 	},
 	ammo_status_show_most_needy = {
@@ -4058,14 +4130,14 @@ local loc = {
 		en = "Needy margin",
 		fr = "Marge de besoin",
 		ru = "Порог нужды",
-		["zh-tw"] = "需求差額",
+		["zh-tw"] = "隊友彈藥差距門檻",
 		["zh-cn"] = "需求差值",
 	},
 	ammo_status_green_colour = {
 		en = "Status Colour: Take It All",
 		fr = "Couleur du statut : Prendre tout",
 		ru = "Цвет статуса: взять всё",
-		["zh-tw"] = "狀態顏色：全部拾取",
+		["zh-tw"] = "狀態顏色：可全數取得",
 		["zh-cn"] = "状态颜色：可全部拾取",
 	},
 	ammo_status_green_colour_R = {
@@ -4121,7 +4193,7 @@ local loc = {
 		en = "Status Colour: Would Waste Ammo",
 		fr = "Couleur du statut : Munitions gaspillées",
 		ru = "Цвет статуса: боеприпасы будут потеряны",
-		["zh-tw"] = "狀態顏色：會有浪費",
+		["zh-tw"] = "狀態顏色：拾取會浪費彈藥",
 		["zh-cn"] = "状态颜色：会有浪费",
 	},
 	ammo_status_red_colour_R = {
@@ -4155,6 +4227,7 @@ local loc = {
 	ammo_status_enable_tooltip = {
 		en = "Master toggle for the ammo info features (ring colours, gain/waste numbers, most needy teammate icon).",
 		ru = "Главный переключатель функций информации о боеприпасах (цвет кольца, числа +G/-W, иконка наиболее нуждающегося союзника).",
+		["zh-tw"] = "彈藥資訊功能的總開關，包括狀態環顏色、獲得量／浪費量數字，以及最需要彈藥的隊友圖示。",
 		["zh-cn"] = "弹药信息功能总开关（状态环颜色、获得/浪费数值、最需要弹药的队友图标）。",
 	},
 	ammo_status_marker_text_enable = {
@@ -4167,6 +4240,7 @@ local loc = {
 	ammo_status_marker_text_enable_tooltip = {
 		en = "Show the gain (+G) and waste (-W) numbers directly on the ammo pickup's world marker, under the marker icon.",
 		ru = "Показывать числа +G и -W прямо на мировой метке предмета, под иконкой.",
+		["zh-tw"] = "在場景中的彈藥拾取標記上，直接於圖示下方顯示獲得量（+G）與浪費量（-W）。",
 		["zh-cn"] = "在弹药的显示标记图标下方直接显示获得(+G)与浪费(-W)数值。",
 	},
 	ammo_status_popup_text_enable = {
@@ -4179,6 +4253,7 @@ local loc = {
 	ammo_status_popup_text_enable_tooltip = {
 		en = "Show the gain (+G) and waste (-W) next to the ammo pickup name in the interact prompt that appears when you are close enough to interact.",
 		ru = "Показывать +G и -W рядом с названием предмета в окне взаимодействия, которое появляется, когда вы достаточно близко для подбора.",
+		["zh-tw"] = "靠近彈藥並可互動時，在互動提示的彈藥名稱旁顯示獲得量（+G）與浪費量（-W）。",
 		["zh-cn"] = "在足够靠近进行互动时出现的互动提示中，在弹药名称旁显示获得(+G)与浪费(-W)。",
 	},
 	ammo_status_text_font_size = {
@@ -4191,6 +4266,7 @@ local loc = {
 	ammo_status_text_font_size_tooltip = {
 		en = "Font size of the gain/waste numbers shown on the pickup marker.",
 		ru = "Размер шрифта чисел +G/-W на метке предмета.",
+		["zh-tw"] = "設定拾取標記上獲得量／浪費量數字的字體大小。",
 		["zh-cn"] = "拾取标记上获得/浪费数字的字体大小。",
 	},
 	ammo_status_text_position = {
@@ -4203,6 +4279,7 @@ local loc = {
 	ammo_status_text_position_tooltip = {
 		en = "Where the gain/waste numbers are placed relative to the pickup marker icon. Defaults to Top so it does not overlap the distance text (which defaults to Bottom).",
 		ru = "Где размещаются числа +G/-W относительно иконки метки. По умолчанию сверху, чтобы не пересекаться с текстом дистанции (по умолчанию снизу).",
+		["zh-tw"] = "設定獲得量／浪費量數字相對於拾取標記圖示的位置。預設顯示在上方，避免與預設顯示在下方的距離文字重疊。",
 		["zh-cn"] = "获得/浪费数字相对拾取标记图标的位置。默认位于上方，以避免与距离文字（默认在下方）重叠。",
 	},
 	ammo_status_text_offset = {
@@ -4215,6 +4292,7 @@ local loc = {
 	ammo_status_text_offset_tooltip = {
 		en = "Extra distance (in pixels) added to the chosen position, so you can push the numbers further from or closer to the marker.",
 		ru = "Дополнительное расстояние (в пикселях) к выбранному положению, чтобы отодвинуть или приблизить числа к метке.",
+		["zh-tw"] = "在所選位置上額外調整距離（像素），可讓數字離標記更近或更遠。",
 		["zh-cn"] = "在所选位置上额外增加的距离（像素），可用来调整数字与标记的距离。",
 	},
 	ammo_status_text_width = {
@@ -4227,13 +4305,14 @@ local loc = {
 	ammo_status_text_width_tooltip = {
 		en = "Width of the text box on the pickup marker. Large values keep '+30 (-5)' on a single line instead of splitting it.",
 		ru = "Ширина текстового поля на метке. Большие значения не дают тексту '+30 (-5)' переноситься на две строки.",
+		["zh-tw"] = "設定拾取標記上文字方塊的寬度。加寬後，'+30 (-5)' 等內容可維持單行顯示。",
 		["zh-cn"] = "拾取标记上文字框的宽度。较大的值可让 '+30 (-5)' 保持在一行而不折行。",
 	},
 	ammo_status_gain_colour = {
 		en = "Gain (+) Colour",
 		fr = "Couleur du gain (+)",
 		ru = "Цвет получения (+)",
-		["zh-tw"] = "獲得(+)顏色",
+		["zh-tw"] = "獲得量（+）顏色",
 		["zh-cn"] = "获得(+)颜色",
 	},
 	ammo_status_gain_colour_R = {
@@ -4261,7 +4340,7 @@ local loc = {
 		en = "Waste (-) Colour",
 		fr = "Couleur de la perte (-)",
 		ru = "Цвет потери (-)",
-		["zh-tw"] = "浪費(-)顏色",
+		["zh-tw"] = "浪費量（-）顏色",
 		["zh-cn"] = "浪费(-)颜色",
 	},
 	ammo_status_waste_colour_R = {
@@ -4289,18 +4368,23 @@ local loc = {
 		en = "Adjust the colour of the background of ammo crate and medical markers to differentiate the amount of uses they have left?",
 		ru = "Изменить цвет фона меток ящиков с боеприпасами и аптечек, чтобы различать количество оставшихся использований?",
 		["zh-cn"] = "根据剩余使用次数改变弹药箱与医疗标记的背景颜色。",
+		["zh-tw"] = "根據剩餘使用次數改變彈藥箱與醫療標記的背景顏色。",
 	},
 	change_colour_for_ammo_charges_4 = {
 		en = "4 Charges Left Colour",
+		["zh-tw"] = "剩餘 4 次使用時的顏色",
 	},
 	change_colour_for_ammo_charges_3 = {
 		en = "3 Charges Left Colour",
+		["zh-tw"] = "剩餘 3 次使用時的顏色",
 	},
 	change_colour_for_ammo_charges_2 = {
 		en = "2 Charges Left Colour",
+		["zh-tw"] = "剩餘 2 次使用時的顏色",
 	},
 	change_colour_for_ammo_charges_1 = {
 		en = "1 Charges Left Colour",
+		["zh-tw"] = "剩餘 1 次使用時的顏色",
 	},
 	change_colour_for_ammo_charges_4_R = {
 		en = "R",
@@ -4390,61 +4474,73 @@ local loc = {
 		en = "Adjust the medical crate radius ring to change colour depending on whether a Veteran with the Field Improvisation talent is present in your party.",
 		ru = "Регулирует радиус кольца аптечки так, чтобы оно меняло цвет в зависимости от того, есть ли в вашей группе ветеран с навыком «Полевая импровизация».",
 		["zh-cn"] = "根据队伍中是否有携带临场发挥天赋的老兵，改变医疗箱范围环颜色。",
+		["zh-tw"] = "根據隊伍中是否有攜帶臨場發揮天賦的老兵，改變醫療箱範圍環顏色。",
 	},
 	display_field_improv_icon_tooltip = {
 		en = "Add an icon to ammo crates and medical markers depicting whether a Veteran with the Field Improvisation talent is present in your party.",
 		ru = "Добавляет к ящикам с боеприпасами и медицинским меткам значок, указывающий на наличие в вашей группе ветерана с навыком «Полевая импровизация».",
 		["zh-cn"] = "在弹药箱与医疗标记上显示图标，提示队伍中是否有携带临场发挥天赋的老兵。",
+		["zh-tw"] = "在彈藥箱與醫療標記上顯示圖示，提示隊伍中是否有攜帶臨場發揮天賦的老兵。",
 	},
 	display_med_ring_tooltip = {
 		en = "Display a radius circle around deployed medcrates to indicate the range of the buff.",
 		ru = "Показывает радиус действия установленных аптечек, чтобы показать область действия усиления.",
 		["zh-cn"] = "在放置的医疗箱周围显示范围圈，提示增益生效距离。",
+		["zh-tw"] = "在放置的醫療箱周圍顯示範圍圈，提示增益生效距離。",
 	},
 	icon_tooltip = {
 		en = "Adjust the icon for this marker type.",
 		ru = "Настройте значок для этого типа метки.",
 		["zh-cn"] = "调整此类标记的图标。",
+		["zh-tw"] = "調整此類標記的圖示。",
 	},
 	stimm_enable_tooltip = {
 		en = "Enable colour adjustments for the Hive Scum stimms on the UI elements?",
 		ru = "Включить настройку цвета для стимов Отребья Улья на элементах пользовательского интерфейса?",
 		["zh-cn"] = "为巢都药剂UI元素启用颜色调整。",
+		["zh-tw"] = "為巢都藥劑UI元素啟用顏色調整。",
 	},
 	martyrs_skull_guide_enable_tooltip = {
 		en = "Enable an on-screen guide widget with step-by-step text for collecting Martyr's Skulls.",
 		ru = "Включите на экране виджет-руководство с пошаговой инструкцией по сбору черепов мучеников.",
 		["zh-cn"] = "启用屏幕上的步骤文字指引，指导收集殉道者颅骨。",
+		["zh-tw"] = "啟用螢幕上的步驟文字指引，指導收集殉道者之顱。",
 	},
 	martyrs_skull_guide_markers_enable_tooltip = {
 		en = "Enable in-world positional markers for Martyr's Skull guide steps.",
 		ru = "Включите внутриигровые метки положения для шагов по прохождению маршрута черепа мученика.",
 		["zh-cn"] = "启用任务内殉道者颅骨收集步骤的场景位置标记。",
+		["zh-tw"] = "啟用任務內殉道者之顱收集步驟的場景位置標記。",
 	},
 	martyrs_skull_guide_disable_if_collected_tooltip = {
 		en = "Disable the Martyr's Skull guide if you have already collected this skull and have the penance unlocked?",
 		ru = "Отключить руководство по поиску черепов мучеников, если вы уже собрали этот череп и разблокировали искупление?",
 		["zh-cn"] = "已收集颅骨并解锁苦修后，关闭殉道者颅骨指引。",
+		["zh-tw"] = "已收集殉道者之顱並解鎖苦修後，關閉殉道者之顱指引。",
 	},
 	martyrs_skull_guide_x_offset_tooltip = {
 		en = "Horizontal position of the guide widget (in pixels). 0 = left edge of screen.",
 		ru = "Горизонтальное положение виджета руководства (в пикселях). 0 = левый край экрана.",
 		["zh-cn"] = "指南小工具的水平位置像素值。0 = 屏幕左边缘。",
+		["zh-tw"] = "指南小工具的水平位置像素值。0 = 螢幕左邊緣。",
 	},
 	martyrs_skull_guide_y_offset_tooltip = {
 		en = "Vertical position of the guide widget (in pixels). 0 = top edge of screen.",
 		ru = "Вертикальное положение виджета руководства (в пикселях). 0 = верхний край экрана.",
 		["zh-cn"] = "指南小工具的垂直位置像素值。0 = 屏幕顶部边缘。",
+		["zh-tw"] = "指南小工具的垂直位置像素值。0 = 螢幕頂部邊緣。",
 	},
 	martyrs_skull_collected = {
 		en = "You have already collected this skull.",
 		ru = "Вы уже собирали этот череп.",
 		["zh-cn"] = "你已经收集过这个颅骨了。",
+		["zh-tw"] = "你已經收集過這個顱骨了。",
 	},
 	martyrs_skull_not_collected = {
 		en = "You haven't collected this skull before.",
 		ru = "Вы ещё не собирали этот череп.",
 		["zh-cn"] = "你还没有收集过这个颅骨。",
+		["zh-tw"] = "你還沒有收集過這個顱骨。",
 	},
 	unknown_markers_extra_allowed = {
 		en = "Enable adjustments for buttons & misc markers?",

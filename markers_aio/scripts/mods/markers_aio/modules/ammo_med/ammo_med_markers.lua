@@ -100,6 +100,20 @@ local function player_ammo_percentage(unit)
 	return total / max_total
 end
 
+local function get_ammo_pickup_modifier()
+	local game_mode_manager = Managers.state.game_mode
+	local game_mode = game_mode_manager and game_mode_manager:game_mode()
+	local havoc_extension = game_mode and game_mode.extension and game_mode:extension("havoc")
+	local havoc_modifier = havoc_extension and havoc_extension:get_modifier_value("ammo_pickup_modifier")
+
+	if havoc_modifier then
+		return havoc_modifier
+	end
+
+	local difficulty = Managers.state.difficulty
+	return difficulty and difficulty:get_ammo_modifier() or 1
+end
+
 local function predict_ammo_restore(unit, pickup_name)
 	local slots = read_weapon_ammo_slots(unit)
 
@@ -113,9 +127,10 @@ local function predict_ammo_restore(unit, pickup_name)
 		return 0, 0
 	end
 
-	local difficulty = Managers.state.difficulty
-	local modifier = difficulty and difficulty:get_ammo_modifier() or 1
+	local modifier = get_ammo_pickup_modifier()
+
 	local data = table.clone(pickup_data)
+
 	data.modifier = modifier
 
 	local total_restored = 0
@@ -473,7 +488,6 @@ local function apply_ammo_status_marker_visuals(marker)
 
 			marker_text_style.font_size = font_size
 			marker_text_style.default_font_size = font_size
-			-- Wide, non-wrapping text box so "+30 (-5)" stays on a single line.
 			marker_text_style.size = {
 				status_fs.ammo_status_text_width or 500,
 				64,
@@ -627,12 +641,10 @@ local function get_med_crate_init_data_value(key, fallback)
 	return value
 end
 
--- The crate's actual max health pool, i.e. how much healing it has to give out in total.
 local function get_med_crate_heal_reserve()
 	return get_med_crate_init_data_value("optional_heal_reserve", DEFAULT_MED_CRATE_HEAL_RESERVE)
 end
 
--- How long the crate stays alive, which caps the contents it can actually give out.
 local function get_med_crate_heal_time()
 	return get_med_crate_init_data_value("optional_heal_time", DEFAULT_MED_CRATE_HEAL_TIME)
 end
@@ -867,8 +879,6 @@ end
 
 local FIELD_IMPROV_TALENT = "veteran_better_deployables"
 
--- Talents used to be stored as a plain 1, they are now { tier, target_slot, node_name }
--- tables, so only the presence of the entry can be relied on.
 local function has_field_improv_talent(player)
 	local profile = player and player._profile
 	local talents = profile and profile.talents
@@ -885,7 +895,6 @@ mod.check_players_talents_for_Field_Improvisation = function()
 		return false
 	end
 
-	-- Matches how the game itself decides this, see ProximityHeal.init
 	local buff_keywords = {
 		BuffSettings.keywords.improved_medical_crate,
 		BuffSettings.keywords.improved_ammo_pickups,
@@ -917,7 +926,6 @@ local function field_improv_pass_id(marker)
 	return marker.type == MarkerTemplate.name and "field_improv" or "field_improv_ammo_med"
 end
 
--- Applies the Field Improvisation highlight: the border recolour plus the extra icon.
 local function apply_field_improv_visuals(marker, field_improv_active)
 	local widget = marker and marker.widget
 	local style = widget and widget.style
@@ -942,7 +950,6 @@ local function apply_field_improv_visuals(marker, field_improv_active)
 		return
 	end
 
-	-- The med marker template scales and offsets its own pass in its update function
 	if pass_id == "field_improv_ammo_med" then
 		if style.icon then
 			pass_style.size[1] = style.icon.size[1]
@@ -1351,7 +1358,6 @@ mod.update_ammo_med_markers = function(self, marker)
 		end
 	end
 
-	-- Periodic maintenance: drop dead bookkeeping and re-add our med_marker if it went missing
 	mod._med_scan_counter = (mod._med_scan_counter or 0) + 1
 	if mod._med_scan_counter >= 60 then
 		mod._med_scan_counter = 0
@@ -1390,6 +1396,7 @@ end
 
 mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, name, definition)
 	fs = mod.frame_settings
+
 	-- add new marker text widget to definitions
 	local marker_text_style = table.clone(UIFontSettings.header_2)
 
@@ -1585,7 +1592,6 @@ mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, na
 	definition.style.ammo_status_circle_shadow = table.clone(ammo_status_circle_shadow_style)
 	definition.content.ammo_status_circle_shadow = "content/ui/materials/gradients/gradient_circular"
 
-	-- add text pass for the "most needy teammate" class icon (text glyph, tinted with the teammate's colour)
 	local needy_icon_style = table.clone(UIFontSettings.header_2)
 
 	needy_icon_style.horizontal_alignment = "center"

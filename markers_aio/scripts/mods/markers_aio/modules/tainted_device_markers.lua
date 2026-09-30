@@ -18,7 +18,6 @@ mod.update_TaintedDevices_markers = function(self, marker)
 
 			if pickup then
 				if pickup.name and pickup.name == "communications_hack_device" then
-					-- force hide marker to start, to prevent "pop in" where the marker will briefly appear at max opacity
 					marker.widget.alpha_multiplier = 0
 					marker.draw = false
 

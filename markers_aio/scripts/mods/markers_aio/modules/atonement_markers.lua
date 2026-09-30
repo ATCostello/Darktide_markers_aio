@@ -6,6 +6,7 @@ local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local fs = mod.frame_settings
+
 mod.update_atonement_markers = function(self, marker)
 	if marker and self then
 		local unit = marker.unit
