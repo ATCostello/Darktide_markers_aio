@@ -526,6 +526,7 @@ mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
 	mod.medical_crate_charges = {}
 	mod.reset_martyrs_skull_guides()
 	mod._needs_totem_scan = true
+	mod._needs_idol_scan = true
 
 	local loc = Managers and Managers.localization
 
@@ -670,6 +671,7 @@ end)
 mod:hook_safe(CLASS.MissionObjectiveSystem, "hot_join_sync", function(self, sender, channel)
 	mod.reset_martyrs_skull_guides()
 	mod.scan_for_existing_totems()
+	mod.scan_for_existing_idols()
 end)
 
 mod.get_marker_pickup_type = function(marker)
@@ -941,6 +943,11 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 	if mod._needs_totem_scan then
 		mod._needs_totem_scan = false
 		mod.scan_for_existing_totems()
+	end
+
+	if mod._needs_idol_scan then
+		mod._needs_idol_scan = false
+		mod.scan_for_existing_idols()
 	end
 
 	local raycasts_allowed = self._raycast_frame_counter == 0
@@ -2284,3 +2291,4 @@ mod:hook_safe(CLASS.BaseView, "update", function(self)
 end)
 
 mod._needs_totem_scan = true
+mod._needs_idol_scan = true

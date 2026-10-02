@@ -127,7 +127,64 @@ mod.get_marker_pickup_type_by_unit = function(marker_unit)
 	return Unit.get_data(marker_unit, "pickup_type")
 end
 
+mod.is_heretical_idol_unit = function(unit)
+	if not unit or type(unit) ~= "userdata" then
+		return false
+	end
+
+	if not ScriptUnit.has_extension(unit, "destructible_system") then
+		return false
+	end
+
+	local destructible_extension = ScriptUnit.extension(unit, "destructible_system")
+
+	return destructible_extension ~= nil and destructible_extension._collectible_data ~= nil
+end
+
 mod.current_heretical_idol_markers = {}
+
+mod.get_world_markers_element = function()
+	local ui_manager = Managers.ui
+
+	if not ui_manager then
+		return nil
+	end
+
+	local hud = ui_manager:get_hud()
+
+	if not hud then
+		return nil
+	end
+
+	return hud:element("HudElementWorldMarkers")
+end
+
+mod.find_collectible_marker_by_unit = function(unit)
+	local world_markers = mod.get_world_markers_element()
+
+	if not world_markers then
+		return nil
+	end
+
+	local markers_by_type = world_markers._markers_by_type
+
+	if not markers_by_type then
+		return nil
+	end
+
+	-- the idol template is registered under both type keys
+	for _, marker_type in ipairs({ HereticalIdolTemplate.name, "nurgle_totem" }) do
+		local markers = markers_by_type[marker_type]
+
+		if markers then
+			for i = 1, #markers do
+				if markers[i].unit == unit then
+					return markers[i]
+				end
+			end
+		end
+	end
+end
 
 mod.add_heretical_idol_marker = function(self, unit, section_id)
 	if fs.heretical_idol_enable then
@@ -138,10 +195,49 @@ mod.add_heretical_idol_marker = function(self, unit, section_id)
 
 		if section_id then
 			if Unit.alive(unit) then
+				-- nil means the section has not been handled yet, a false marker id means the
+				-- collectible has been destroyed, so only a missing entry should be retried
 				if mod.current_heretical_idol_markers[section_id] == nil then
-					Managers.event:trigger("add_world_marker_unit", marker_type, unit)
-					mod.current_heretical_idol_markers[section_id] = unit
+					local existing = mod.find_collectible_marker_by_unit(unit)
+
+					if existing then
+						mod.current_heretical_idol_markers[section_id] = existing.id
+					else
+						local marker_id
+
+						Managers.event:trigger("add_world_marker_unit", marker_type, unit, function(id)
+							marker_id = id
+						end)
+
+						-- the callback only runs when a world markers element took the marker,
+						-- so a dropped trigger leaves the section open for the next attempt
+						mod.current_heretical_idol_markers[section_id] = marker_id
+					end
 				end
+			end
+		end
+	end
+end
+
+mod.scan_for_existing_idols = function()
+	if not Managers.world then
+		return
+	end
+	local world = Managers.world:world("level_world")
+	if not world then
+		return
+	end
+	local units = World.units(world)
+	if not units then
+		return
+	end
+	for i = 1, #units do
+		local unit = units[i]
+		if mod.is_heretical_idol_unit(unit) then
+			local destructible_extension = ScriptUnit.extension(unit, "destructible_system")
+			local collectible_data = destructible_extension and destructible_extension._collectible_data
+			if collectible_data and collectible_data.section_id then
+				mod.add_heretical_idol_marker(destructible_extension, collectible_data.unit or unit, collectible_data.section_id)
 			end
 		end
 	end
@@ -160,11 +256,30 @@ mod.remove_heretical_idol_marker = function(self, unit, section_id)
 			end
 		end
 	end
+
+	-- keep the section flagged so the idle update loop does not bring the
+	-- marker back for a collectible that has already been destroyed
+	if section_id and mod.current_heretical_idol_markers[section_id] == nil then
+		mod.current_heretical_idol_markers[section_id] = false
+	end
 end
 
 mod.update_marker_icon = function(self, marker)
 	if marker then
 		local max_distance = get_max_distance()
+
+		if
+			marker.type
+			and marker.type == "interaction"
+			and (mod.is_heretical_idol_unit(marker.unit) or mod.is_totem_unit(marker.unit))
+		then
+			-- only hide the vanilla interaction marker once the custom marker is really on screen,
+			-- otherwise the collectible would have no marker at all
+			if mod.find_collectible_marker_by_unit(marker.unit) then
+				marker.markers_aio_type = "heretical_idol"
+				marker.aio_suppress = true
+			end
+		end
 
 		if marker.type and (marker.type == "heretical_idol") then
 			marker.markers_aio_type = "heretical_idol"

@@ -2459,7 +2459,7 @@ return {
 							{
 								setting_id = "objective_colour_R",
 								type = "numeric",
-								default_value = 226,
+								default_value = 255,
 								range = { 0, 255 },
 								step_size_value = 1,
 								tooltip = "colour_R_tooltip",
@@ -2467,7 +2467,7 @@ return {
 							{
 								setting_id = "objective_colour_G",
 								type = "numeric",
-								default_value = 199,
+								default_value = 255,
 								range = { 0, 255 },
 								step_size_value = 1,
 								tooltip = "colour_G_tooltip",
@@ -2475,7 +2475,7 @@ return {
 							{
 								setting_id = "objective_colour_B",
 								type = "numeric",
-								default_value = 126,
+								default_value = 255,
 								range = { 0, 255 },
 								step_size_value = 1,
 								tooltip = "colour_B_tooltip",
