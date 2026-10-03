@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.15.7"
+mod.version = "2.15.8"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
