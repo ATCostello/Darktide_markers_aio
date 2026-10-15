@@ -57,9 +57,7 @@ local function read_weapon_ammo_slots(unit)
 
 	for i = 1, #STATIC_WEAPON_SLOTS do
 		local slot_name = STATIC_WEAPON_SLOTS[i]
-		local ok, component = pcall(function()
-			return unit_data_extension:read_component(slot_name)
-		end)
+		local ok, component = pcall(unit_data_extension.read_component, unit_data_extension, slot_name)
 
 		if ok and component and component.max_ammunition_reserve and component.max_ammunition_reserve > 0 then
 			slots[#slots + 1] = {
@@ -190,55 +188,14 @@ local function find_most_needy_teammate(self_unit, local_percentage)
 	return most_needy
 end
 
-local function update_ammo_status(marker, unit, player_unit)
-	marker.ammo_status = nil
+local ammo_status_frame = -1
+local ammo_status_cache = {}
 
-	if not marker or not unit or not player_unit or not Unit.alive(player_unit) then
-		return
-	end
-
-	if marker.widget and marker.widget.style and marker.widget.style.ammo_needy_icon then
-		marker.widget.content.ammo_needy_icon = ""
-	end
-
-	if marker.widget and marker.widget.style and marker.widget.style.ammo_status_circle then
-		marker.widget.content.ammo_status_circle_visible = false
-	end
-
-	if marker.widget and marker.widget.style and marker.widget.style.marker_text_ammo_med then
-		marker.widget.content.marker_text_ammo_med = ""
-	end
-
-	local status_fs = mod.frame_settings
-
-	if status_fs and status_fs.ammo_status_enable == false then
-		return
-	end
-
-	if
-		not status_fs.ammo_status_colours_enable
-		and not status_fs.ammo_status_numeric_enable
-		and not status_fs.ammo_status_show_most_needy
-		and not status_fs.ammo_status_circle_enable
-	then
-		return
-	end
-
-	local pickup_type = marker.pickup_type or mod.get_marker_pickup_type(marker) or (marker.data and marker.data.type)
-
-	if
-		pickup_type ~= "small_clip"
-		and pickup_type ~= "large_clip"
-		and pickup_type ~= "ammo_cache_pocketable"
-		and pickup_type ~= "ammo_cache_deployable"
-	then
-		return
-	end
-
+local function compute_ammo_status(status_fs, pickup_type, player_unit)
 	local gain, potential = predict_ammo_restore(player_unit, pickup_type)
 
 	if not gain or potential <= 0 then
-		return
+		return false
 	end
 
 	local waste = math.max(0, potential - gain)
@@ -284,7 +241,7 @@ local function update_ammo_status(marker, unit, player_unit)
 		}
 	end
 
-	marker.ammo_status = {
+	return {
 		gain = gain,
 		waste = waste,
 		potential = potential,
@@ -294,6 +251,70 @@ local function update_ammo_status(marker, unit, player_unit)
 		local_percentage = local_percentage,
 		colour = status_colour,
 	}
+end
+
+local function update_ammo_status(marker, unit, player_unit)
+	marker.ammo_status = nil
+
+	if not marker or not unit or not player_unit or not Unit.alive(player_unit) then
+		return
+	end
+
+	if marker.widget and marker.widget.style and marker.widget.style.ammo_needy_icon then
+		marker.widget.content.ammo_needy_icon = ""
+	end
+
+	if marker.widget and marker.widget.style and marker.widget.style.ammo_status_circle then
+		marker.widget.content.ammo_status_circle_visible = false
+	end
+
+	if marker.widget and marker.widget.style and marker.widget.style.marker_text_ammo_med then
+		marker.widget.content.marker_text_ammo_med = ""
+	end
+
+	local status_fs = mod.frame_settings
+
+	if status_fs and status_fs.ammo_status_enable == false then
+		return
+	end
+
+	if
+		not status_fs.ammo_status_colours_enable
+		and not status_fs.ammo_status_numeric_enable
+		and not status_fs.ammo_status_show_most_needy
+		and not status_fs.ammo_status_circle_enable
+	then
+		return
+	end
+
+	local pickup_type = marker.pickup_type or mod.get_marker_pickup_type(marker) or (marker.data and marker.data.type)
+
+	if
+		pickup_type ~= "small_clip"
+		and pickup_type ~= "large_clip"
+		and pickup_type ~= "ammo_cache_pocketable"
+		and pickup_type ~= "ammo_cache_deployable"
+	then
+		return
+	end
+
+	local frame = mod._aio_frame
+
+	if ammo_status_frame ~= frame then
+		ammo_status_frame = frame
+		table.clear(ammo_status_cache)
+	end
+
+	local status = ammo_status_cache[pickup_type]
+
+	if status == nil then
+		status = compute_ammo_status(status_fs, pickup_type, player_unit) or false
+		ammo_status_cache[pickup_type] = status
+	end
+
+	if status then
+		marker.ammo_status = status
+	end
 end
 
 local function apply_ammo_status_marker_visuals(marker)
@@ -879,6 +900,11 @@ end
 
 local FIELD_IMPROV_TALENT = "veteran_better_deployables"
 
+local FIELD_IMPROV_BUFF_KEYWORDS = {
+	BuffSettings.keywords.improved_medical_crate,
+	BuffSettings.keywords.improved_ammo_pickups,
+}
+
 local function has_field_improv_talent(player)
 	local profile = player and player._profile
 	local talents = profile and profile.talents
@@ -888,38 +914,50 @@ local function has_field_improv_talent(player)
 end
 
 mod.check_players_talents_for_Field_Improvisation = function()
+	local frame = mod._aio_frame
+
+	if mod._field_improv_frame == frame then
+		return mod._field_improv_cached
+	end
+
+	mod._field_improv_frame = frame
+
+	local result = false
 	local player_unit_spawn = Managers.state.player_unit_spawn
 	local alive_players = player_unit_spawn and player_unit_spawn:alive_players()
 
-	if not alive_players then
-		return false
-	end
+	if alive_players then
+		local buff_keywords = FIELD_IMPROV_BUFF_KEYWORDS
 
-	local buff_keywords = {
-		BuffSettings.keywords.improved_medical_crate,
-		BuffSettings.keywords.improved_ammo_pickups,
-	}
+		for _, player in pairs(alive_players) do
+			if player then
+				if has_field_improv_talent(player) then
+					result = true
+					break
+				end
 
-	for _, player in pairs(alive_players) do
-		if player then
-			if has_field_improv_talent(player) then
-				return true
-			end
+				local player_unit = player.player_unit
+				local buff_extension = player_unit and ScriptUnit.has_extension(player_unit, "buff_system")
 
-			local player_unit = player.player_unit
-			local buff_extension = player_unit and ScriptUnit.has_extension(player_unit, "buff_system")
+				if buff_extension and buff_extension._keywords then
+					for _, keyword in pairs(buff_keywords) do
+						if buff_extension:has_keyword(keyword) then
+							result = true
+							break
+						end
+					end
 
-			if buff_extension and buff_extension._keywords then
-				for _, keyword in pairs(buff_keywords) do
-					if buff_extension:has_keyword(keyword) then
-						return true
+					if result then
+						break
 					end
 				end
 			end
 		end
 	end
 
-	return false
+	mod._field_improv_cached = result
+
+	return result
 end
 
 local function field_improv_pass_id(marker)
@@ -963,32 +1001,46 @@ local function apply_field_improv_visuals(marker, field_improv_active)
 		or ""
 end
 
+local ammo_med_pickup_types = {
+	small_clip = true,
+	large_clip = true,
+	small_grenade = true,
+	ammo_cache_pocketable = true,
+	medical_crate_pocketable = true,
+	medical_crate_deployable = true,
+	ammo_cache_deployable = true,
+}
+
 mod.update_ammo_med_markers = function(self, marker)
-	local max_distance = get_max_distance()
+	local frame = mod._aio_frame
 
-	-- remove med proximity circle
-	for posstr, array in pairs(med_crate_decals) do
-		local unit = array[2]
-		local decal_unit = array[1]
-		local world
+	-- remove med proximity circle (once per frame, not once per marker)
+	if mod._med_decal_frame ~= frame then
+		mod._med_decal_frame = frame
 
-		if not Unit.alive(unit) and Unit.alive(decal_unit) then
-			world = Unit.world(decal_unit)
-		end
+		for posstr, array in pairs(med_crate_decals) do
+			local unit = array[2]
+			local decal_unit = array[1]
+			local world
 
-		if decal_unit and world then
-			World.destroy_unit(world, decal_unit)
-			med_crate_decals[posstr] = nil
-		end
+			if not Unit.alive(unit) and Unit.alive(decal_unit) then
+				world = Unit.world(decal_unit)
+			end
 
-		if not Unit.alive(unit) and not Unit.alive(decal_unit) then
-			med_crate_decals[posstr] = nil
+			if decal_unit and world then
+				World.destroy_unit(world, decal_unit)
+				med_crate_decals[posstr] = nil
+			end
+
+			if not Unit.alive(unit) and not Unit.alive(decal_unit) then
+				med_crate_decals[posstr] = nil
+			end
 		end
 	end
 
 	if marker and self then
 		local unit = marker.unit
-		local player = Managers.player:local_player_safe(1)
+		local player = mod.get_local_player()
 		local player_unit = player and player.player_unit
 
 		local is_native_med_crate = marker.type == "interaction"
@@ -1003,25 +1055,20 @@ mod.update_ammo_med_markers = function(self, marker)
 
 		local pickup_type = mod.get_marker_pickup_type(marker)
 
+		local data = marker.data
+		local data_type = data and data.type
+
+		local is_health_station = unit and mod.get_marker_extension(marker, "health_station_system") or nil
+
 		if
-			pickup_type and pickup_type == "small_clip"
-			or pickup_type and pickup_type == "large_clip"
-			or pickup_type and pickup_type == "small_grenade"
-			or pickup_type and pickup_type == "ammo_cache_pocketable"
-			or pickup_type and pickup_type == "medical_crate_pocketable"
-			or pickup_type and pickup_type == "medical_crate_deployable"
-			or pickup_type and pickup_type == "ammo_cache_deployable"
+			pickup_type and ammo_med_pickup_types[pickup_type]
+			or data_type and ammo_med_pickup_types[data_type]
 			or marker.type == MarkerTemplate.name
-			or marker.data and marker.data.type == "small_clip"
-			or marker.data and marker.data.type == "large_clip"
-			or marker.data and marker.data.type == "small_grenade"
-			or marker.data and marker.data.type == "ammo_cache_pocketable"
-			or marker.data and marker.data.type == "medical_crate_pocketable"
-			or marker.data and marker.data.type == "medical_crate_deployable"
-			or marker.data and marker.data.type == "ammo_cache_deployable"
-			or marker.data and marker.data._active_interaction_type == "health_station"
-			or unit and ScriptUnit.has_extension(unit, "health_station_system")
+			or data and data._active_interaction_type == "health_station"
+			or is_health_station
 		then
+			local max_distance = get_max_distance()
+
 			marker.markers_aio_type = "ammo_med"
 
 			marker.pickup_type = pickup_type
@@ -1053,13 +1100,10 @@ mod.update_ammo_med_markers = function(self, marker)
 
 			local med_crate_pos = POSITION_LOOKUP[marker.unit]
 
-			if
-				marker.data and marker.data._active_interaction_type == "health_station"
-				or unit and ScriptUnit.has_extension(unit, "health_station_system")
-			then
+			if data and data._active_interaction_type == "health_station" or is_health_station then
 				marker.aio_check_line_of_sight = fs.med_station_require_line_of_sight
 
-				local health_station_extension = ScriptUnit.has_extension(unit, "health_station_system")
+				local health_station_extension = is_health_station
 
 				local remaining_charges = health_station_extension and health_station_extension._charge_amount or 0
 
@@ -1129,10 +1173,7 @@ mod.update_ammo_med_markers = function(self, marker)
 
 			local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
-			if
-				pickup_type == "ammo_cache_deployable"
-				or marker.data and marker.data.type == "ammo_cache_deployable"
-			then
+			if pickup_type == "ammo_cache_deployable" or data_type == "ammo_cache_deployable" then
 				local game_session = Managers.state.game_session:game_session()
 				local game_object_id = Managers.state.unit_spawner:game_object_id(unit)
 				local remaining_charges = GameSession.game_object_field(game_session, game_object_id, "charges")
@@ -1196,8 +1237,6 @@ mod.update_ammo_med_markers = function(self, marker)
 				)
 			end
 
-			local max_distance = get_max_distance()
-
 			self.max_distance = max_distance
 			marker.max_distance = max_distance
 
@@ -1206,7 +1245,7 @@ mod.update_ammo_med_markers = function(self, marker)
 				self.fade_settings.distance_min = max_distance - (self.evolve_distance or 0) * 2
 			end
 
-			if pickup_type == "small_clip" or marker.data and marker.data.type == "small_clip" then
+			if pickup_type == "small_clip" or data_type == "small_clip" then
 				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.ammo_small_border_colour))
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/ammunition"
 
@@ -1217,7 +1256,7 @@ mod.update_ammo_med_markers = function(self, marker)
 					fs.ammo_small_colour_G,
 					fs.ammo_small_colour_B
 				)
-			elseif pickup_type == "large_clip" or marker.data and marker.data.type == "large_clip" then
+			elseif pickup_type == "large_clip" or data_type == "large_clip" then
 				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.ammo_large_border_colour))
 				if fs.ammo_med_markers_alternate_large_ammo_icon == true then
 					marker.widget.content.icon = "content/ui/materials/icons/presets/preset_16"
@@ -1232,7 +1271,7 @@ mod.update_ammo_med_markers = function(self, marker)
 					fs.ammo_large_colour_G,
 					fs.ammo_large_colour_B
 				)
-			elseif pickup_type == "small_grenade" or marker.data and marker.data.type == "small_grenade" then
+			elseif pickup_type == "small_grenade" or data_type == "small_grenade" then
 				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.grenade_border_colour))
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/grenade"
 
@@ -1243,10 +1282,7 @@ mod.update_ammo_med_markers = function(self, marker)
 					fs.grenade_colour_G,
 					fs.grenade_colour_B
 				)
-			elseif
-				pickup_type == "ammo_cache_pocketable"
-				or marker.data and marker.data.type == "ammo_cache_pocketable"
-			then
+			elseif pickup_type == "ammo_cache_pocketable" or data_type == "ammo_cache_pocketable" then
 				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.ammo_crate_border_colour))
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_ammo"
 
@@ -1259,10 +1295,7 @@ mod.update_ammo_med_markers = function(self, marker)
 				)
 
 				apply_field_improv_visuals(marker, field_improv_active)
-			elseif
-				pickup_type == "ammo_cache_deployable"
-				or marker.data and marker.data.type == "ammo_cache_deployable"
-			then
+			elseif pickup_type == "ammo_cache_deployable" or data_type == "ammo_cache_deployable" then
 				if marker.widget.style.ring then
 					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.ammo_crate_border_colour))
 				end
@@ -1274,10 +1307,7 @@ mod.update_ammo_med_markers = function(self, marker)
 					marker.widget.style.marker_text_ammo_med.font_size = 40 * marker.scale
 					marker.widget.style.marker_text_ammo_med.default_font_size = 40 * marker.scale
 				end
-			elseif
-				pickup_type == "medical_crate_pocketable"
-				or marker.data and marker.data.type == "medical_crate_pocketable"
-			then
+			elseif pickup_type == "medical_crate_pocketable" or data_type == "medical_crate_pocketable" then
 				if marker.widget.style.ring then
 					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.med_crate_border_colour))
 				end
@@ -1294,7 +1324,7 @@ mod.update_ammo_med_markers = function(self, marker)
 			elseif
 				pickup_type == "medical_crate_deployable"
 				or marker.type == MarkerTemplate.name
-				or marker.data and marker.data.type == "medical_crate_deployable"
+				or data_type == "medical_crate_deployable"
 			then
 				if marker.widget.style.ring then
 					mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.med_crate_border_colour))
@@ -1305,7 +1335,7 @@ mod.update_ammo_med_markers = function(self, marker)
 
 				if fs.display_med_charges == true then
 					local is_crate = pickup_type == "medical_crate_deployable"
-						or (marker.data and marker.data.type == "medical_crate_deployable")
+						or (data_type == "medical_crate_deployable")
 						or marker.type == MarkerTemplate.name
 
 					if is_crate then
@@ -1358,35 +1388,39 @@ mod.update_ammo_med_markers = function(self, marker)
 		end
 	end
 
-	mod._med_scan_counter = (mod._med_scan_counter or 0) + 1
-	if mod._med_scan_counter >= 60 then
-		mod._med_scan_counter = 0
+	if mod._med_scan_frame ~= frame then
+		mod._med_scan_frame = frame
+		mod._med_scan_counter = (mod._med_scan_counter or 0) + 1
 
-		for unit, _ in pairs(med_crate_units) do
-			if not Unit.alive(unit) then
-				med_crate_units[unit] = nil
-			end
-		end
+		if mod._med_scan_counter >= 60 then
+			mod._med_scan_counter = 0
 
-		for unit, _ in pairs(med_crate_estimates) do
-			if not Unit.alive(unit) then
-				med_crate_estimates[unit] = nil
-			end
-		end
-
-		local markers_by_id = self and self._markers_by_id
-		if markers_by_id then
 			for unit, _ in pairs(med_crate_units) do
-				if Unit.alive(unit) then
-					local has_marker = false
-					for _, marker in pairs(markers_by_id) do
-						if marker.type == MarkerTemplate.name and marker.unit == unit then
-							has_marker = true
-							break
+				if not Unit.alive(unit) then
+					med_crate_units[unit] = nil
+				end
+			end
+
+			for unit, _ in pairs(med_crate_estimates) do
+				if not Unit.alive(unit) then
+					med_crate_estimates[unit] = nil
+				end
+			end
+
+			local markers_by_id = self and self._markers_by_id
+			if markers_by_id then
+				for unit, _ in pairs(med_crate_units) do
+					if Unit.alive(unit) then
+						local has_marker = false
+						for _, marker in pairs(markers_by_id) do
+							if marker.type == MarkerTemplate.name and marker.unit == unit then
+								has_marker = true
+								break
+							end
 						end
-					end
-					if not has_marker then
-						Managers.event:trigger("add_world_marker_unit", MarkerTemplate.name, unit)
+						if not has_marker then
+							Managers.event:trigger("add_world_marker_unit", MarkerTemplate.name, unit)
+						end
 					end
 				end
 			end

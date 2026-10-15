@@ -317,9 +317,9 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 		data.distance = distance
 	end
 
-	local smart_tag_system = Managers.state.extension:system("smart_tag_system")
+	local smart_tag_system = mod.get_smart_tag_system()
 	local marker_unit = marker.unit
-	local is_tagged = marker_unit and smart_tag_system:unit_tag_id(marker_unit) ~= nil
+	local is_tagged = marker_unit and smart_tag_system and smart_tag_system:unit_tag_id(marker_unit) ~= nil
 
 	content.tagged = is_tagged
 	marker.block_fade_settings = is_tagged

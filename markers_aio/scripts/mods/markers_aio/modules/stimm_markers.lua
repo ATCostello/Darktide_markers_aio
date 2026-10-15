@@ -47,26 +47,24 @@ local set_stimm_colours = function(marker, stimm_name, border_setting, r_setting
 	mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs[border_setting]))
 end
 
-mod.update_stimm_markers = function(self, marker)
-	local max_distance = get_max_distance()
+local stimm_types = {
+	syringe_power_boost_pocketable = true,
+	syringe_speed_boost_pocketable = true,
+	syringe_ability_boost_pocketable = true,
+	syringe_corruption_pocketable = true,
+	syringe_broker_pocketable = true,
+}
 
+mod.update_stimm_markers = function(self, marker)
 	if marker and self then
 		local unit = marker.unit
 
 		local pickup_type = mod.get_marker_pickup_type(marker)
+		local data_type = marker.data and marker.data.type
 
-		if
-			pickup_type and pickup_type == "syringe_power_boost_pocketable"
-			or pickup_type and pickup_type == "syringe_speed_boost_pocketable"
-			or pickup_type and pickup_type == "syringe_ability_boost_pocketable"
-			or pickup_type and pickup_type == "syringe_corruption_pocketable"
-			or marker.data and marker.data.type == "syringe_power_boost_pocketable"
-			or marker.data and marker.data.type == "syringe_speed_boost_pocketable"
-			or marker.data and marker.data.type == "syringe_ability_boost_pocketable"
-			or marker.data and marker.data.type == "syringe_corruption_pocketable"
-			or pickup_type and pickup_type == "syringe_broker_pocketable"
-			or marker.data and marker.data.type == "syringe_broker_pocketable"
-		then
+		if (pickup_type and stimm_types[pickup_type]) or (data_type and stimm_types[data_type]) then
+			local max_distance = get_max_distance()
+
 			marker.markers_aio_type = "stimm"
 			marker.widget.alpha_multiplier = 0
 			marker.draw = false
@@ -98,10 +96,7 @@ mod.update_stimm_markers = function(self, marker)
 
 			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
 
-			if
-				pickup_type == "syringe_power_boost_pocketable"
-				or marker.data and marker.data.type == "syringe_power_boost_pocketable"
-			then
+			if pickup_type == "syringe_power_boost_pocketable" or data_type == "syringe_power_boost_pocketable" then
 				marker.aio_check_line_of_sight = fs.power_stimm_require_line_of_sight
 				set_stimm_colours(
 					marker,
@@ -111,10 +106,7 @@ mod.update_stimm_markers = function(self, marker)
 					"power_stimm_icon_colour_G",
 					"power_stimm_icon_colour_B"
 				)
-			elseif
-				pickup_type == "syringe_speed_boost_pocketable"
-				or marker.data and marker.data.type == "syringe_speed_boost_pocketable"
-			then
+			elseif pickup_type == "syringe_speed_boost_pocketable" or data_type == "syringe_speed_boost_pocketable" then
 				marker.aio_check_line_of_sight = fs.speed_stimm_require_line_of_sight
 				set_stimm_colours(
 					marker,
@@ -126,7 +118,7 @@ mod.update_stimm_markers = function(self, marker)
 				)
 			elseif
 				pickup_type == "syringe_ability_boost_pocketable"
-				or marker.data and marker.data.type == "syringe_ability_boost_pocketable"
+				or data_type == "syringe_ability_boost_pocketable"
 			then
 				marker.aio_check_line_of_sight = fs.boost_stimm_require_line_of_sight
 				set_stimm_colours(
@@ -137,10 +129,7 @@ mod.update_stimm_markers = function(self, marker)
 					"boost_stimm_icon_colour_G",
 					"boost_stimm_icon_colour_B"
 				)
-			elseif
-				pickup_type == "syringe_corruption_pocketable"
-				or marker.data and marker.data.type == "syringe_corruption_pocketable"
-			then
+			elseif pickup_type == "syringe_corruption_pocketable" or data_type == "syringe_corruption_pocketable" then
 				marker.aio_check_line_of_sight = fs.corruption_stimm_require_line_of_sight
 				set_stimm_colours(
 					marker,
@@ -150,10 +139,7 @@ mod.update_stimm_markers = function(self, marker)
 					"corruption_stimm_icon_colour_G",
 					"corruption_stimm_icon_colour_B"
 				)
-			elseif
-				pickup_type == "syringe_broker_pocketable"
-				or marker.data and marker.data.type == "syringe_broker_pocketable"
-			then
+			elseif pickup_type == "syringe_broker_pocketable" or data_type == "syringe_broker_pocketable" then
 				if fs.broker_stimm_enable == true then
 					marker.aio_check_line_of_sight = fs.broker_stimm_require_line_of_sight
 					set_stimm_colours(
@@ -172,9 +158,16 @@ end
 
 -- update player weapon stimm icon colour
 mod:hook_safe(CLASS.HudElementPlayerWeapon, "update", function(self, dt, t, ui_renderer)
-	local inventory_component = self._inventory_component
-
 	local weapon_name = self._weapon_name
+	local version = mod._settings_version
+
+	if self._aio_stimm_weapon == weapon_name and self._aio_stimm_version == version then
+		return
+	end
+
+	self._aio_stimm_weapon = weapon_name
+	self._aio_stimm_version = version
+
 	local widget = self._widgets_by_name.icon
 
 	if weapon_name == "content/items/pocketable/syringe_power_boost_pocketable" then
@@ -250,13 +243,15 @@ end)
 -- update team panel stimm icon colour
 local PlayerUnitVisualLoadout = require("scripts/extension_systems/visual_loadout/utilities/player_unit_visual_loadout")
 
+local stimm_team_colour_state = {}
+
 mod:hook_safe(
 	CLASS.HudElementTeamPanelHandler,
 	"update",
 	function(self, dt, t, ui_renderer, render_settings, input_service)
-		local weapon_name = ""
 		local players = Managers.player:players()
 		local player_panels_array = self._player_panels_array
+		local version = mod._settings_version
 
 		for _, player in pairs(players) do
 			local player_unit = player.player_unit
@@ -267,99 +262,25 @@ mod:hook_safe(
 				local item = visual_loadout_extension:item_from_slot("slot_pocketable_small")
 
 				if item then
-					weapon_name = item.name
+					local weapon_name = item.name
+					local account_id = player._account_id
+					local state = account_id and stimm_team_colour_state[account_id]
+					local changed = not account_id
+						or not state
+						or state.version ~= version
+						or state.weapon ~= weapon_name
 
-					-- grab stim widget for player
-					for _, panel_array in pairs(player_panels_array) do
-						if panel_array.player._account_id == player._account_id then
-							local stimm_widget = panel_array.panel._widgets_by_name.pocketable_small
+					if changed then
+						-- grab stim widget for player
+						for _, panel_array in pairs(player_panels_array) do
+							if panel_array.player._account_id == account_id then
+								local stimm_widget = panel_array.panel._widgets_by_name.pocketable_small
 
-							if stimm_widget and weapon_name ~= "" then
-								if weapon_name == "content/items/pocketable/syringe_power_boost_pocketable" then
-									if mod.RecolorStimms then
-										local argb =
-											mod.RecolorStimms.get_stimm_argb_255("syringe_power_boost_pocketable")
-										mod.set_colour_argb(
-											stimm_widget.style.texture.color,
-											argb[1],
-											argb[2],
-											argb[3],
-											argb[4]
-										)
-									else
-										mod.set_colour_argb(
-											stimm_widget.style.texture.color,
-											255,
-											fs.power_stimm_icon_colour_R,
-											fs.power_stimm_icon_colour_G,
-											fs.power_stimm_icon_colour_B
-										)
-									end
-								elseif weapon_name == "content/items/pocketable/syringe_speed_boost_pocketable" then
-									if mod.RecolorStimms then
-										local argb =
-											mod.RecolorStimms.get_stimm_argb_255("syringe_speed_boost_pocketable")
-										mod.set_colour_argb(
-											stimm_widget.style.texture.color,
-											argb[1],
-											argb[2],
-											argb[3],
-											argb[4]
-										)
-									else
-										mod.set_colour_argb(
-											stimm_widget.style.texture.color,
-											255,
-											fs.speed_stimm_icon_colour_R,
-											fs.speed_stimm_icon_colour_G,
-											fs.speed_stimm_icon_colour_B
-										)
-									end
-								elseif weapon_name == "content/items/pocketable/syringe_ability_boost_pocketable" then
-									if mod.RecolorStimms then
-										local argb =
-											mod.RecolorStimms.get_stimm_argb_255("syringe_ability_boost_pocketable")
-										mod.set_colour_argb(
-											stimm_widget.style.texture.color,
-											argb[1],
-											argb[2],
-											argb[3],
-											argb[4]
-										)
-									else
-										mod.set_colour_argb(
-											stimm_widget.style.texture.color,
-											255,
-											fs.boost_stimm_icon_colour_R,
-											fs.boost_stimm_icon_colour_G,
-											fs.boost_stimm_icon_colour_B
-										)
-									end
-								elseif weapon_name == "content/items/pocketable/syringe_corruption_pocketable" then
-									if mod.RecolorStimms then
-										local argb =
-											mod.RecolorStimms.get_stimm_argb_255("syringe_corruption_pocketable")
-										mod.set_colour_argb(
-											stimm_widget.style.texture.color,
-											argb[1],
-											argb[2],
-											argb[3],
-											argb[4]
-										)
-									else
-										mod.set_colour_argb(
-											stimm_widget.style.texture.color,
-											255,
-											fs.corruption_stimm_icon_colour_R,
-											fs.corruption_stimm_icon_colour_G,
-											fs.corruption_stimm_icon_colour_B
-										)
-									end
-								elseif weapon_name == "content/items/pocketable/syringe_broker_pocketable" then
-									if fs.broker_stimm_enable == true then
+								if stimm_widget then
+									if weapon_name == "content/items/pocketable/syringe_power_boost_pocketable" then
 										if mod.RecolorStimms then
 											local argb =
-												mod.RecolorStimms.get_stimm_argb_255("syringe_broker_pocketable")
+												mod.RecolorStimms.get_stimm_argb_255("syringe_power_boost_pocketable")
 											mod.set_colour_argb(
 												stimm_widget.style.texture.color,
 												argb[1],
@@ -371,14 +292,104 @@ mod:hook_safe(
 											mod.set_colour_argb(
 												stimm_widget.style.texture.color,
 												255,
-												fs.broker_stimm_icon_colour_R,
-												fs.broker_stimm_icon_colour_G,
-												fs.broker_stimm_icon_colour_B
+												fs.power_stimm_icon_colour_R,
+												fs.power_stimm_icon_colour_G,
+												fs.power_stimm_icon_colour_B
 											)
+										end
+									elseif weapon_name == "content/items/pocketable/syringe_speed_boost_pocketable" then
+										if mod.RecolorStimms then
+											local argb =
+												mod.RecolorStimms.get_stimm_argb_255("syringe_speed_boost_pocketable")
+											mod.set_colour_argb(
+												stimm_widget.style.texture.color,
+												argb[1],
+												argb[2],
+												argb[3],
+												argb[4]
+											)
+										else
+											mod.set_colour_argb(
+												stimm_widget.style.texture.color,
+												255,
+												fs.speed_stimm_icon_colour_R,
+												fs.speed_stimm_icon_colour_G,
+												fs.speed_stimm_icon_colour_B
+											)
+										end
+									elseif
+										weapon_name == "content/items/pocketable/syringe_ability_boost_pocketable"
+									then
+										if mod.RecolorStimms then
+											local argb =
+												mod.RecolorStimms.get_stimm_argb_255("syringe_ability_boost_pocketable")
+											mod.set_colour_argb(
+												stimm_widget.style.texture.color,
+												argb[1],
+												argb[2],
+												argb[3],
+												argb[4]
+											)
+										else
+											mod.set_colour_argb(
+												stimm_widget.style.texture.color,
+												255,
+												fs.boost_stimm_icon_colour_R,
+												fs.boost_stimm_icon_colour_G,
+												fs.boost_stimm_icon_colour_B
+											)
+										end
+									elseif weapon_name == "content/items/pocketable/syringe_corruption_pocketable" then
+										if mod.RecolorStimms then
+											local argb =
+												mod.RecolorStimms.get_stimm_argb_255("syringe_corruption_pocketable")
+											mod.set_colour_argb(
+												stimm_widget.style.texture.color,
+												argb[1],
+												argb[2],
+												argb[3],
+												argb[4]
+											)
+										else
+											mod.set_colour_argb(
+												stimm_widget.style.texture.color,
+												255,
+												fs.corruption_stimm_icon_colour_R,
+												fs.corruption_stimm_icon_colour_G,
+												fs.corruption_stimm_icon_colour_B
+											)
+										end
+									elseif weapon_name == "content/items/pocketable/syringe_broker_pocketable" then
+										if fs.broker_stimm_enable == true then
+											if mod.RecolorStimms then
+												local argb =
+													mod.RecolorStimms.get_stimm_argb_255("syringe_broker_pocketable")
+												mod.set_colour_argb(
+													stimm_widget.style.texture.color,
+													argb[1],
+													argb[2],
+													argb[3],
+													argb[4]
+												)
+											else
+												mod.set_colour_argb(
+													stimm_widget.style.texture.color,
+													255,
+													fs.broker_stimm_icon_colour_R,
+													fs.broker_stimm_icon_colour_G,
+													fs.broker_stimm_icon_colour_B
+												)
+											end
 										end
 									end
 								end
 							end
+						end
+						if account_id then
+							stimm_team_colour_state[account_id] = {
+								version = version,
+								weapon = weapon_name,
+							}
 						end
 					end
 				end

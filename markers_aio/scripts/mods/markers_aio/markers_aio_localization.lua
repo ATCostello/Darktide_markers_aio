@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.15.8"
+mod.version = "2.16.0"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -3938,6 +3938,69 @@ local loc = {
 		["zh-cn"] = "标记缩放倍数。\n例如：100=1倍大小，50=0.5倍大小，150=1.5倍大小。",
 		["zh-tw"] = "標記縮放倍數。\n例如：100=1倍大小，50=0.5倍大小，150=1.5倍大小。",
 	},
+	dashed = {
+		en = "Dashed line",
+		ru = "Пунктирная линия",
+		["zh-cn"] = "虚线",
+		["zh-tw"] = "虛線",
+	},
+	arrows = {
+		en = "Arrows",
+		ru = "Стрелки",
+		["zh-cn"] = "箭头",
+		["zh-tw"] = "箭頭",
+	},
+	dots = {
+		en = "Dots",
+		ru = "Точки",
+		["zh-cn"] = "圆点",
+		["zh-tw"] = "圓點",
+	},
+	spillway_route_fx_smoke = {
+		en = "Smoke",
+		ru = "Дым",
+		["zh-cn"] = "烟雾",
+		["zh-tw"] = "煙霧",
+	},
+	spillway_route_fx_fire = {
+		en = "Fire",
+		ru = "Пламя",
+		["zh-cn"] = "火焰",
+		["zh-tw"] = "火焰",
+	},
+	spillway_route_fx_arc = {
+		en = "Lightning",
+		ru = "Молнии",
+		["zh-cn"] = "闪电",
+		["zh-tw"] = "閃電",
+	},
+	spillway_route_fx_warp = {
+		en = "Warp",
+		ru = "Варп",
+		["zh-cn"] = "灵能",
+		["zh-tw"] = "靈能",
+	},
+	spillway_route_fx_beacon = {
+		en = "Beacons",
+		ru = "Маяки",
+		["zh-cn"] = "信标",
+		["zh-tw"] = "信標",
+	},
+	off = {
+		en = "Off",
+		ru = "Выкл.",
+		["zh-cn"] = "关闭",
+		["zh-tw"] = "關閉",
+	},
+	spillway_path_route_fx = {
+		en = "Safe path route style",
+	},
+	spillway_path_route_fx_tooltip = {
+		en = "Visual style used to draw the safe path routes between path markers. (On Spillway map)\n",
+		ru = "Визуальный стиль, используемый для отрисовки маршрутов Spillway между нумерованными маркерами пути.\nПунктирная линия, Стрелки, Точки: линии без дополнительных ресурсов.\nДым, Пламя, Молнии, Варп, Маяки: эффекты частиц вдоль маршрута (загружают пакет эффекта; при недоступности заменяются пунктиром).",
+		["zh-cn"] = "用于绘制 Spillway 编号路径标记之间路线的视���样式。\n虚线、箭头、圆点：无需额外资源。\n烟雾、火焰、闪电、灵能、信标：沿路线放置的粒子效果（加载效果资源包，不可用时回退为虚线）。",
+		["zh-tw"] = "用於繪製 Spillway 編號路徑標記之間路線的視覺樣式。\n虛線、箭頭、圓點：無需額外資源。\n煙霧、火焰、閃電、靈能、信標：沿路線放置的粒子效果（載入效果資源包，不可用時回退為虛線）。",
+	},
 	los_fade_enable_tooltip = {
 		en = "Fade out markers that are behind a world object/out of line of sight? Only takes effect if 'Require Line of Sight' is disabled.",
 		ru = "Скрывать метки, находящиеся за объектами в игровом мире/вне прямой видимости? Эффект проявляется только в том случае, если параметр «Требовать прямой видимости» отключён.",
@@ -4074,8 +4137,8 @@ local loc = {
 	},
 	ammo_status_show_most_needy_tooltip = {
 		en = "When a teammate needs the ammo more than you, show their class icon with their team colour to mark who should take this pickup.",
-		ru = "Если союзнику нужно больше боеприпасов, чем вам, показывает иконку его класса в цвете его команды, чтобы отметить, кому следует забрать этот предмет.",
-		["zh-tw"] = "當隊友比你更需要這份彈藥時，顯示該隊友的職業圖示與對應顏色，標示應由誰拾取。",
+		ru = "Если союзнику нужно больше боеприпасов, чем вам, показывает иконку ег�� класса в цвете его команды, чтобы отметить, кому следует забрать этот предмет.",
+		["zh-tw"] = "當隊友比你更需要這份彈藥時�����顯示該隊友的職業圖示與對應顏色，標示應由誰拾取。",
 		["zh-cn"] = "当队友比您更需要弹药时，以队友职业图标与队友颜色标示谁应该拾取。",
 	},
 	ammo_status_margin_tooltip = {
@@ -4577,6 +4640,120 @@ local loc = {
 		["zh-tw"] = "掃描器",
 		["zh-cn"] = "扫描器",
 	},
+
+	-- Spillway Path Markers
+	tab_spillway_path = {
+		en = "Spillway Path",
+		fr = "Chemin du déversoir",
+		ru = "Путь водосброса",
+		["zh-tw"] = "洩洪道路徑",
+		["zh-cn"] = "泄洪道路径",
+	},
+	spillway_path_markers_settings = {
+		en = "SPILLWAY PATH MARKERS",
+		fr = "MARQUEURS DU CHEMIN DU DÉVERSOIR",
+		ru = "МЕТКИ ПУТИ ВОДОСБРОСА",
+		["zh-tw"] = "洩洪道路徑標記",
+		["zh-cn"] = "泄洪道路径标记",
+	},
+	spillway_path_enable = {
+		en = "Enable Spillway Path Markers",
+		fr = "Activer les marqueurs du chemin du déversoir",
+		ru = "Включить метки пути водосброса",
+		["zh-tw"] = "啟用洩洪道路徑標記",
+		["zh-cn"] = "启用泄洪道路径标记",
+	},
+	spillway_path_route_enable = {
+		en = "Enable Spillway Path Route",
+		fr = "Activer l'itinéraire du chemin du déversoir",
+		ru = "Включить маршрут пути водосброса",
+		["zh-tw"] = "啟用洩洪道路徑路線",
+		["zh-cn"] = "启用泄洪道路由",
+	},
+	route_enable_tooltip = {
+		en = "Toggle an in-world path showing the safe route to follow.",
+		fr = "Activer l'itinéraire du chemin du déversoir",
+		ru = "Включить маршрут пути водосброса",
+		["zh-tw"] = "啟用洩洪道路徑路線",
+		["zh-cn"] = "启用泄洪道路由",
+	},
+	mod_marker_spillway_path_name = {
+		en = "Safe Spillway Path",
+		fr = "Chemin sûr du déversoir",
+		ru = "Безопасный путь водосброса",
+		["zh-tw"] = "安全的洩洪道路徑",
+		["zh-cn"] = "安全的泄洪道路径",
+	},
+	spillway_path_max_distance = {
+		en = "Max Distance",
+		fr = "Distance maximale",
+		ru = "Макс. дистанция",
+		["zh-tw"] = "最大距離",
+		["zh-cn"] = "最大距离",
+	},
+	spillway_path_colour = {
+		en = "Marker Colour",
+		fr = "Couleur du marqueur",
+		ru = "Цвет метки",
+		["zh-tw"] = "標記顏色",
+		["zh-cn"] = "标记颜色",
+	},
+	spillway_path_colour_R = {
+		en = "Red",
+		fr = "Rouge",
+		ru = "Красный",
+		["zh-tw"] = "紅色",
+		["zh-cn"] = "红色",
+	},
+	spillway_path_colour_G = {
+		en = "Green",
+		fr = "Vert",
+		ru = "Зелёный",
+		["zh-tw"] = "綠色",
+		["zh-cn"] = "绿色",
+	},
+	spillway_path_colour_B = {
+		en = "Blue",
+		fr = "Bleu",
+		ru = "Синий",
+		["zh-tw"] = "藍色",
+		["zh-cn"] = "蓝色",
+	},
+	spillway_path_border_colour = {
+		en = "Border Colour",
+		fr = "Couleur de bordure",
+		ru = "Цвет рамки",
+		["zh-tw"] = "邊框顏色",
+		["zh-cn"] = "边框颜色",
+	},
+	spillway_path_keep_on_screen = {
+		en = "Keep On Screen",
+		fr = "Garder à l'écran",
+		ru = "Держать на экране",
+		["zh-tw"] = "保持在螢幕上",
+		["zh-cn"] = "保持在屏幕上",
+	},
+	spillway_path_require_line_of_sight = {
+		en = "Require Line Of Sight",
+		fr = "Nécessite une ligne de vue",
+		ru = "Требовать прямую видимость",
+		["zh-tw"] = "需要視線",
+		["zh-cn"] = "需要视线",
+	},
+	spillway_path_scale = {
+		en = "Scale",
+		fr = "Échelle",
+		ru = "Масштаб",
+		["zh-tw"] = "縮放",
+		["zh-cn"] = "缩放",
+	},
+	spillway_path_alpha = {
+		en = "Alpha",
+		fr = "Opacité",
+		ru = "Прозрачность",
+		["zh-tw"] = "透明度",
+		["zh-cn"] = "透明度",
+	},
 }
 
 local apply_color_to_text = function(text, r, g, b)
@@ -4646,9 +4823,18 @@ local apply_colours = function()
 			end
 		end
 	end
-
-	return loc
 end
+
+mod:add_global_localize_strings({
+
+	mod_marker_spillway_path_name = {
+		en = "Safe Spillway Path",
+		fr = "Chemin sûr du déversoir",
+		ru = "Безопасный путь водосброса",
+		["zh-tw"] = "安全的洩洪道路徑",
+		["zh-cn"] = "安全的泄洪道路径",
+	},
+})
 
 -- Insert font localisation
 insert_fonts(loc)
@@ -4673,6 +4859,7 @@ mod.toggle_pizazz()
 
 mod.apply_colours = function()
 	apply_colours()
+
 	return loc
 end
 

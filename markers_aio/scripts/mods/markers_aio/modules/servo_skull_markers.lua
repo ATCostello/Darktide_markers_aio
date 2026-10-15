@@ -16,18 +16,14 @@ mod.update_servo_skull_markers = function(self, marker)
 			return
 		end
 
-		local interactee_extension = ScriptUnit.has_extension(unit, "interactee_system")
-		local interaction_type = interactee_extension and interactee_extension:interaction_type()
-		local decoder_ext = ScriptUnit.has_extension(unit, "decoder_device_system")
+		local decoder_ext = mod.get_marker_extension(marker, "decoder_device_system")
 		local is_decoding_terminal = decoder_ext and decoder_ext:unit_is_enabled() and not decoder_ext:is_finished()
-
-		local skull_is_injecting = false
-
-		local unit_data_extension = ScriptUnit.has_extension(unit, "unit_data_system")
 
 		if not is_decoding_terminal then
 			return
 		end
+
+		local unit_data_extension = ScriptUnit.has_extension(unit, "unit_data_system")
 
 		local widget = marker.widget
 		if not widget or not widget.style or not widget.style.background then
@@ -40,10 +36,12 @@ mod.update_servo_skull_markers = function(self, marker)
 
 		marker.markers_aio_type = "servo_skull"
 
+		local pt = fs.per_type.servo_skull
+
 		mod.set_colour(widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-		marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
-		marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
-		marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
+		marker.template.check_line_of_sight = pt.require_line_of_sight
+		marker.template.max_distance = pt.max_distance
+		marker.template.screen_clamp = pt.keep_on_screen
 		marker.block_screen_clamp = false
 
 		local character_state_component = unit_data_extension and unit_data_extension:read_component("character_state")
@@ -61,15 +59,14 @@ mod.update_servo_skull_markers = function(self, marker)
 		marker.template.icon_max_size[1] = 48
 		marker.template.icon_max_size[2] = 48
 
-		local decoder_extension = ScriptUnit.has_extension(unit, "decoder_device_system")
 		local minigame_extension = ScriptUnit.has_extension(unit, "minigame_system")
 		local colour_type = "servo_skull_default"
 		local border_key = "servo_skull_border_colour"
 		marker.servo_skull_pulse = false
 
 		if is_decoding_terminal then
-			if decoder_extension then
-				if decoder_extension:wait_for_restart() then
+			if decoder_ext then
+				if decoder_ext:wait_for_restart() then
 					colour_type = "servo_skull_stalled"
 					border_key = "servo_skull_stalled_border_colour"
 					marker.servo_skull_pulse = fs.servo_skull_pulse_when_stalled
@@ -77,9 +74,9 @@ mod.update_servo_skull_markers = function(self, marker)
 						widget.content.icon = fs.servo_skull_icon
 					end
 				elseif
-					decoder_extension:started_decode()
-					and not decoder_extension:is_finished()
-					and decoder_extension:is_minigame_active()
+					decoder_ext:started_decode()
+					and not decoder_ext:is_finished()
+					and decoder_ext:is_minigame_active()
 				then
 					colour_type = "servo_skull_active"
 					border_key = "servo_skull_active_border_colour"
@@ -89,7 +86,8 @@ mod.update_servo_skull_markers = function(self, marker)
 					end
 				end
 			else
-				local player = Managers.player:local_player(1)
+				local interactee_extension = ScriptUnit.has_extension(unit, "interactee_system")
+				local player = mod.get_local_player()
 				local player_unit = player and player.player_unit
 
 				if minigame_extension and _is_decoder_active(minigame_extension) then

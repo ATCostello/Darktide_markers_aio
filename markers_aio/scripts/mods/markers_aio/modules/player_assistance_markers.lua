@@ -38,7 +38,7 @@ end
 mod.update_player_assistance_markers = function(self, marker)
 	if marker and self then
 		local unit = marker.unit
-		if not unit or type(unit) ~= "userdata" or not Unit.alive(unit) then
+		if not unit or type(unit) ~= "userdata" then
 			return
 		end
 
@@ -46,11 +46,15 @@ mod.update_player_assistance_markers = function(self, marker)
 		local is_assisted = false
 		local skull_is_injecting = false
 
-		local unit_data_extension = ScriptUnit.has_extension(unit, "unit_data_system")
+		local unit_data_extension
 
-		if unit_data_extension and Managers.player:player_by_unit(unit) then
-			needs_help = _player_needs_help(unit_data_extension)
-			is_assisted = _player_is_assisted(unit_data_extension)
+		if mod.get_player_units()[unit] and Unit.alive(unit) then
+			unit_data_extension = ScriptUnit.has_extension(unit, "unit_data_system")
+
+			if unit_data_extension then
+				needs_help = _player_needs_help(unit_data_extension)
+				is_assisted = _player_is_assisted(unit_data_extension)
+			end
 		end
 
 		if fs and fs.servo_skull_equipped and fs.inject_ally and fs.servo_skull_injecting then
@@ -72,10 +76,12 @@ mod.update_player_assistance_markers = function(self, marker)
 
 		marker.markers_aio_type = "player_assistance"
 
+		local pt = fs.per_type.player_assistance
+
 		mod.set_colour(widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-		marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
-		marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
-		marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
+		marker.template.check_line_of_sight = pt.require_line_of_sight
+		marker.template.max_distance = pt.max_distance
+		marker.template.screen_clamp = pt.keep_on_screen
 		marker.block_screen_clamp = false
 
 		widget.content.icon = fs.player_assistance_icon

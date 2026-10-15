@@ -22,10 +22,12 @@ mod.update_tainted_skull_markers = function(self, marker)
 
 					marker.markers_aio_type = "event"
 
+					local pt = fs.per_type.event
+
 					mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
 					marker.template.check_line_of_sight = fs.event_require_line_of_sight
 
-					marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
+					marker.template.max_distance = pt.max_distance
 					marker.template.screen_clamp = fs.event_keep_on_screen
 					marker.block_screen_clamp = false
 
@@ -49,10 +51,12 @@ mod.update_tainted_skull_markers = function(self, marker)
 
 			marker.markers_aio_type = "event"
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-			marker.template.check_line_of_sight = false
+			local pt = fs.per_type.event
 
-			marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.check_line_of_sight = fs.event_require_line_of_sight
+
+			marker.template.max_distance = pt.max_distance
 			marker.template.screen_clamp = fs.event_keep_on_screen
 			marker.block_screen_clamp = false
 

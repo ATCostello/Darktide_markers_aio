@@ -19,24 +19,23 @@ local get_max_distance = function()
 	return max_distance
 end
 
-mod.update_material_markers = function(self, marker)
-	local max_distance = get_max_distance()
+local material_types = {
+	small_metal = true,
+	large_metal = true,
+	small_platinum = true,
+	large_platinum = true,
+}
 
+mod.update_material_markers = function(self, marker)
 	if marker and self then
 		local unit = marker.unit
 
 		local pickup_type = mod.get_marker_pickup_type(marker)
+		local data_type = marker.data and marker.data.type
 
-		if
-			pickup_type and pickup_type == "small_metal"
-			or pickup_type and pickup_type == "large_metal"
-			or pickup_type and pickup_type == "small_platinum"
-			or pickup_type and pickup_type == "large_platinum"
-			or marker.data and marker.data.type == "small_metal"
-			or marker.data and marker.data.type == "large_metal"
-			or marker.data and marker.data.type == "small_platinum"
-			or marker.data and marker.data.type == "large_platinum"
-		then
+		if (pickup_type and material_types[pickup_type]) or (data_type and material_types[data_type]) then
+			local max_distance = get_max_distance()
+
 			marker.markers_aio_type = "material"
 			marker.widget.alpha_multiplier = 0
 			marker.draw = false
@@ -44,8 +43,8 @@ mod.update_material_markers = function(self, marker)
 			if
 				pickup_type == "small_metal"
 				or pickup_type == "small_platinum"
-				or marker.data and marker.data.type == "small_metal"
-				or marker.data and marker.data.type == "small_platinum"
+				or data_type == "small_metal"
+				or data_type == "small_platinum"
 			then
 				mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.material_small_border_colour))
 			else
@@ -71,13 +70,8 @@ mod.update_material_markers = function(self, marker)
 			self.max_distance = max_distance
 			marker.max_distance = max_distance
 
-			if self.fade_settings then
-				self.fade_settings.distance_max = max_distance
-				self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
-			end
-
 			-- plasteel
-			if pickup_type == "large_metal" or marker.data and marker.data.type == "large_metal" then
+			if pickup_type == "large_metal" or data_type == "large_metal" then
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
 
 				mod.set_colour_argb(
@@ -94,7 +88,7 @@ mod.update_material_markers = function(self, marker)
 						marker.widget.visible = true
 					end
 				end
-			elseif pickup_type == "small_metal" or marker.data and marker.data.type == "small_metal" then
+			elseif pickup_type == "small_metal" or data_type == "small_metal" then
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
 
 				mod.set_colour_argb(
@@ -112,7 +106,7 @@ mod.update_material_markers = function(self, marker)
 					end
 				end
 				-- diamantine
-			elseif pickup_type == "small_platinum" or marker.data and marker.data.type == "small_platinum" then
+			elseif pickup_type == "small_platinum" or data_type == "small_platinum" then
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
 
 				mod.set_colour_argb(
@@ -129,7 +123,7 @@ mod.update_material_markers = function(self, marker)
 						marker.widget.visible = true
 					end
 				end
-			elseif pickup_type == "large_platinum" or marker.data and marker.data.type == "large_platinum" then
+			elseif pickup_type == "large_platinum" or data_type == "large_platinum" then
 				marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/environment_generic"
 				mod.set_colour_argb(
 					marker.widget.style.icon.color,

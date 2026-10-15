@@ -15,7 +15,14 @@ local fs = mod.frame_settings
 
 mod.update_martyrs_skull_markers = function(self, marker)
 	local fs = mod.frame_settings
-	if fs.martyrs_skull_guide_enable == true or fs.martyrs_skull_guide_markers_enable == true then
+	local frame = mod._aio_frame
+
+	if
+		(fs.martyrs_skull_guide_enable == true or fs.martyrs_skull_guide_markers_enable == true)
+		and mod._martyrs_walkthrough_frame ~= frame
+	then
+		mod._martyrs_walkthrough_frame = frame
+
 		local now = os.clock()
 		if now - last_walkthrough_update > walkthrough_update_interval then
 			last_walkthrough_update = now
@@ -34,26 +41,19 @@ mod.update_martyrs_skull_markers = function(self, marker)
 
 			marker.markers_aio_type = "martyrs_skull"
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-			marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+			local pt = fs.per_type.martyrs_skull
 
-			marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
-			marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.check_line_of_sight = pt.require_line_of_sight
+
+			marker.template.max_distance = pt.max_distance
+			marker.template.screen_clamp = pt.keep_on_screen
 			marker.block_screen_clamp = false
 
 			marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/enemy"
 
-			mod.set_colour(
-				marker.widget.style.ring.color,
-				mod.lookup_colour(fs.per_type[marker.markers_aio_type].border_colour)
-			)
-			mod.set_colour_argb(
-				marker.widget.style.icon.color,
-				255,
-				fs.per_type[marker.markers_aio_type].colour_R,
-				fs.per_type[marker.markers_aio_type].colour_G,
-				fs.per_type[marker.markers_aio_type].colour_B
-			)
+			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(pt.border_colour))
+			mod.set_colour_argb(marker.widget.style.icon.color, 255, pt.colour_R, pt.colour_G, pt.colour_B)
 		end
 	end
 end
@@ -1839,7 +1839,12 @@ local maryrs_skull_walkthrough_markers = {
 	},
 }
 
-mod.does_player_need_skull = function()
+local need_skull_cache = {
+	time = -1,
+	value = false,
+}
+
+local function compute_player_needs_skull()
 	local characters_needing = {}
 
 	-- Grab current players in-game
@@ -1854,6 +1859,8 @@ mod.does_player_need_skull = function()
 
 		if achievement_manager then
 			local definitions = achievement_manager:achievement_definitions()
+			local mission = Managers.state.mission
+			local current_mission = mission and mission:mission_name()
 			for _, config in pairs(definitions) do
 				local id = config.id
 				local category = config.category
@@ -1862,8 +1869,7 @@ mod.does_player_need_skull = function()
 
 				if parent_name == "exploration" then
 					if config.icon and config.icon:match("missions_achievement_puzzle") then
-						local current_mission = Managers.state.mission:mission_name()
-						if config.stat_name:match(current_mission) then
+						if current_mission and config.stat_name and config.stat_name:match(current_mission) then
 							current_mission_martyrskull_achievement_id = config.id
 						end
 					end
@@ -1901,27 +1907,57 @@ mod.does_player_need_skull = function()
 	return false
 end
 
+mod.does_player_need_skull = function()
+	local now = os.clock()
+
+	if now - need_skull_cache.time < 5 then
+		return need_skull_cache.value
+	end
+
+	need_skull_cache.time = now
+	need_skull_cache.value = compute_player_needs_skull()
+
+	return need_skull_cache.value
+end
+
+local guide_check_cache = {}
+
 mod.check_guide_marker_exists = function(self, guide_position)
+	local key = string.format("%.4f_%.4f_%.4f", guide_position.x, guide_position.y, guide_position.z)
+	local cached = guide_check_cache[key]
+
+	if cached ~= nil then
+		return cached or nil
+	end
+
 	local markers_by_type = self._markers_by_type
+	local found = nil
 
 	for marker_type, markers in pairs(markers_by_type) do
 		for i = 1, #markers do
 			local marker = markers[i]
 
 			if vector3_equals_4dp(Vector3Box.unbox(marker.position), guide_position) then
-				return marker
+				found = marker
+				break
 			end
+		end
+
+		if found then
+			break
 		end
 	end
 
-	return nil
+	guide_check_cache[key] = found or false
+
+	return found
 end
 
 mod.is_player_near_marker = function(self, marker, threshold)
 	if marker then
 		threshold = threshold or 2
 
-		local player = Managers.player:local_player(1)
+		local player = mod.get_local_player()
 		if not player then
 			return false
 		end
@@ -1959,7 +1995,7 @@ mod.is_player_near_position = function(self, position, threshold)
 	end
 
 	threshold = threshold or 30
-	local player = Managers.player:local_player(1)
+	local player = mod.get_local_player()
 	if not player then
 		return false
 	end
@@ -1981,6 +2017,8 @@ end
 local player_near_skull = false
 
 mod.setup_walkthrough_markers = function(self)
+	table.clear(guide_check_cache)
+
 	self._level = Managers.state.mission:mission()
 	if not self._level then
 		if fs.martyrs_skull_guide_enable == true then
@@ -2132,6 +2170,9 @@ mod.setup_walkthrough_markers = function(self)
 end
 
 mod.reset_martyrs_skull_guides = function()
+	need_skull_cache.time = -1
+	table.clear(guide_check_cache)
+
 	for level_name, walkthrough_markers in pairs(maryrs_skull_walkthrough_markers) do
 		walkthrough_markers.title_placed = false
 		for i, wmarker in ipairs(walkthrough_markers.markers) do
@@ -2142,7 +2183,34 @@ mod.reset_martyrs_skull_guides = function()
 end
 
 -- Debug teleport command
-mod:command("tpm", "Teleport to a Martyr's Skull marker by index or marker_text", function(args)
+mod:command("tpm", "Teleport to a Martyr's Skull or Spillway Path marker by index or marker_text", function(args)
+	local player = Managers.player:local_player(1)
+	if not player or not player.player_unit or not Unit.alive(player.player_unit) then
+		mod:echo("Player not available.")
+		return
+	end
+
+	local PlayerMovement = require("scripts/utilities/player_movement")
+	local arg = args
+
+	local spillway_markers = mod.get_spillway_path_markers and mod.get_spillway_path_markers()
+
+	if spillway_markers and #spillway_markers > 0 then
+		local index = tonumber(arg)
+		local entry = index and spillway_markers[index]
+
+		if entry then
+			PlayerMovement.teleport_fixed_update(player.player_unit, entry.position)
+			mod:echo("Teleported to Spillway Path marker " .. index)
+			return
+		end
+
+		if index then
+			mod:echo("Spillway marker not found.")
+			return
+		end
+	end
+
 	local current_level = Managers.state.mission and Managers.state.mission:mission()
 
 	if not current_level then
@@ -2164,7 +2232,6 @@ mod:command("tpm", "Teleport to a Martyr's Skull marker by index or marker_text"
 	end
 
 	local target_marker = nil
-	local arg = args
 
 	for i, wmarker in ipairs(walkthrough_markers.markers) do
 		if tostring(i) == arg or tostring(wmarker.marker_text) == arg then
@@ -2178,13 +2245,6 @@ mod:command("tpm", "Teleport to a Martyr's Skull marker by index or marker_text"
 		return
 	end
 
-	local player = Managers.player:local_player(1)
-	if not player or not player.player_unit or not Unit.alive(player.player_unit) then
-		mod:echo("Player not available.")
-		return
-	end
-
-	local PlayerMovement = require("scripts/utilities/player_movement")
 	local pos = Vector3(target_marker.position[1], target_marker.position[2], target_marker.position[3])
 
 	PlayerMovement.teleport_fixed_update(player.player_unit, pos)

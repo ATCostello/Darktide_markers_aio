@@ -23,8 +23,6 @@ mod.update_tome_markers = function(self, marker)
 	local max_distance = get_max_distance()
 
 	if marker and self then
-		local unit = marker.unit
-
 		local pickup_type = mod.get_marker_pickup_type(marker)
 
 		if pickup_type then
@@ -56,17 +54,8 @@ mod.update_tome_markers = function(self, marker)
 					marker.template.fade_settings.distance_max = max_distance
 					marker.template.fade_settings.distance_min = max_distance - marker.template.evolve_distance * 2
 
-					local pickup_name = Unit.has_data(unit, "pickup_type") and Unit.get_data(unit, "pickup_type")
-
-					local max_distance = get_max_distance()
-
 					self.max_distance = max_distance
 					marker.max_distance = max_distance
-
-					if self.fade_settings then
-						self.fade_settings.distance_max = max_distance
-						self.fade_settings.distance_min = max_distance - self.evolve_distance * 2
-					end
 
 					marker.widget.content.icon = "content/ui/materials/hud/interactions/icons/pocketable_default"
 

@@ -13,6 +13,8 @@ mod.update_unknown_markers = function(self, marker)
 			return
 		end
 
+		marker._aio_effected = true
+
 		-- Toggle to allow unwanted markers to be affected.
 		if not fs.unknown_markers_extra_allowed then
 			if
@@ -38,14 +40,16 @@ mod.update_unknown_markers = function(self, marker)
 
 		marker.markers_aio_type = "unknown"
 
-		mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-		marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+		local pt = fs.per_type.unknown
 
-		local max_distance = fs.per_type[marker.markers_aio_type].max_distance
+		mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+		marker.template.check_line_of_sight = pt.require_line_of_sight
+
+		local max_distance = pt.max_distance
 		marker.template.max_distance = max_distance
 		self.max_distance = max_distance
 
-		marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
+		marker.template.screen_clamp = pt.keep_on_screen
 		marker.block_screen_clamp = false
 
 		mod.set_colour_argb(

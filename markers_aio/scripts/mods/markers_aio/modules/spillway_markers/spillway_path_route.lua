@@ -1,0 +1,1287 @@
+local mod = get_mod("markers_aio")
+
+local fs = mod.frame_settings
+
+local NavQueries = require("scripts/utilities/nav_queries")
+local Navigation = require("scripts/extension_systems/navigation/utilities/navigation")
+
+local RUN_CACHE = false
+
+local SPILLWAY_ROUTES = {
+	{ 11, 12 },
+	{ 18, 19, 20 },
+}
+
+mod.spillway_routes = SPILLWAY_ROUTES
+
+local ROUTE_LEGS = {}
+
+for r = 1, #SPILLWAY_ROUTES do
+	local route = SPILLWAY_ROUTES[r]
+
+	for i = 1, #route - 1 do
+		ROUTE_LEGS[#ROUTE_LEGS + 1] = {
+			route = r,
+			from = route[i],
+			to = route[i + 1],
+		}
+	end
+end
+
+local FX_DASHED = "dashed"
+local FX_ARROWS = "arrows"
+local FX_DOTS = "dots"
+local FX_SMOKE = "smoke"
+local FX_FIRE = "fire"
+local FX_ARC = "arc"
+local FX_WARP = "warp"
+local FX_BEACON = "beacon"
+local FX_OFF = "off"
+
+local SOLID_SUBDIVISIONS = 6
+local DASH_GAP = 40
+local DASH_SUBDIVISIONS = 24
+local DOT_RADIUS = 0.45
+local DOT_SPACING = 2.5
+local ARROW_SPACING = 3
+local ARROW_SIZE = 0.8
+local ARROW_GAP = 10
+local ARROW_SUBDIVISIONS = 4
+
+local PARTICLE_FX = {
+	[FX_SMOKE] = {
+		path = "content/fx/particles/weapons/grenades/gas_grenade_gas",
+		spacing = 3,
+		refresh = 8,
+		z = 0.2,
+	},
+	[FX_FIRE] = {
+		path = "content/fx/particles/enemies/renegade_flamer/renegade_flamer_fire_lingering",
+		spacing = 2.5,
+		refresh = 5,
+		z = 0.1,
+	},
+	[FX_ARC] = {
+		path = "content/fx/particles/abilities/chainlightning_charge_loop",
+		spacing = 4,
+		refresh = 6,
+		z = 0.6,
+	},
+	[FX_WARP] = {
+		path = "content/fx/particles/abilities/psyker_venting",
+		spacing = 3,
+		refresh = 6,
+		z = 0.3,
+	},
+	[FX_BEACON] = {
+		path = "content/fx/particles/weapons/grenades/shock_mine/shock_mine_idle_01",
+		spacing = 5,
+		refresh = 6,
+		z = 0.3,
+	},
+}
+
+local ROUTE_Z_OFFSET = 0.5
+local PACKAGE_REFERENCE = "markers_aio_spillway_route"
+local PACKAGE_LOAD_TIMEOUT = 10
+local MIN_POINT_SPACING = 0.5
+local NAV_CHECK_ABOVE = 2
+local NAV_CHECK_BELOW = 4
+local NAV_WAIT_MAX = 20
+local SPARSE_GRACE = 8
+local ROUTE_MAX_ATTEMPTS = 6
+local ROUTE_RETRY_DELAY = 1
+local CACHE_KEY = "spillway_route_cache"
+local CACHE_VERSION = 1
+local CACHE_MAX_ENTRIES = 64
+local CACHE_TOLERANCE = 1
+local SEED_MODULE = "markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_route_seed"
+local SEED_WRITE_PATH = "./../mods/markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_route_seed.lua"
+local DRIVE_NAV_ASYNC = true
+local state
+
+local function get_world()
+	local player = mod.get_local_player()
+	local unit = player and player.player_unit
+
+	if unit and Unit.alive(unit) then
+		return Unit.world(unit)
+	end
+end
+
+local function requires_package(fx)
+	return PARTICLE_FX[fx] ~= nil
+end
+
+local function package_path_for(fx)
+	local config = PARTICLE_FX[fx]
+
+	return config and config.path
+end
+
+local function get_route_rgba()
+	local pt = fs.per_type and fs.per_type.spillway_path
+	local r = math.max(0, math.min(255, pt and pt.colour_R or 161))
+	local g = math.max(0, math.min(255, pt and pt.colour_G or 166))
+	local b = math.max(0, math.min(255, pt and pt.colour_B or 169))
+	local alpha = pt and pt.alpha or 1
+	local a = math.max(0, math.min(255, math.floor(alpha * 255)))
+
+	return r, g, b, a
+end
+
+local function get_route_color()
+	local r, g, b, a = get_route_rgba()
+
+	return Color(a, r, g, b)
+end
+
+local _fallback_traverse_logic
+local _fallback_nav_tag_cost_table
+local _fallback_nav_world
+
+local function destroy_fallback_traverse_logic()
+	if _fallback_traverse_logic then
+		GwNavTraverseLogic.destroy(_fallback_traverse_logic)
+		_fallback_traverse_logic = nil
+	end
+
+	if _fallback_nav_tag_cost_table then
+		GwNavTagLayerCostTable.destroy(_fallback_nav_tag_cost_table)
+		_fallback_nav_tag_cost_table = nil
+	end
+
+	_fallback_nav_world = nil
+end
+
+local function get_nav_context()
+	local nav_mesh = Managers.state.nav_mesh
+
+	if not nav_mesh then
+		return
+	end
+
+	local nav_world = nav_mesh:nav_world()
+
+	if not nav_world then
+		return
+	end
+
+	local traverse_logic = nav_mesh.client_traverse_logic and nav_mesh:client_traverse_logic()
+
+	if not traverse_logic then
+		if _fallback_nav_world ~= nav_world then
+			destroy_fallback_traverse_logic()
+
+			_fallback_traverse_logic, _fallback_nav_tag_cost_table =
+				Navigation.create_traverse_logic(nav_world, {}, nil, false)
+			_fallback_nav_world = nav_world
+		end
+
+		traverse_logic = _fallback_traverse_logic
+	end
+
+	if nav_world and traverse_logic then
+		return nav_world, traverse_logic
+	end
+end
+
+local function entry_position(entry)
+	if entry.position_box then
+		return entry.position_box:unbox()
+	end
+
+	return entry.position
+end
+
+local function destroy_line_object()
+	if state and state.line_object and state.world and state.world == get_world() then
+		pcall(function()
+			LineObject.reset(state.line_object)
+			LineObject.dispatch(state.world, state.line_object)
+			World.destroy_line_object(state.world, state.line_object)
+		end)
+	end
+
+	if state then
+		state.line_object = nil
+	end
+end
+
+local function destroy_units()
+	if not (state and state.units) then
+		return
+	end
+
+	local world = state.world
+
+	if not (world and world == get_world()) then
+		for i = #state.units, 1, -1 do
+			state.units[i] = nil
+		end
+
+		return
+	end
+
+	for i = #state.units, 1, -1 do
+		local unit = state.units[i]
+
+		if unit and Unit.alive(unit) then
+			World.destroy_unit(world, unit)
+		end
+
+		state.units[i] = nil
+	end
+end
+
+local function destroy_particles()
+	if not (state and state.particle_group) then
+		return
+	end
+
+	local world = state.world
+
+	if world and world == get_world() then
+		pcall(World.destroy_particle_group, world, state.particle_group)
+	end
+
+	state.particle_group = nil
+
+	if state.particles then
+		table.clear(state.particles)
+	end
+end
+
+local function destroy_state()
+	if state then
+		if state.astar then
+			GwNavAStar.destroy(state.astar)
+		end
+
+		destroy_line_object()
+		destroy_units()
+		destroy_particles()
+
+		if state.package_id then
+			Managers.package:release(state.package_id)
+		end
+	end
+
+	state = nil
+
+	destroy_fallback_traverse_logic()
+end
+
+mod.reset_spillway_path_route = function()
+	destroy_state()
+end
+
+local function get_mission_name()
+	local mission = Managers.state.mission
+
+	return mission and mission:mission_name() or "unknown"
+end
+
+local function vec_to_table(v)
+	return {
+		x = v.x,
+		y = v.y,
+		z = v.z,
+	}
+end
+
+local function pos_matches(a, b)
+	if not (a and b) or not a.x or not b.x then
+		return false
+	end
+
+	return math.abs(a.x - b.x) <= CACHE_TOLERANCE
+		and math.abs(a.y - b.y) <= CACHE_TOLERANCE
+		and math.abs(a.z - b.z) <= CACHE_TOLERANCE
+end
+
+local function cache_entries()
+	local ok, cache = pcall(mod.get, mod, CACHE_KEY)
+
+	if not ok or type(cache) ~= "table" or cache.version ~= CACHE_VERSION then
+		return {}
+	end
+
+	return type(cache.entries) == "table" and cache.entries or {}
+end
+
+local _seed_entries
+
+local function seed_entries()
+	if _seed_entries == nil then
+		local data = mod:io_dofile(SEED_MODULE)
+
+		if type(data) == "table" and data.version == CACHE_VERSION and type(data.entries) == "table" then
+			_seed_entries = data.entries
+		else
+			_seed_entries = {}
+		end
+
+		if #_seed_entries > 0 then
+			mod:info("[spillway_route] loaded %d pre-calculated route(s) from the seed file", #_seed_entries)
+		end
+	end
+
+	return _seed_entries
+end
+
+local function find_in(entries, from_table, to_table)
+	for i = 1, #entries do
+		local entry = entries[i]
+
+		if
+			entry
+			and pos_matches(entry.from, from_table)
+			and pos_matches(entry.to, to_table)
+			and type(entry.points) == "table"
+			and #entry.points >= 2
+		then
+			return entry
+		end
+	end
+
+	return nil
+end
+
+local function cache_lookup(from_table, to_table)
+	return find_in(cache_entries(), from_table, to_table) or find_in(seed_entries(), from_table, to_table)
+end
+
+local function cache_store(from_table, to_table, points)
+	if not RUN_CACHE then
+		return
+	end
+
+	local old = cache_entries()
+	local entries = {}
+	local mission = get_mission_name()
+
+	for i = 1, #old do
+		local entry = old[i]
+
+		if
+			not (
+				entry
+				and entry.mission == mission
+				and pos_matches(entry.from, from_table)
+				and pos_matches(entry.to, to_table)
+			)
+		then
+			entries[#entries + 1] = entry
+		end
+	end
+
+	entries[#entries + 1] = {
+		mission = mission,
+		from = from_table,
+		to = to_table,
+		points = points,
+	}
+
+	while #entries > CACHE_MAX_ENTRIES do
+		table.remove(entries, 1)
+	end
+
+	pcall(mod.set, mod, CACHE_KEY, {
+		version = CACHE_VERSION,
+		entries = entries,
+	})
+end
+
+local function merged_entries()
+	local result = {}
+
+	local function add(entries)
+		for i = 1, #entries do
+			local entry = entries[i]
+
+			if entry and entry.from and entry.to and type(entry.points) == "table" and #entry.points >= 2 then
+				local duplicate = false
+
+				for j = 1, #result do
+					if pos_matches(result[j].from, entry.from) and pos_matches(result[j].to, entry.to) then
+						duplicate = true
+
+						break
+					end
+				end
+
+				if not duplicate then
+					result[#result + 1] = entry
+				end
+			end
+		end
+	end
+
+	add(cache_entries())
+	add(seed_entries())
+
+	return result
+end
+
+local function format_vec(v)
+	return string.format("{ x = %.3f, y = %.3f, z = %.3f }", v.x, v.y, v.z)
+end
+
+local function format_points(points)
+	local parts = {}
+
+	for i = 1, #points do
+		parts[#parts + 1] = format_vec(points[i])
+	end
+
+	return "{ " .. table.concat(parts, ", ") .. " }"
+end
+
+local function build_seed_source(entries)
+	local lines = {
+		"return {",
+		"\tversion = " .. CACHE_VERSION .. ",",
+		"\tentries = {",
+	}
+
+	for i = 1, #entries do
+		local entry = entries[i]
+
+		lines[#lines + 1] = "\t\t{"
+		lines[#lines + 1] = "\t\t\tmission = " .. string.format("%q", entry.mission or "unknown") .. ","
+		lines[#lines + 1] = "\t\t\tfrom = " .. format_vec(entry.from) .. ","
+		lines[#lines + 1] = "\t\t\tto = " .. format_vec(entry.to) .. ","
+		lines[#lines + 1] = "\t\t\tpoints = " .. format_points(entry.points) .. ","
+		lines[#lines + 1] = "\t\t},"
+	end
+
+	lines[#lines + 1] = "\t},"
+	lines[#lines + 1] = "}"
+	lines[#lines + 1] = ""
+
+	return table.concat(lines, "\n")
+end
+
+mod.export_spillway_route_cache = function()
+	if not RUN_CACHE then
+		return
+	end
+
+	local entries = merged_entries()
+
+	if #entries == 0 then
+		mod:echo("No cached Spillway routes to export yet.")
+
+		return
+	end
+
+	local source = build_seed_source(entries)
+	local ok, err = pcall(function()
+		local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
+
+		if not file then
+			error("could not open " .. SEED_WRITE_PATH)
+		end
+
+		file:write(source)
+		file:close()
+	end)
+
+	if ok then
+		mod:info("[spillway_route] exported %d route(s) to %s", #entries, SEED_WRITE_PATH)
+		mod:echo(string.format("Exported %d Spillway route(s) to the mod's seed file.", #entries))
+	else
+		mod:info("[spillway_route] export failed (%s); dumping source below", tostring(err))
+		mod:echo("Could not write the seed file; dumping route source to the log instead.")
+
+		for line in string.gmatch(source, "[^\n]+") do
+			mod:info("[spillway_route][seed] %s", line)
+		end
+	end
+end
+
+if RUN_CACHE then
+	mod:command("spillway_route_export", "Export cached Spillway route paths so they can ship with the mod", function()
+		mod.export_spillway_route_cache()
+	end)
+end
+
+mod.clear_spillway_route_cache = function()
+	if not RUN_CACHE then
+		return
+	end
+
+	local cached_count = #cache_entries()
+	local seeded_count = #seed_entries()
+
+	pcall(mod.set, mod, CACHE_KEY, {
+		version = CACHE_VERSION,
+		entries = {},
+	})
+
+	_seed_entries = {}
+
+	local file_ok = pcall(function()
+		local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
+
+		if not file then
+			error("could not open " .. SEED_WRITE_PATH)
+		end
+
+		file:write(build_seed_source({}))
+		file:close()
+	end)
+
+	mod.reset_spillway_path_route()
+
+	mod:info("[spillway_route] cleared %d cached and %d seeded route(s)", cached_count, seeded_count)
+
+	if file_ok then
+		mod:echo(string.format("Cleared %d cached and %d seeded Spillway route(s).", cached_count, seeded_count))
+	else
+		mod:echo(
+			string.format(
+				"Cleared %d cached and %d seeded Spillway route(s). Could not reset the seed file (in-memory only).",
+				cached_count,
+				seeded_count
+			)
+		)
+	end
+end
+
+if RUN_CACHE then
+	mod:command("spillway_route_clear", "Clear all stored Spillway route paths and start fresh", function()
+		mod.clear_spillway_route_cache()
+	end)
+end
+
+local function boxes_from_points(points)
+	local boxes = {}
+
+	for i = 1, #points do
+		local point = points[i]
+
+		if point and point.x then
+			boxes[#boxes + 1] = Vector3Box(Vector3(point.x, point.y, point.z))
+		end
+	end
+
+	return boxes
+end
+
+local function points_from_boxes(boxes)
+	local points = {}
+
+	for i = 1, #boxes do
+		points[i] = vec_to_table(boxes[i]:unbox())
+	end
+
+	return points
+end
+
+local function advance_route(points)
+	state.route_points[state.route_index] = points or {}
+	state.route_index = state.route_index + 1
+	state.attempts = 0
+	state.wait_t = 0
+	state.cache_checked = false
+	state.nav_wait_logged = false
+	state.nav_wait_logged_out = false
+end
+
+local function update_astar_stage(markers, dt)
+	dt = dt or 0.016
+
+	if state.astar then
+		local nav_mesh = Managers.state.nav_mesh
+
+		if DRIVE_NAV_ASYNC and nav_mesh and nav_mesh.kick_async_update then
+			nav_mesh:kick_async_update(dt)
+		end
+
+		if not GwNavAStar.processing_finished(state.astar) then
+			return
+		end
+
+		local points = {}
+		local path_found = GwNavAStar.path_found(state.astar)
+
+		if path_found then
+			local count = GwNavAStar.node_count(state.astar)
+
+			for i = 1, count do
+				points[i] = Vector3Box(GwNavAStar.node_at_index(state.astar, i))
+			end
+
+			mod:info(
+				"[spillway_route] route %d finished: path_found=%s, nodes=%d",
+				state.route_index,
+				tostring(path_found),
+				#points
+			)
+		end
+
+		GwNavAStar.destroy(state.astar)
+
+		state.astar = nil
+
+		if path_found then
+			if #points >= 2 and state.query_from and state.query_to then
+				cache_store(state.query_from, state.query_to, points_from_boxes(points))
+			end
+
+			advance_route(points)
+
+			return
+		end
+
+		state.attempts = state.attempts + 1
+
+		if state.attempts >= ROUTE_MAX_ATTEMPTS then
+			mod:info(
+				"[spillway_route] route %d: no path found after %d attempts, giving up",
+				state.route_index,
+				state.attempts
+			)
+
+			advance_route(nil)
+
+			return
+		end
+
+		state.retry_delay = ROUTE_RETRY_DELAY
+
+		mod:info(
+			"[spillway_route] route %d: no path found, retrying %d/%d in %.1fs",
+			state.route_index,
+			state.attempts + 1,
+			ROUTE_MAX_ATTEMPTS,
+			ROUTE_RETRY_DELAY
+		)
+
+		return
+	end
+
+	if state.route_index > #ROUTE_LEGS then
+		state.stage = requires_package(state.fx) and "package" or "render"
+
+		return
+	end
+
+	if state.retry_delay > 0 then
+		state.retry_delay = state.retry_delay - dt
+
+		return
+	end
+
+	local leg = ROUTE_LEGS[state.route_index]
+	local from_entry = leg and markers[leg.from]
+	local to_entry = leg and markers[leg.to]
+
+	if not from_entry or not to_entry then
+		mod:info(
+			"[spillway_route] skipping leg %d (from=%s, to=%s, markers=%d)",
+			state.route_index,
+			tostring(from_entry ~= nil),
+			tostring(to_entry ~= nil),
+			#markers
+		)
+
+		advance_route(nil)
+
+		return
+	end
+
+	local from_pos = entry_position(from_entry)
+	local to_pos = entry_position(to_entry)
+	local from_key = vec_to_table(from_pos)
+	local to_key = vec_to_table(to_pos)
+
+	if not state.cache_checked then
+		state.cache_checked = true
+
+		local cached = cache_lookup(from_key, to_key)
+
+		if cached then
+			mod:info("[spillway_route] route %d loaded from cache (%d points)", state.route_index, #cached.points)
+
+			advance_route(boxes_from_points(cached.points))
+
+			return
+		end
+	end
+
+	local nav_world, traverse_logic = get_nav_context()
+
+	if not nav_world or not traverse_logic then
+		state.wait_t = state.wait_t + dt
+
+		if not state.nav_wait_logged and state.wait_t > 1 then
+			state.nav_wait_logged = true
+
+			mod:info("[spillway_route] waiting for a nav world before route %d", state.route_index)
+		end
+
+		return
+	end
+
+	local from_mesh = NavQueries.position_on_mesh(nav_world, from_pos, NAV_CHECK_ABOVE, NAV_CHECK_BELOW, traverse_logic)
+	local to_mesh = NavQueries.position_on_mesh(nav_world, to_pos, NAV_CHECK_ABOVE, NAV_CHECK_BELOW, traverse_logic)
+	local meshes_ready = from_mesh ~= nil and to_mesh ~= nil
+
+	local nav_mesh = Managers.state.nav_mesh
+	local sparse_ok = not (nav_mesh and nav_mesh.is_sparse_graph_connected) or nav_mesh:is_sparse_graph_connected()
+
+	local ready = meshes_ready and (sparse_ok or state.wait_t > SPARSE_GRACE)
+
+	if not ready then
+		state.wait_t = state.wait_t + dt
+
+		if not state.nav_wait_logged and state.wait_t > 1 then
+			state.nav_wait_logged = true
+
+			mod:info(
+				"[spillway_route] waiting for navmesh before route %d (from_on_mesh=%s, to_on_mesh=%s, sparse_graph=%s)",
+				state.route_index,
+				tostring(from_mesh ~= nil),
+				tostring(to_mesh ~= nil),
+				tostring(sparse_ok)
+			)
+		end
+
+		if state.wait_t < NAV_WAIT_MAX then
+			return
+		end
+
+		if not state.nav_wait_logged_out then
+			state.nav_wait_logged_out = true
+
+			mod:info("[spillway_route] navmesh still not ready after %ds, querying anyway", NAV_WAIT_MAX)
+		end
+	end
+
+	local from = from_mesh
+		or NavQueries.position_on_mesh_guaranteed(nav_world, from_pos, NAV_CHECK_ABOVE, NAV_CHECK_BELOW, traverse_logic)
+		or from_pos
+	local to = to_mesh
+		or NavQueries.position_on_mesh_guaranteed(nav_world, to_pos, NAV_CHECK_ABOVE, NAV_CHECK_BELOW, traverse_logic)
+		or to_pos
+	local astar = GwNavAStar.create(nav_world)
+
+	state.query_from = from_key
+	state.query_to = to_key
+
+	mod:info(
+		"[spillway_route] querying leg %d: marker %d -> marker %d (attempt %d)",
+		state.route_index,
+		leg.from,
+		leg.to,
+		state.attempts + 1
+	)
+
+	GwNavAStar.start(astar, nav_world, from, to, traverse_logic)
+
+	state.astar = astar
+end
+
+local function update_package_stage(dt)
+	local package_path = package_path_for(state.fx)
+
+	if not package_path then
+		state.stage = "render"
+
+		return
+	end
+
+	if state.package_loaded then
+		state.stage = "render"
+
+		return
+	end
+
+	if state.package_requested then
+		state.package_wait = (state.package_wait or 0) + (dt or 0)
+
+		if state.package_wait >= PACKAGE_LOAD_TIMEOUT then
+			mod:info("[spillway_route] timed out loading package '%s'", package_path)
+
+			state.package_failed = true
+		end
+	end
+
+	if state.package_failed then
+		mod:info("[spillway_route] falling back to '%s' (package unavailable)", FX_DASHED)
+
+		state.fx = FX_DASHED
+		state.stage = "render"
+
+		return
+	end
+
+	if state.package_requested then
+		return
+	end
+
+	state.package_requested = true
+
+	if Managers.package and Managers.package.has_loaded and Managers.package:has_loaded(package_path) then
+		mod:info("[spillway_route] package '%s' is already loaded", package_path)
+
+		state.package_loaded = true
+		state.stage = "render"
+
+		return
+	end
+
+	if not Application.can_get_resource("package", package_path) then
+		state.package_failed = true
+
+		mod:info("[spillway_route] '%s' is not available as a package", package_path)
+
+		return
+	end
+
+	mod:info("[spillway_route] loading package '%s'", package_path)
+
+	state.package_id = Managers.package:load(package_path, PACKAGE_REFERENCE, function()
+		if state then
+			state.package_loaded = true
+		end
+	end)
+end
+
+local function thin_points(points)
+	local count = #points
+
+	if count < 3 then
+		return points
+	end
+
+	local thinned = { points[1] }
+	local last = points[1]:unbox()
+
+	for i = 2, count - 1 do
+		local point = points[i]
+		local position = point:unbox()
+
+		if Vector3.distance(last, position) >= MIN_POINT_SPACING then
+			thinned[#thinned + 1] = point
+			last = position
+		end
+	end
+
+	thinned[#thinned + 1] = points[count]
+
+	return thinned
+end
+
+local function walk_points(points, spacing, callback)
+	local count = #points
+
+	if count < 2 then
+		if count == 1 then
+			callback(points[1]:unbox())
+		end
+
+		return
+	end
+
+	local prev = points[1]:unbox()
+
+	callback(prev)
+
+	for i = 2, count do
+		local cur = points[i]:unbox()
+		local diff = cur - prev
+		local distance = Vector3.length(diff)
+
+		if distance > 0.01 then
+			local direction = diff / distance
+			local travelled = spacing
+
+			while travelled < distance do
+				callback(prev + direction * travelled)
+
+				travelled = travelled + spacing
+			end
+		end
+
+		prev = cur
+	end
+end
+
+local function ensure_line_object()
+	local world = state.world
+
+	if not world then
+		return
+	end
+
+	if state.line_object and state.line_object_world ~= world then
+		state.line_object = nil
+	end
+
+	if state.line_object then
+		return
+	end
+
+	local ok, line_object = pcall(World.create_line_object, world)
+
+	if ok and line_object then
+		state.line_object = line_object
+		state.line_object_world = world
+	end
+end
+
+local function draw_line_route()
+	ensure_line_object()
+
+	local world = state.world
+	local line_object = state.line_object
+
+	if not (world and line_object) then
+		return
+	end
+
+	local dashed = state.fx == FX_DASHED
+	local color = get_route_color()
+
+	pcall(function()
+		LineObject.reset(line_object)
+
+		for r = 1, #state.route_points do
+			local points = state.route_points[r]
+
+			if points then
+				for i = 1, #points - 1 do
+					local a = points[i]:unbox() + Vector3(0, 0, ROUTE_Z_OFFSET)
+					local b = points[i + 1]:unbox() + Vector3(0, 0, ROUTE_Z_OFFSET)
+
+					if dashed then
+						LineObject.add_segmented_line(line_object, color, a, b, DASH_GAP, DASH_SUBDIVISIONS)
+					else
+						LineObject.add_segmented_line(line_object, color, a, b, 0, SOLID_SUBDIVISIONS)
+					end
+				end
+			end
+		end
+
+		LineObject.dispatch(world, line_object)
+	end)
+end
+
+local function draw_dot_route()
+	ensure_line_object()
+
+	local world = state.world
+	local line_object = state.line_object
+
+	if not (world and line_object) then
+		return
+	end
+
+	local color = get_route_color()
+	local up = Vector3.up()
+
+	pcall(function()
+		LineObject.reset(line_object)
+
+		for r = 1, #state.route_points do
+			local points = state.route_points[r]
+
+			if points then
+				walk_points(points, DOT_SPACING, function(position)
+					LineObject.add_circle(
+						line_object,
+						color,
+						position + Vector3(0, 0, ROUTE_Z_OFFSET),
+						DOT_RADIUS,
+						up,
+						16
+					)
+				end)
+			end
+		end
+
+		LineObject.dispatch(world, line_object)
+	end)
+end
+
+local function draw_arrow_route()
+	ensure_line_object()
+
+	local world = state.world
+	local line_object = state.line_object
+
+	if not (world and line_object) then
+		return
+	end
+
+	local color = get_route_color()
+	local up = Vector3.up()
+
+	pcall(function()
+		LineObject.reset(line_object)
+
+		for r = 1, #state.route_points do
+			local points = state.route_points[r]
+
+			if points then
+				for i = 1, #points - 1 do
+					local a = points[i]:unbox()
+					local b = points[i + 1]:unbox()
+					local diff = b - a
+					local distance = Vector3.length(diff)
+
+					if distance > 0.01 then
+						local direction = diff / distance
+						local perpendicular = Vector3.normalize(Vector3.cross(direction, up))
+						local half = ARROW_SIZE * 0.5
+						local travelled = ARROW_SPACING * 0.5
+
+						while travelled < distance do
+							local center = a + direction * travelled + Vector3(0, 0, ROUTE_Z_OFFSET)
+							local tip = center + direction * half
+							local back_left = center - direction * half + perpendicular * half
+							local back_right = center - direction * half - perpendicular * half
+
+							LineObject.add_segmented_line(
+								line_object,
+								color,
+								back_left,
+								tip,
+								ARROW_GAP,
+								ARROW_SUBDIVISIONS
+							)
+							LineObject.add_segmented_line(
+								line_object,
+								color,
+								back_right,
+								tip,
+								ARROW_GAP,
+								ARROW_SUBDIVISIONS
+							)
+
+							travelled = travelled + ARROW_SPACING
+						end
+					end
+				end
+			end
+		end
+
+		LineObject.dispatch(world, line_object)
+	end)
+end
+
+local function ensure_particle_group(world)
+	if state.particle_group then
+		return state.particle_group
+	end
+
+	local ok, group = pcall(World.create_particle_group, world)
+
+	if ok and group then
+		state.particle_group = group
+	end
+
+	return state.particle_group
+end
+
+local function spawn_particle_route()
+	local config = PARTICLE_FX[state.fx]
+	local world = state.world
+
+	if not (config and world) then
+		return
+	end
+
+	destroy_particles()
+
+	local group = ensure_particle_group(world)
+
+	if not group then
+		mod:info("[spillway_route] could not create a particle group for '%s'", state.fx)
+
+		return
+	end
+
+	local spawned = 0
+
+	for r = 1, #state.route_points do
+		local points = state.route_points[r]
+
+		if points then
+			walk_points(points, config.spacing, function(position)
+				local ok, id = pcall(
+					World.create_particles,
+					world,
+					config.path,
+					position + Vector3(0, 0, config.z),
+					nil,
+					nil,
+					group
+				)
+
+				if ok and id then
+					spawned = spawned + 1
+				end
+			end)
+		end
+	end
+
+	state.particle_timer = 0
+
+	if spawned > 0 then
+		mod:info("[spillway_route] spawned %d '%s' effects", spawned, state.fx)
+
+		state.stage = "done"
+
+		return
+	end
+
+	state.particle_wait = (state.particle_wait or 0) + 1
+
+	if state.particle_wait >= 5 then
+		mod:info("[spillway_route] '%s' effects unavailable, falling back to '%s'", state.fx, FX_DASHED)
+
+		state.fx = FX_DASHED
+		state.stage = "render"
+	end
+end
+
+local function update_render_stage(dt)
+	state.world = state.world or get_world()
+
+	if not state.world then
+		return
+	end
+
+	local fx = state.fx
+
+	if fx == FX_DASHED then
+		draw_line_route()
+	elseif fx == FX_ARROWS then
+		draw_arrow_route()
+	elseif fx == FX_DOTS then
+		draw_dot_route()
+	elseif PARTICLE_FX[fx] then
+		spawn_particle_route()
+	else
+		state.stage = "done"
+	end
+end
+
+local function update_done_stage(dt)
+	local config = PARTICLE_FX[state.fx]
+
+	if config then
+		state.particle_timer = (state.particle_timer or 0) + (dt or 0)
+
+		if state.particle_timer >= config.refresh then
+			state.particle_timer = 0
+
+			spawn_particle_route()
+		end
+	end
+end
+
+local function normalize_fx(fx)
+	if
+		fx == FX_DASHED
+		or fx == FX_ARROWS
+		or fx == FX_DOTS
+		or fx == FX_SMOKE
+		or fx == FX_FIRE
+		or fx == FX_ARC
+		or fx == FX_WARP
+		or fx == FX_BEACON
+		or fx == FX_OFF
+	then
+		return fx
+	end
+
+	return FX_DASHED
+end
+
+local function start_state(markers, fx)
+	state = {
+		world = get_world(),
+		markers = markers,
+		route_index = 1,
+		route_points = {},
+		units = {},
+		particles = {},
+		particle_group = nil,
+		particle_timer = 0,
+		particle_wait = 0,
+		astar = nil,
+		stage = "astar",
+		requested_fx = fx,
+		fx = fx,
+		line_object = nil,
+		line_object_world = nil,
+		package_requested = false,
+		package_wait = 0,
+		package_loaded = false,
+		package_failed = false,
+		package_id = nil,
+		attempts = 0,
+		wait_t = 0,
+		retry_delay = 0,
+		cache_checked = false,
+		nav_wait_logged = false,
+		nav_wait_logged_out = false,
+		query_from = nil,
+		query_to = nil,
+	}
+end
+
+mod.update_spillway_path_route = function(dt)
+	local enable = fs.enable
+	local fx = normalize_fx(fs.spillway_route_fx)
+
+	if not (enable and enable.spillway_path and enable.spillway_path_route) then
+		if state then
+			mod.reset_spillway_path_route()
+		end
+
+		return
+	end
+
+	if fx == FX_OFF then
+		if state then
+			mod.reset_spillway_path_route()
+		end
+
+		return
+	end
+
+	if state and state.requested_fx ~= fx then
+		mod.reset_spillway_path_route()
+	end
+
+	if not state then
+		local markers = mod.get_spillway_path_markers()
+
+		if not markers or #markers == 0 then
+			return
+		end
+
+		mod:info("[spillway_route] starting route generation with %d path markers (fx=%s)", #markers, fx)
+
+		start_state(markers, fx)
+	end
+
+	state.world = state.world or get_world()
+
+	if state.stage == "astar" then
+		update_astar_stage(state.markers, dt)
+	elseif state.stage == "package" then
+		update_package_stage(dt)
+	elseif state.stage == "render" then
+		update_render_stage(dt)
+	elseif state.stage == "done" then
+		update_done_stage(dt)
+	end
+end

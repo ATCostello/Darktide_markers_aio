@@ -27,12 +27,14 @@ mod.update_stolenrations_markers = function(self, marker)
 
 					marker.markers_aio_type = "event"
 
+					local pt = fs.per_type.event
+
 					mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-					marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+					marker.template.check_line_of_sight = pt.require_line_of_sight
 
-					marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
+					marker.template.max_distance = pt.max_distance
 
-					marker.template.screen_clamp = fs.rations_keep_on_screen
+					marker.template.screen_clamp = fs.event_keep_on_screen
 					marker.block_screen_clamp = false
 
 					marker.widget.content.icon = "content/ui/materials/icons/throwables/hud/rock_grenade"

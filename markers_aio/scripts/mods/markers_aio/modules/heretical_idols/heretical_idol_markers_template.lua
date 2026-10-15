@@ -197,8 +197,6 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 
 	marker.ignore_scale = false
 
-	local global_scale = marker.ignore_scale and 1 or marker.scale
-
 	local check_los = marker.aio_check_line_of_sight
 	if check_los == nil then
 		check_los = template.check_line_of_sight
@@ -217,42 +215,11 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 		line_of_sight_progress = 1
 	end
 
-	local default_size = template.min_size
-	local max_size = template.max_size
-	local ring_size = style.ring.size
-
-	ring_size[1] = (default_size[1] + (max_size[1] - default_size[1]) * scale_progress) * global_scale
-	ring_size[2] = (default_size[2] + (max_size[2] - default_size[2]) * scale_progress) * global_scale
-
-	local ping_min_size = template.ping_min_size
-	local ping_max_size = template.ping_max_size
-	local ping_style = style.ping
-	local ping_size = ping_style.size
-	local ping_speed = 7
-	local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
-	local ping_pulse_size_increase = ping_anim_progress * 15
-
-	ping_size[1] = (
-		ping_min_size[1]
-		+ (ping_max_size[1] - ping_min_size[1]) * scale_progress
-		+ ping_pulse_size_increase
-	) * global_scale
-	ping_size[2] = (
-		ping_min_size[2]
-		+ (ping_max_size[2] - ping_min_size[2]) * scale_progress
-		+ ping_pulse_size_increase
-	) * global_scale
-
-	local ping_pivot = ping_style.pivot
-
-	ping_pivot[1] = ping_size[1] * 0.5
-	ping_pivot[2] = ping_size[2] * 0.5
-
 	local icon_max_size = template.icon_max_size
 	local icon_min_size = template.icon_min_size
 	local background_max_size = template.background_max_size
 	local background_min_size = template.background_min_size
-	local icon_size = style.icon.size
+
 	local icon_style_size = style.icon.size
 	local bg_style_size = style.background.size
 
@@ -261,12 +228,16 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	icon_style_size[1] = i_sx * marker.scale
 	icon_style_size[2] = i_sy * marker.scale
 
-	local background_size = style.background.size
-
 	local b_sx = background_min_size[1] + (background_max_size[1] - background_min_size[1]) * scale_progress
 	local b_sy = background_min_size[2] + (background_max_size[2] - background_min_size[2]) * scale_progress
 	bg_style_size[1] = b_sx * marker.scale
 	bg_style_size[2] = b_sy * marker.scale
+
+	local ping_style = style.ping
+	local ping_size = ping_style.size
+	local ping_speed = 7
+	local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
+	local ping_pulse_size_increase = ping_anim_progress * 15
 
 	local ring_size = style.ring.size
 
@@ -292,9 +263,9 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 		data.distance = distance
 	end
 
-	local smart_tag_system = Managers.state.extension:system("smart_tag_system")
+	local smart_tag_system = mod.get_smart_tag_system()
 	local marker_unit = marker.unit
-	local is_tagged = marker_unit and smart_tag_system:unit_tag_id(marker_unit) ~= nil
+	local is_tagged = marker_unit and smart_tag_system and smart_tag_system:unit_tag_id(marker_unit) ~= nil
 
 	content.tagged = is_tagged
 	marker.block_fade_settings = is_tagged

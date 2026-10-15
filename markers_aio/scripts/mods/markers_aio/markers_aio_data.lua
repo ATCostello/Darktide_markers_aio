@@ -169,10 +169,48 @@ local distance_text_positions = {
 		value = "Center",
 	},
 }
+local spillway_route_fx_options = {
+	{
+		text = "dashed",
+		value = "dashed",
+	},
+	{
+		text = "arrows",
+		value = "arrows",
+	},
+	{
+		text = "dots",
+		value = "dots",
+	},
+	--[[{
+		text = mod:localize("spillway_route_fx_smoke"),
+		value = "smoke",
+	},
+	{
+		text = mod:localize("spillway_route_fx_fire"),
+		value = "fire",
+	},
+	{
+		text = mod:localize("spillway_route_fx_arc"),
+		value = "arc",
+	},
+	{
+		text = mod:localize("spillway_route_fx_warp"),
+		value = "warp",
+	},
+	{
+		text = mod:localize("spillway_route_fx_beacon"),
+		value = "beacon",
+	},]]
+	{
+		text = "off",
+		value = "off",
+	},
+}
 return {
 	name = mod:localize("mod_name"),
 	description = mod:localize("mod_description"),
-	is_togglable = false,
+	is_togglable = true,
 	options = {
 		widgets = {
 
@@ -2018,6 +2056,109 @@ return {
 						type = "dropdown",
 						options = border_colours,
 						default_value = "Gold",
+						tooltip = "border_colour_tooltip",
+					},
+				},
+			},
+
+			-- SPILLWAY PATH
+			{
+
+				setting_id = "spillway_path_markers_settings",
+				type = "group",
+				tab = mod:localize("tab_spillway_path"),
+				sub_widgets = {
+					{
+						setting_id = "spillway_path_enable",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "enable_tooltip",
+					},
+					{
+						setting_id = "spillway_path_route_enable",
+						type = "checkbox",
+						default_value = true,
+						tooltip = "route_enable_tooltip",
+					},
+					{
+						setting_id = "spillway_path_route_fx",
+						type = "dropdown",
+						options = spillway_route_fx_options,
+						default_value = "dashed",
+						tooltip = "spillway_path_route_fx_tooltip",
+					},
+					{
+						setting_id = "spillway_path_keep_on_screen",
+						type = "checkbox",
+						default_value = false,
+						tooltip = "keep_on_screen_tooltip",
+					},
+					{
+						setting_id = "spillway_path_require_line_of_sight",
+						type = "checkbox",
+						default_value = false,
+						tooltip = "require_line_of_sight_tooltip",
+					},
+					{
+						setting_id = "spillway_path_max_distance",
+						type = "numeric",
+						default_value = 100,
+						range = { 0, 500 },
+						step_size_value = 1,
+						tooltip = "max_distance_tooltip",
+					},
+					{
+						setting_id = "spillway_path_scale",
+						type = "numeric",
+						default_value = 100,
+						range = { 50, 150 },
+						step_size_value = 1,
+						tooltip = "scale_tooltip",
+					},
+					{
+						setting_id = "spillway_path_alpha",
+						type = "numeric",
+						default_value = 1,
+						range = { 0.1, 1 },
+						decimals_number = 2,
+						step_size_value = 0.05,
+						tooltip = "alpha_tooltip",
+					},
+					{
+						setting_id = "spillway_path_colour",
+						type = "group",
+						sub_widgets = {
+							{
+								setting_id = "spillway_path_colour_R",
+								type = "numeric",
+								default_value = 0,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_R_tooltip",
+							},
+							{
+								setting_id = "spillway_path_colour_G",
+								type = "numeric",
+								default_value = 255,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_G_tooltip",
+							},
+							{
+								setting_id = "spillway_path_colour_B",
+								type = "numeric",
+								default_value = 0,
+								range = { 0, 255 },
+								step_size_value = 1,
+								tooltip = "colour_B_tooltip",
+							},
+						},
+					},
+					{
+						setting_id = "spillway_path_border_colour",
+						type = "dropdown",
+						options = border_colours,
+						default_value = "Steel",
 						tooltip = "border_colour_tooltip",
 					},
 				},

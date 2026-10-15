@@ -29,23 +29,19 @@ mod.update_luggable_markers = function(self, marker)
 
 			marker.markers_aio_type = "luggable"
 
-			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
-			marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+			local pt = fs.per_type.luggable
 
-			marker.template.max_distance = fs.per_type[marker.markers_aio_type].max_distance
-			marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
+			mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
+			marker.template.check_line_of_sight = pt.require_line_of_sight
+
+			marker.template.max_distance = pt.max_distance
+			marker.template.screen_clamp = pt.keep_on_screen
 			marker.block_screen_clamp = false
 
 			marker.widget.content.icon = fs.luggable_icon
 
 			mod.set_colour(marker.widget.style.ring.color, mod.lookup_colour(fs.luggable_border_colour))
-			mod.set_colour_argb(
-				marker.widget.style.icon.color,
-				255,
-				fs.per_type[marker.markers_aio_type].colour_R,
-				fs.per_type[marker.markers_aio_type].colour_G,
-				fs.per_type[marker.markers_aio_type].colour_B
-			)
+			mod.set_colour_argb(marker.widget.style.icon.color, 255, pt.colour_R, pt.colour_G, pt.colour_B)
 		end
 	end
 end

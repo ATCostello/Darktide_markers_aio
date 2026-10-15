@@ -1,6 +1,8 @@
 local mod = get_mod("markers_aio")
 local fs = mod.frame_settings
 
+local temp_colour = { 255, 255, 255, 255 }
+
 mod.update_objective_markers = function(self, marker)
 	if not marker or not marker.type then
 		return
@@ -36,12 +38,11 @@ mod.update_objective_markers = function(self, marker)
 	marker.template.screen_clamp = pt.keep_on_screen
 	marker.block_screen_clamp = false
 
-	local colour = {
-		255,
-		pt.colour_R or 255,
-		pt.colour_G or 255,
-		pt.colour_B or 255,
-	}
+	local colour = temp_colour
+	colour[1] = 255
+	colour[2] = pt.colour_R or 255
+	colour[3] = pt.colour_G or 255
+	colour[4] = pt.colour_B or 255
 
 	if widget.style.icon then
 		mod.set_colour(widget.style.icon.color, colour)

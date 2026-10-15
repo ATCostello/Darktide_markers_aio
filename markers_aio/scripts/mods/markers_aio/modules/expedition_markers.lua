@@ -45,6 +45,12 @@ local expedition_pickup_types = {
 	"expedition_dataslate_key",
 }
 
+local expedition_pickup_type_set = {}
+
+for i = 1, #expedition_pickup_types do
+	expedition_pickup_type_set[expedition_pickup_types[i]] = true
+end
+
 mod.update_expedition_markers = function(self, marker)
 	if marker and self then
 		local unit = marker.unit
@@ -52,14 +58,7 @@ mod.update_expedition_markers = function(self, marker)
 		local pickup_type = mod.get_marker_pickup_type(marker)
 
 		-- filter out unwanted
-		local pickup_found = false
-		for i = 1, #expedition_pickup_types do
-			if pickup_type == expedition_pickup_types[i] then
-				pickup_found = true
-			end
-		end
-
-		if not pickup_found then
+		if not pickup_type or not expedition_pickup_type_set[pickup_type] then
 			return
 		end
 
@@ -70,16 +69,18 @@ mod.update_expedition_markers = function(self, marker)
 
 		marker.markers_aio_type = "expedition"
 
+		local pt = fs.per_type.expedition
+
 		mod.set_colour(marker.widget.style.background.color, mod.lookup_colour(fs.marker_background_colour))
 
-		marker.template.check_line_of_sight = fs.per_type[marker.markers_aio_type].require_line_of_sight
+		marker.template.check_line_of_sight = pt.require_line_of_sight
 
-		local max_distance = fs.per_type[marker.markers_aio_type].max_distance
+		local max_distance = pt.max_distance
 		marker.template.max_distance = max_distance
 		marker.max_distance = max_distance
 		self.max_distance = max_distance
 
-		marker.template.screen_clamp = fs.per_type[marker.markers_aio_type].keep_on_screen
+		marker.template.screen_clamp = pt.keep_on_screen
 		marker.block_screen_clamp = false
 
 		-- set options based on grouping
