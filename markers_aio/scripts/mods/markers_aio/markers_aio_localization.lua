@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.16.0"
+mod.version = "2.16.1"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -4000,6 +4000,12 @@ local loc = {
 		ru = "Визуальный стиль, используемый для отрисовки маршрутов Spillway между нумерованными маркерами пути.\nПунктирная линия, Стрелки, Точки: линии без дополнительных ресурсов.\nДым, Пламя, Молнии, Варп, Маяки: эффекты частиц вдоль маршрута (загружают пакет эффекта; при недоступности заменяются пунктиром).",
 		["zh-cn"] = "用于绘制 Spillway 编号路径标记之间路线的视���样式。\n虚线、箭头、圆点：无需额外资源。\n烟雾、火焰、闪电、灵能、信标：沿路线放置的粒子效果（加载效果资源包，不可用时回退为虚线）。",
 		["zh-tw"] = "用於繪製 Spillway 編號路徑標記之間路線的視覺樣式。\n虛線、箭頭、圓點：無需額外資源。\n煙霧、火焰、閃電、靈能、信標：沿路線放置的粒子效果（載入效果資源包，不可用時回退為虛線）。",
+	},
+	spillway_path_route_thickness_tooltip = {
+		en = "Thickness of the safe path route decals. (On Spillway map)",
+		ru = "Толщина линий маршрута безопасного пути. (На карте Spillway)",
+		["zh-cn"] = "安全路径路线贴花的粗细。（Spillway 地图）",
+		["zh-tw"] = "安全路徑路線貼花的粗細。（Spillway 地圖）",
 	},
 	los_fade_enable_tooltip = {
 		en = "Fade out markers that are behind a world object/out of line of sight? Only takes effect if 'Require Line of Sight' is disabled.",

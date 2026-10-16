@@ -120,6 +120,7 @@ mod.build_frame_settings = function()
 	fs.enable.spillway_path = mod:get("spillway_path_enable")
 	fs.enable.spillway_path_route = mod:get("spillway_path_route_enable")
 	fs.spillway_route_fx = mod:get("spillway_path_route_fx")
+	fs.spillway_path_route_thickness = mod:get("spillway_path_route_thickness")
 
 	fs.marker_background_colour = mod:get("marker_background_colour")
 	fs.font_type = mod:get("font_type")

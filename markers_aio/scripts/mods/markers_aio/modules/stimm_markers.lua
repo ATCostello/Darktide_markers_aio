@@ -159,16 +159,11 @@ end
 -- update player weapon stimm icon colour
 mod:hook_safe(CLASS.HudElementPlayerWeapon, "update", function(self, dt, t, ui_renderer)
 	local weapon_name = self._weapon_name
-	local version = mod._settings_version
+	local widget = self._widgets_by_name.icon
 
-	if self._aio_stimm_weapon == weapon_name and self._aio_stimm_version == version then
+	if not widget then
 		return
 	end
-
-	self._aio_stimm_weapon = weapon_name
-	self._aio_stimm_version = version
-
-	local widget = self._widgets_by_name.icon
 
 	if weapon_name == "content/items/pocketable/syringe_power_boost_pocketable" then
 		if mod.RecolorStimms then
@@ -243,15 +238,12 @@ end)
 -- update team panel stimm icon colour
 local PlayerUnitVisualLoadout = require("scripts/extension_systems/visual_loadout/utilities/player_unit_visual_loadout")
 
-local stimm_team_colour_state = {}
-
 mod:hook_safe(
 	CLASS.HudElementTeamPanelHandler,
 	"update",
 	function(self, dt, t, ui_renderer, render_settings, input_service)
 		local players = Managers.player:players()
 		local player_panels_array = self._player_panels_array
-		local version = mod._settings_version
 
 		for _, player in pairs(players) do
 			local player_unit = player.player_unit
@@ -264,13 +256,8 @@ mod:hook_safe(
 				if item then
 					local weapon_name = item.name
 					local account_id = player._account_id
-					local state = account_id and stimm_team_colour_state[account_id]
-					local changed = not account_id
-						or not state
-						or state.version ~= version
-						or state.weapon ~= weapon_name
 
-					if changed then
+					do
 						-- grab stim widget for player
 						for _, panel_array in pairs(player_panels_array) do
 							if panel_array.player._account_id == account_id then
@@ -384,12 +371,6 @@ mod:hook_safe(
 									end
 								end
 							end
-						end
-						if account_id then
-							stimm_team_colour_state[account_id] = {
-								version = version,
-								weapon = weapon_name,
-							}
 						end
 					end
 				end

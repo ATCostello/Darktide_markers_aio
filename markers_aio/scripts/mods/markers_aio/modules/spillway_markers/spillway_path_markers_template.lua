@@ -38,10 +38,13 @@ local function find_marker_by_order(parent, order)
 	if markers then
 		for i = 1, #markers do
 			local marker = markers[i]
-			local data = marker and marker.data
 
-			if data and data.spillway_order == order then
-				return marker
+			if marker and marker.type == "spillway_path_marker" then
+				local data = marker.data
+
+				if data and data.spillway_order == order then
+					return marker
+				end
 			end
 		end
 	end

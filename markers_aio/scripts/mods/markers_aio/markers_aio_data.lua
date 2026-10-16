@@ -2087,6 +2087,15 @@ return {
 						default_value = "dashed",
 						tooltip = "spillway_path_route_fx_tooltip",
 					},
+					--[[{
+						setting_id = "spillway_path_route_thickness",
+						type = "numeric",
+						default_value = 1,
+						range = { 1, 4 },
+						decimals_number = 1,
+						step_size_value = 0.5,
+						tooltip = "spillway_path_route_thickness_tooltip",
+					},]]
 					{
 						setting_id = "spillway_path_keep_on_screen",
 						type = "checkbox",
