@@ -254,11 +254,41 @@ mod.get_spillway_route_legs = function()
 			local from_entry = path[j]
 			local to_entry = path[j + 1]
 
+			local crossroad_id = from_entry.crossroads_id or to_entry.crossroads_id
+			local road_id = from_entry.road_id or to_entry.road_id
+
+			if crossroad_id == nil then
+				local from_cross = from_entry.crossroads
+				local to_cross = to_entry.crossroads
+
+				if type(from_cross) == "string" and from_cross ~= "" then
+					local cid, rid = string.match(from_cross, "^(.-):(.*)$")
+					crossroad_id = cid or crossroad_id
+					road_id = road_id or tonumber(rid)
+				end
+
+				if type(to_cross) == "string" and to_cross ~= "" and crossroad_id == nil then
+					local cid = string.match(to_cross, "^(.-):.*$")
+					crossroad_id = cid
+				end
+			end
+
+			local path_label
+
+			if crossroad_id and road_id then
+				path_label = tostring(crossroad_id) .. ":" .. tostring(road_id)
+			elseif crossroad_id then
+				path_label = tostring(crossroad_id)
+			end
+
 			legs[#legs + 1] = {
 				from = from_entry,
 				to = to_entry,
 				from_order = from_entry.order,
 				to_order = to_entry.order,
+				crossroad_id = crossroad_id,
+				road_id = road_id,
+				path_label = path_label,
 			}
 		end
 	end
