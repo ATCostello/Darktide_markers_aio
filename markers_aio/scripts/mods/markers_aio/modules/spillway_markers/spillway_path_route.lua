@@ -2,9 +2,6 @@ local mod = get_mod("markers_aio")
 
 local fs = mod.frame_settings
 
-local NavQueries = require("scripts/utilities/nav_queries")
-local Navigation = require("scripts/extension_systems/navigation/utilities/navigation")
-
 local RUN_CACHE = false
 
 local FX_DASHED = "dashed"
@@ -63,24 +60,13 @@ local PARTICLE_FX = {
 local ROUTE_Z_OFFSET = 0.5
 local PACKAGE_REFERENCE = "markers_aio_spillway_route"
 local PACKAGE_LOAD_TIMEOUT = 10
-local MIN_POINT_SPACING = 0.5
-local NAV_CHECK_ABOVE = 2
-local NAV_CHECK_BELOW = 4
-local NAV_WAIT_MAX = 20
-local SPARSE_GRACE = 8
-local ROUTE_MAX_ATTEMPTS = 6
-local ROUTE_RETRY_DELAY = 1
-local CACHE_KEY = "spillway_route_cache"
-local CACHE_VERSION = 1
-local CACHE_MAX_ENTRIES = 64
-local CACHE_TOLERANCE = 10
+local CACHE_TOLERANCE = 1
+local SEED_VERSION = 1
 local SEED_MODULE = "markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_route_seed"
-local SEED_WRITE_PATH = "./../mods/markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_route_seed.lua"
+local SEED_WRITE_PATH =
+	"./../mods/markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_route_seed.lua"
 local WAYPOINT_KEY = "spillway_route_waypoints"
 local WAYPOINT_VERSION = 1
-local WAYPOINT_SEED_MODULE = "markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_route_waypoints_seed"
-local WAYPOINT_SEED_WRITE_PATH = "./../mods/markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_route_waypoints_seed.lua"
-local DRIVE_NAV_ASYNC = true
 local state
 
 local function get_world()
@@ -117,54 +103,6 @@ local function get_route_color()
 	local r, g, b, a = get_route_rgba()
 
 	return Color(a, r, g, b)
-end
-
-local _fallback_traverse_logic
-local _fallback_nav_tag_cost_table
-local _fallback_nav_world
-
-local function destroy_fallback_traverse_logic()
-	if _fallback_traverse_logic then
-		GwNavTraverseLogic.destroy(_fallback_traverse_logic)
-		_fallback_traverse_logic = nil
-	end
-
-	if _fallback_nav_tag_cost_table then
-		GwNavTagLayerCostTable.destroy(_fallback_nav_tag_cost_table)
-		_fallback_nav_tag_cost_table = nil
-	end
-
-	_fallback_nav_world = nil
-end
-
-local function get_nav_context()
-	local nav_mesh = Managers.state.nav_mesh
-
-	if not nav_mesh then
-		return
-	end
-
-	local nav_world = nav_mesh:nav_world()
-
-	if not nav_world then
-		return
-	end
-
-	local traverse_logic = nav_mesh.client_traverse_logic and nav_mesh:client_traverse_logic()
-
-	if not traverse_logic then
-		destroy_fallback_traverse_logic()
-
-		_fallback_traverse_logic, _fallback_nav_tag_cost_table =
-			Navigation.create_traverse_logic(nav_world, {}, nil, false)
-		_fallback_nav_world = nav_world
-
-		traverse_logic = _fallback_traverse_logic
-	end
-
-	if nav_world and traverse_logic then
-		return nav_world, traverse_logic
-	end
 end
 
 local function entry_position(entry)
@@ -235,10 +173,6 @@ end
 
 local function destroy_state()
 	if state then
-		if state.astar then
-			GwNavAStar.destroy(state.astar)
-		end
-
 		destroy_line_object()
 		destroy_units()
 		destroy_particles()
@@ -249,8 +183,6 @@ local function destroy_state()
 	end
 
 	state = nil
-
-	destroy_fallback_traverse_logic()
 end
 
 mod.reset_spillway_path_route = function()
@@ -281,163 +213,42 @@ local function pos_matches(a, b)
 		and math.abs(a.z - b.z) <= CACHE_TOLERANCE * 2
 end
 
-local function cache_entries()
-	local ok, cache = pcall(mod.get, mod, CACHE_KEY)
-
-	if not ok or type(cache) ~= "table" or cache.version ~= CACHE_VERSION then
-		return {}
-	end
-
-	return type(cache.entries) == "table" and cache.entries or {}
-end
-
 local _seed_entries
 
 local function seed_entries()
 	if _seed_entries == nil then
 		local data = mod:io_dofile(SEED_MODULE)
+		local entries = {}
 
-		if type(data) == "table" and data.version == CACHE_VERSION and type(data.entries) == "table" then
-			_seed_entries = data.entries
-		else
-			_seed_entries = {}
+		if type(data) == "table" and type(data.entries) == "table" then
+			for i = 1, #data.entries do
+				entries[#entries + 1] = data.entries[i]
+			end
 		end
 
-		if #_seed_entries > 0 then
-			mod:info("[spillway_route] loaded %d pre-calculated route(s) from the seed file", #_seed_entries)
+		if #entries > 0 then
+			mod:info("[spillway_route] loaded %d route(s) from the seed file", #entries)
 		end
+
+		_seed_entries = entries
 	end
 
 	return _seed_entries
 end
 
-local function find_in(entries, from_table, to_table)
+local function find_route_entry(from_table, to_table)
+	local entries = seed_entries()
+
 	for i = 1, #entries do
 		local entry = entries[i]
 
-		if
-			entry
-			and pos_matches(entry.from, from_table)
-			and pos_matches(entry.to, to_table)
-			and type(entry.points) == "table"
-			and #entry.points >= 2
-		then
+		if entry and pos_matches(entry.from, from_table) and pos_matches(entry.to, to_table) then
 			return entry
 		end
 	end
 
 	return nil
 end
-
-local function cache_lookup(from_table, to_table)
-	local seeded = find_in(seed_entries(), from_table, to_table)
-
-	if seeded then
-		return seeded
-	end
-
-	return find_in(cache_entries(), from_table, to_table)
-end
-
-local function cache_store(from_table, to_table, points, metadata)
-	if not RUN_CACHE then
-		return
-	end
-
-	local old = cache_entries()
-	local entries = {}
-	local mission = get_mission_name()
-
-	for i = 1, #old do
-		local entry = old[i]
-
-		if
-			not (
-				entry
-				and entry.mission == mission
-				and pos_matches(entry.from, from_table)
-				and pos_matches(entry.to, to_table)
-			)
-		then
-			entries[#entries + 1] = entry
-		end
-	end
-
-	local stored = {
-		mission = mission,
-		from = from_table,
-		to = to_table,
-		points = points,
-	}
-
-	if type(metadata) == "table" then
-		if metadata.path_label then
-			stored.path_label = metadata.path_label
-		end
-		if metadata.label then
-			stored.label = metadata.label
-		end
-		if metadata.crossroad_id then
-			stored.crossroad_id = metadata.crossroad_id
-		end
-		if metadata.road_id then
-			stored.road_id = metadata.road_id
-		end
-		if metadata.from_order then
-			stored.from_order = metadata.from_order
-		end
-		if metadata.to_order then
-			stored.to_order = metadata.to_order
-		end
-		if metadata.route_index then
-			stored.route_index = metadata.route_index
-		end
-	end
-
-	entries[#entries + 1] = stored
-
-	while #entries > CACHE_MAX_ENTRIES do
-		table.remove(entries, 1)
-	end
-
-	pcall(mod.set, mod, CACHE_KEY, {
-		version = CACHE_VERSION,
-		entries = entries,
-	})
-end
-
-local function merged_entries()
-	local result = {}
-
-	local function add(entries)
-		for i = 1, #entries do
-			local entry = entries[i]
-
-			if entry and entry.from and entry.to and type(entry.points) == "table" and #entry.points >= 2 then
-				local duplicate = false
-
-				for j = 1, #result do
-					if pos_matches(result[j].from, entry.from) and pos_matches(result[j].to, entry.to) then
-						duplicate = true
-
-						break
-					end
-				end
-
-				if not duplicate then
-					result[#result + 1] = entry
-				end
-			end
-		end
-	end
-
-	add(seed_entries())
-	add(cache_entries())
-
-	return result
-end
-
-local _waypoint_seed_entries
 
 local function waypoint_entries()
 	local ok, data = pcall(mod.get, mod, WAYPOINT_KEY)
@@ -447,24 +258,6 @@ local function waypoint_entries()
 	end
 
 	return type(data.entries) == "table" and data.entries or {}
-end
-
-local function waypoint_seed_entries()
-	if _waypoint_seed_entries == nil then
-		local data = mod:io_dofile(WAYPOINT_SEED_MODULE)
-
-		if type(data) == "table" and data.version == WAYPOINT_VERSION and type(data.entries) == "table" then
-			_waypoint_seed_entries = data.entries
-		else
-			_waypoint_seed_entries = {}
-		end
-
-		if #_waypoint_seed_entries > 0 then
-			mod:info("[spillway_route] loaded %d mapped waypoint override(s) from the seed file", #_waypoint_seed_entries)
-		end
-	end
-
-	return _waypoint_seed_entries
 end
 
 local function find_waypoint_entry(entries, from_table, to_table)
@@ -487,14 +280,16 @@ local function save_waypoint_entries(entries)
 end
 
 local function leg_waypoints(from_table, to_table)
-	local entry = find_waypoint_entry(waypoint_seed_entries(), from_table, to_table)
+	local session = find_waypoint_entry(waypoint_entries(), from_table, to_table)
 
-	if not entry then
-		entry = find_waypoint_entry(waypoint_entries(), from_table, to_table)
+	if session and type(session.points) == "table" and #session.points > 0 then
+		return session.points
 	end
 
-	if entry and type(entry.points) == "table" and #entry.points > 0 then
-		return entry.points
+	local route_entry = find_route_entry(from_table, to_table)
+
+	if route_entry and type(route_entry.waypoints) == "table" and #route_entry.waypoints > 0 then
+		return route_entry.waypoints
 	end
 
 	return nil
@@ -517,7 +312,7 @@ end
 local function build_seed_source(entries, version)
 	local lines = {
 		"return {",
-		"\tversion = " .. (version or CACHE_VERSION) .. ",",
+		"\tversion = " .. (version or SEED_VERSION) .. ",",
 		"\tentries = {",
 	}
 
@@ -554,7 +349,15 @@ local function build_seed_source(entries, version)
 
 		lines[#lines + 1] = "\t\t\tfrom = " .. format_vec(entry.from) .. ","
 		lines[#lines + 1] = "\t\t\tto = " .. format_vec(entry.to) .. ","
-		lines[#lines + 1] = "\t\t\tpoints = " .. format_points(entry.points) .. ","
+
+		if type(entry.points) == "table" and #entry.points > 0 then
+			lines[#lines + 1] = "\t\t\tpoints = " .. format_points(entry.points) .. ","
+		end
+
+		if type(entry.waypoints) == "table" and #entry.waypoints > 0 then
+			lines[#lines + 1] = "\t\t\twaypoints = " .. format_points(entry.waypoints) .. ","
+		end
+
 		lines[#lines + 1] = "\t\t},"
 	end
 
@@ -565,62 +368,15 @@ local function build_seed_source(entries, version)
 	return table.concat(lines, "\n")
 end
 
-mod.export_spillway_route_cache = function()
-	if not RUN_CACHE then
-		return
-	end
-
-	local entries = merged_entries()
-
-	if #entries == 0 then
-		mod:echo("No cached Spillway routes to export yet.")
-
-		return
-	end
-
-	local source = build_seed_source(entries)
-	local ok, err = pcall(function()
-		local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
-
-		if not file then
-			error("could not open " .. SEED_WRITE_PATH)
-		end
-
-		file:write(source)
-		file:close()
-	end)
-
-	if ok then
-		mod:info("[spillway_route] exported %d route(s) to %s", #entries, SEED_WRITE_PATH)
-		mod:echo(string.format("Exported %d Spillway route(s) to the mod's seed file.", #entries))
-	else
-		mod:info("[spillway_route] export failed (%s); dumping source below", tostring(err))
-		mod:echo("Could not write the seed file; dumping route source to the log instead.")
-
-		for line in string.gmatch(source, "[^\n]+") do
-			mod:info("[spillway_route][seed] %s", line)
-		end
-	end
-end
-
-if RUN_CACHE then
-	mod:command("spillway_route_export", "Export cached Spillway route paths so they can ship with the mod", function()
-		mod.export_spillway_route_cache()
-	end)
-end
-
 mod.clear_spillway_route_cache = function()
 	if not RUN_CACHE then
 		return
 	end
 
-	local cached_count = #cache_entries()
+	local session_count = #waypoint_entries()
 	local seeded_count = #seed_entries()
 
-	pcall(mod.set, mod, CACHE_KEY, {
-		version = CACHE_VERSION,
-		entries = {},
-	})
+	save_waypoint_entries({})
 
 	_seed_entries = {}
 
@@ -637,25 +393,34 @@ mod.clear_spillway_route_cache = function()
 
 	mod.reset_spillway_path_route()
 
-	mod:info("[spillway_route] cleared %d cached and %d seeded route(s)", cached_count, seeded_count)
+	mod:info(
+		"[spillway_route] cleared %d session waypoint group(s) and %d seeded route(s)",
+		session_count,
+		seeded_count
+	)
 
 	if file_ok then
-		mod:echo(string.format("Cleared %d cached and %d seeded Spillway route(s).", cached_count, seeded_count))
+		mod:echo(
+			string.format("Cleared %d session waypoint group(s) and %d seeded route(s).", session_count, seeded_count)
+		)
 	else
 		mod:echo(
 			string.format(
-				"Cleared %d cached and %d seeded Spillway route(s). Could not reset the seed file (in-memory only).",
-				cached_count,
-				seeded_count
+				"Cleared %d session waypoint group(s). Seed file reset failed (in-memory only).",
+				session_count
 			)
 		)
 	end
 end
 
 if RUN_CACHE then
-	mod:command("spillway_route_clear", "Clear all stored Spillway route paths and start fresh", function()
-		mod.clear_spillway_route_cache()
-	end)
+	mod:command(
+		"spillway_route_clear",
+		"Clear session waypoints and reset the Spillway route seed file to empty",
+		function()
+			mod.clear_spillway_route_cache()
+		end
+	)
 end
 
 local function get_player_position()
@@ -674,6 +439,22 @@ local function get_player_position()
 
 	return Vector3(position.x, position.y, position.z)
 end
+
+mod:command("pos_dump", "Copy your current position to the clipboard in seed-table format", function()
+	local point = get_player_position()
+
+	if not point then
+		mod:echo("Player position is not available.")
+
+		return
+	end
+
+	local text = format_vec(point)
+
+	mod:info("[spillway_route] pos_dump %s", text)
+	mod:echo(text)
+	Clipboard.put(text)
+end)
 
 local function distance_to_segment(point, a, b)
 	local ab = b - a
@@ -738,7 +519,12 @@ local function select_leg(legs, point, arg1, arg2)
 end
 
 local function describe_leg(leg, leg_index)
-	return string.format("leg %s (marker %s -> %s)", tostring(leg_index), tostring(leg.from_order), tostring(leg.to_order))
+	return string.format(
+		"leg %s (marker %s -> %s)",
+		tostring(leg_index),
+		tostring(leg.from_order),
+		tostring(leg.to_order)
+	)
 end
 
 if RUN_CACHE then
@@ -782,6 +568,14 @@ if RUN_CACHE then
 					to = to_key,
 					points = {},
 				}
+
+				local route_entry = find_route_entry(from_key, to_key)
+
+				if route_entry and type(route_entry.waypoints) == "table" then
+					for i = 1, #route_entry.waypoints do
+						entry.points[#entry.points + 1] = route_entry.waypoints[i]
+					end
+				end
 
 				entries[#entries + 1] = entry
 			end
@@ -842,7 +636,7 @@ if RUN_CACHE then
 			local entry, entry_index = find_waypoint_entry(entries, from_key, to_key)
 
 			if not (entry and type(entry.points) == "table" and #entry.points > 0) then
-				if find_waypoint_entry(waypoint_seed_entries(), from_key, to_key) then
+				if leg_waypoints(from_key, to_key) then
 					mod:echo("That leg's waypoints come from the seed file, not from this session.")
 				else
 					mod:echo("No saved waypoints on that leg.")
@@ -863,7 +657,13 @@ if RUN_CACHE then
 
 			mod.reset_spillway_path_route()
 
-			mod:echo(string.format("Removed last waypoint from %s. %d waypoint(s) remain.", describe_leg(leg, leg_index), remaining))
+			mod:echo(
+				string.format(
+					"Removed last waypoint from %s. %d waypoint(s) remain.",
+					describe_leg(leg, leg_index),
+					remaining
+				)
+			)
 		end
 	)
 
@@ -907,206 +707,188 @@ if RUN_CACHE then
 		end
 	end)
 
-	mod:command("spillway_route_legs_list", "List the current Spillway route legs with their index, marker orders and pinned waypoint count", function()
-		local legs = mod.get_spillway_route_legs()
+	mod:command(
+		"spillway_route_legs_list",
+		"List the current Spillway route legs with their index, marker orders and pinned waypoint count",
+		function()
+			local legs = mod.get_spillway_route_legs()
 
-		if not legs or #legs == 0 then
-			mod:echo("No Spillway route legs available right now.")
+			if not legs or #legs == 0 then
+				mod:echo("No Spillway route legs available right now.")
 
-			return
-		end
-
-		for i = 1, #legs do
-			local leg = legs[i]
-			local count = 0
-
-			if leg and leg.from and leg.to then
-				local waypoints = leg_waypoints(vec_to_table(entry_position(leg.from)), vec_to_table(entry_position(leg.to)))
-
-				count = waypoints and #waypoints or 0
+				return
 			end
 
-			mod:echo(
-				string.format(
-					"leg %d: marker %s -> %s (%d waypoint(s))",
-					i,
-					tostring(leg and leg.from_order),
-					tostring(leg and leg.to_order),
-					count
+			for i = 1, #legs do
+				local leg = legs[i]
+				local count = 0
+
+				if leg and leg.from and leg.to then
+					local waypoints =
+						leg_waypoints(vec_to_table(entry_position(leg.from)), vec_to_table(entry_position(leg.to)))
+
+					count = waypoints and #waypoints or 0
+				end
+
+				mod:echo(
+					string.format(
+						"leg %d: marker %s -> %s (%d waypoint(s))",
+						i,
+						tostring(leg and leg.from_order),
+						tostring(leg and leg.to_order),
+						count
+					)
 				)
-			)
+			end
 		end
-	end)
+	)
 end
 
-mod.export_spillway_route_waypoints = function()
-	local entries = waypoint_entries()
-
-	if #entries == 0 then
-		mod:echo("No saved Spillway waypoints to export yet.")
-
-		return
+mod.save_spillway_route = function(leg)
+	if not leg or not (leg.from and leg.to) then
+		return false, "Could not find a route leg to save."
 	end
 
-	local source = build_seed_source(entries, WAYPOINT_VERSION)
+	local from_key = vec_to_table(entry_position(leg.from))
+	local to_key = vec_to_table(entry_position(leg.to))
+	local session = find_waypoint_entry(waypoint_entries(), from_key, to_key)
+	local route_entry = find_route_entry(from_key, to_key)
+	local waypoints
+
+	if session and type(session.points) == "table" and #session.points > 0 then
+		waypoints = session.points
+	elseif route_entry and type(route_entry.waypoints) == "table" and #route_entry.waypoints > 0 then
+		waypoints = route_entry.waypoints
+	end
+
+	if not waypoints or #waypoints == 0 then
+		return false, "That route has no waypoints to save. Pin waypoints first."
+	end
+
+	local entries = seed_entries()
+	local target
+
+	for i = 1, #entries do
+		if entries[i] and pos_matches(entries[i].from, from_key) and pos_matches(entries[i].to, to_key) then
+			target = entries[i]
+
+			break
+		end
+	end
+
+	if not target then
+		target = {
+			mission = get_mission_name(),
+			from = from_key,
+			to = to_key,
+		}
+
+		entries[#entries + 1] = target
+	end
+
+	target.waypoints = {}
+
+	for i = 1, #waypoints do
+		target.waypoints[i] = {
+			x = waypoints[i].x,
+			y = waypoints[i].y,
+			z = waypoints[i].z,
+		}
+	end
+
+	target.from_order = target.from_order or leg.from_order
+	target.to_order = target.to_order or leg.to_order
+	target.crossroad_id = target.crossroad_id or leg.crossroad_id
+	target.road_id = target.road_id or leg.road_id
+
+	if not target.label then
+		if target.crossroad_id and target.road_id then
+			target.label = tostring(target.crossroad_id) .. tostring(target.road_id)
+		elseif target.from_order and target.to_order then
+			target.label = tostring(target.from_order) .. "->" .. tostring(target.to_order)
+		end
+	end
+
+	if type(target.points) ~= "table" then
+		target.points = {}
+	end
+
+	local source = build_seed_source(entries)
 	local ok, err = pcall(function()
-		local file = Mods.lua.io.open(WAYPOINT_SEED_WRITE_PATH, "w")
+		local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
 
 		if not file then
-			error("could not open " .. WAYPOINT_SEED_WRITE_PATH)
+			error("could not open " .. SEED_WRITE_PATH)
 		end
 
 		file:write(source)
 		file:close()
 	end)
 
-	if ok then
-		_waypoint_seed_entries = nil
-
-		mod:info("[spillway_route] exported %d waypoint group(s) to %s", #entries, WAYPOINT_SEED_WRITE_PATH)
-		mod:echo(string.format("Exported %d waypoint group(s) to the mod's waypoint seed file.", #entries))
-	else
-		mod:info("[spillway_route] waypoint export failed (%s); dumping source below", tostring(err))
-		mod:echo("Could not write the waypoint seed file; dumping source to the log instead.")
+	if not ok then
+		mod:info("[spillway_route] route save failed (%s); dumping source below", tostring(err))
+		mod:echo("Could not write the seed file; dumping route source to the log instead.")
 
 		for line in string.gmatch(source, "[^\n]+") do
-			mod:info("[spillway_route][waypoints] %s", line)
+			mod:info("[spillway_route][seed] %s", line)
 		end
+
+		return false, tostring(err)
 	end
+
+	_seed_entries = nil
+
+	return true, target.label, #waypoints, #entries
 end
 
 if RUN_CACHE then
 	mod:command(
-		"spillway_route_waypoints_export",
-		"Write saved Spillway waypoints to the mod's waypoint seed file so they ship with the mod",
-		function()
-			mod.export_spillway_route_waypoints()
-		end
-	)
+		"spillway_route_save",
+		"Save one Spillway route (its waypoints) into the seed file, replacing only that route: spillway_route_save [leg index | from to]",
+		function(arg1, arg2)
+			local legs = mod.get_spillway_route_legs()
 
-	mod:command(
-		"spillway_route_save_current_to_waypoints",
-		"Save currently cached/generated routes as waypoint overrides (and export them)",
-		function()
-			local cached = cache_entries()
-			if #cached == 0 then
-				mod:echo("No cached routes to save.")
+			if not legs or #legs == 0 then
+				mod:echo("No Spillway route legs available right now.")
+
 				return
 			end
-			local entries = waypoint_entries()
-			local added = 0
-			for i = 1, #cached do
-				local c = cached[i]
-				if c and c.from and c.to and type(c.points) == "table" and #c.points > 0 then
-					local exists = false
-					for j = 1, #entries do
-						if pos_matches(entries[j].from, c.from) and pos_matches(entries[j].to, c.to) then
-							exists = true
-							entries[j].points = c.points
-							break
-						end
-					end
-					if not exists then
-						entries[#entries + 1] = {
-							mission = c.mission or get_mission_name(),
-							from = c.from,
-							to = c.to,
-							points = c.points,
-							label = c.label,
-							crossroad_id = c.crossroad_id,
-							road_id = c.road_id,
-							from_order = c.from_order,
-							to_order = c.to_order,
-						}
-					end
-					added = added + 1
-				end
+
+			local point = get_player_position() or entry_position(legs[1].from)
+			local leg, leg_index = select_leg(legs, point, arg1, arg2)
+
+			if not leg then
+				mod:echo("Could not find a route leg to save.")
+
+				return
 			end
-			save_waypoint_entries(entries)
+
+			local ok, label, waypoint_count, total = mod.save_spillway_route(leg)
+
+			if not ok then
+				mod:echo(label or "Route save failed.")
+
+				return
+			end
+
 			mod.reset_spillway_path_route()
-			mod:echo(string.format("Saved %d cached route(s) to session waypoints.", added))
-			mod.export_spillway_route_waypoints()
+
+			mod:info(
+				"[spillway_route] saved route %s (%d waypoint(s)) to the seed file, %d route(s) total",
+				tostring(label),
+				waypoint_count or 0,
+				total or 0
+			)
+			mod:echo(
+				string.format(
+					"Saved route %s with %d waypoint(s) (%d route(s) in seed).",
+					tostring(label),
+					waypoint_count or 0,
+					total or 0
+				)
+			)
 		end
 	)
-
-	mod:command(
-		"spillway_route_save_current_to_seed",
-		"Overwrite route seed with currently cached/generated routes (clean)",
-		function()
-			local cached = cache_entries()
-			if #cached == 0 then
-				mod:echo("No cached routes to save.")
-				return
-			end
-			local source = build_seed_source(cached)
-			local ok, err = pcall(function()
-				local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
-				if not file then error("could not open " .. SEED_WRITE_PATH) end
-				file:write(source)
-				file:close()
-			end)
-			if ok then
-				_seed_entries = nil
-				mod:echo(string.format("Exported %d cached route(s) to route seed.", #cached))
-			else
-				mod:echo("Export failed: " .. tostring(err))
-			end
-		end
-	)
-end
-
-local function boxes_from_points(points)
-	local boxes = {}
-
-	for i = 1, #points do
-		local point = points[i]
-
-		if point and point.x then
-			boxes[#boxes + 1] = Vector3Box(Vector3(point.x, point.y, point.z))
-		end
-	end
-
-	return boxes
-end
-
-local function points_from_boxes(boxes)
-	local points = {}
-
-	for i = 1, #boxes do
-		points[i] = vec_to_table(boxes[i]:unbox())
-	end
-
-	return points
-end
-
-local function advance_route(points)
-	state.route_points[state.route_index] = points or {}
-	state.route_index = state.route_index + 1
-	state.attempts = 0
-	state.wait_t = 0
-	state.cache_checked = false
-	state.nav_wait_logged = false
-	state.nav_wait_logged_out = false
-
-	state.anchors = nil
-	state.leg_points = nil
-	state.sub_index = nil
-	state.sub_count = nil
-	state.sub_cache_checked = false
-end
-
-local function append_points(target, points)
-	local last = target[#target] and target[#target]:unbox()
-
-	for i = 1, #points do
-		local box = points[i]
-		local pos = box:unbox()
-
-		if not last or Vector3.distance(last, pos) > MIN_POINT_SPACING then
-			target[#target + 1] = box
-			last = pos
-		end
-	end
 end
 
 local function leg_anchor_positions(leg)
@@ -1135,12 +917,16 @@ local function leg_anchor_positions(leg)
 	anchors[#anchors + 1] = to_pos
 
 	if waypoint_count > 0 then
-		local leg_label = leg.path_label or (leg.crossroad_id and leg.road_id and (tostring(leg.crossroad_id) .. ":" .. tostring(leg.road_id))) or string.format("marker %s -> %s", tostring(leg.from_order), tostring(leg.to_order))
+		local leg_label = leg.path_label
+			or (leg.crossroad_id and leg.road_id and (tostring(leg.crossroad_id) .. ":" .. tostring(leg.road_id)))
+			or string.format("marker %s -> %s", tostring(leg.from_order), tostring(leg.to_order))
 		local from_str_pos = leg.from and entry_position(leg.from)
 		local to_str_pos = leg.to and entry_position(leg.to)
-		local from_str = from_str_pos and string.format("(%.3f,%.3f,%.3f)", from_str_pos.x, from_str_pos.y, from_str_pos.z) or "?"
+		local from_str = from_str_pos
+				and string.format("(%.3f,%.3f,%.3f)", from_str_pos.x, from_str_pos.y, from_str_pos.z)
+			or "?"
 		local to_str = to_str_pos and string.format("(%.3f,%.3f,%.3f)", to_str_pos.x, to_str_pos.y, to_str_pos.z) or "?"
-		
+
 		mod:info(
 			"[spillway_route] leg %d (%s) %s -> %s using %d mapped waypoint(s)",
 			state.route_index,
@@ -1149,155 +935,37 @@ local function leg_anchor_positions(leg)
 			to_str,
 			waypoint_count
 		)
+		if RUN_CACHE then
+			mod:echo(
+				string.format(
+					"[spillway_route] leg %d using %d waypoint(s): %s",
+					state.route_index,
+					waypoint_count,
+					leg_label
+				)
+			)
+		end
+	else
+		local leg_label = leg.path_label
+			or (leg.crossroad_id and leg.road_id and (tostring(leg.crossroad_id) .. ":" .. tostring(leg.road_id)))
+			or string.format("marker %s -> %s", tostring(leg.from_order), tostring(leg.to_order))
+		if RUN_CACHE then
+			mod:echo(
+				string.format(
+					"[spillway_route] leg %d using direct line (no waypoints): %s",
+					state.route_index,
+					leg_label
+				)
+			)
+		end
 	end
 
 	return anchors
 end
 
-local function begin_leg(leg)
-	state.leg_points = {}
-	state.anchors = leg_anchor_positions(leg)
-	state.sub_count = #state.anchors - 1
-	state.sub_index = 1
-	state.sub_cache_checked = false
-
-	state.query_from = state.anchors[1]
-	state.query_to = state.anchors[#state.anchors]
-end
-
-local function reset_sub_wait()
-	state.attempts = 0
-	state.wait_t = 0
-	state.nav_wait_logged = false
-	state.nav_wait_logged_out = false
-end
-
-local function update_astar_stage(legs, dt)
-	dt = dt or 0.016
-
-	if state.astar then
-		local nav_mesh = Managers.state.nav_mesh
-
-		if DRIVE_NAV_ASYNC and nav_mesh and nav_mesh.kick_async_update then
-			nav_mesh:kick_async_update(dt)
-		end
-
-		if not GwNavAStar.processing_finished(state.astar) then
-			return
-		end
-
-		local points = {}
-		local path_found = GwNavAStar.path_found(state.astar)
-
-		if path_found then
-			local count = GwNavAStar.node_count(state.astar)
-
-			for i = 1, count do
-				points[i] = Vector3Box(GwNavAStar.node_at_index(state.astar, i))
-			end
-
-		local leg = state.legs and state.legs[state.route_index]
-		local leg_label = leg and (leg.path_label or (leg.crossroad_id and leg.road_id and (tostring(leg.crossroad_id) .. ":" .. tostring(leg.road_id))))
-		if leg_label then
-			mod:info(
-				"[spillway_route] route %d sub-leg %d/%d (%s) finished: path_found=%s, nodes=%d",
-				state.route_index,
-				state.sub_index,
-				state.sub_count,
-				leg_label,
-				tostring(path_found),
-				#points
-			)
-		else
-			mod:info(
-				"[spillway_route] route %d sub-leg %d/%d finished: path_found=%s, nodes=%d",
-				state.route_index,
-				state.sub_index,
-				state.sub_count,
-				tostring(path_found),
-				#points
-			)
-		end
-		end
-
-		GwNavAStar.destroy(state.astar)
-
-		state.astar = nil
-
-		if path_found then
-			if #points >= 2 and state.query_from and state.query_to then
-				local leg = state.legs and state.legs[state.route_index]
-				local meta
-
-				if leg then
-					meta = {
-						path_label = leg.path_label,
-						crossroad_id = leg.crossroad_id,
-						road_id = leg.road_id,
-						from_order = leg.from_order,
-						to_order = leg.to_order,
-						route_index = state.route_index,
-					}
-
-					if not meta.path_label then
-						if meta.crossroad_id and meta.road_id then
-							meta.path_label = tostring(meta.crossroad_id) .. ":" .. tostring(meta.road_id)
-						end
-					end
-				end
-
-				if state.sub_count == 1 then
-					cache_store(state.query_from, state.query_to, points_from_boxes(points), meta)
-				end
-			end
-
-			append_points(state.leg_points, points)
-
-			state.sub_index = state.sub_index + 1
-			state.sub_cache_checked = false
-
-			reset_sub_wait()
-
-			return
-		end
-
-		state.attempts = state.attempts + 1
-
-		if state.attempts >= ROUTE_MAX_ATTEMPTS then
-			mod:info(
-				"[spillway_route] route %d sub-leg %d: no path found after %d attempts, giving up on leg",
-				state.route_index,
-				state.sub_index,
-				state.attempts
-			)
-
-			advance_route(nil)
-
-			return
-		end
-
-		state.retry_delay = ROUTE_RETRY_DELAY
-
-		mod:info(
-			"[spillway_route] route %d sub-leg %d: no path found, retrying %d/%d in %.1fs",
-			state.route_index,
-			state.sub_index,
-			state.attempts + 1,
-			ROUTE_MAX_ATTEMPTS,
-			ROUTE_RETRY_DELAY
-		)
-
-		return
-	end
-
+local function update_build_stage(legs)
 	if state.route_index > #legs then
 		state.stage = requires_package(state.fx) and "package" or "render"
-
-		return
-	end
-
-	if state.retry_delay > 0 then
-		state.retry_delay = state.retry_delay - dt
 
 		return
 	end
@@ -1313,170 +981,23 @@ local function update_astar_stage(legs, dt)
 			#legs
 		)
 
-		advance_route(nil)
+		state.route_points[state.route_index] = {}
+		state.route_index = state.route_index + 1
 
 		return
 	end
 
-	if not state.anchors then
-		begin_leg(leg)
+	local anchors = leg_anchor_positions(leg)
+	local boxes = {}
+
+	for i = 1, #anchors do
+		local anchor = anchors[i]
+
+		boxes[#boxes + 1] = Vector3Box(Vector3(anchor.x, anchor.y, anchor.z))
 	end
 
-	if state.sub_index > state.sub_count then
-		if state.leg_points and #state.leg_points >= 2 and state.sub_count > 1 and state.anchors then
-			local leg = state.legs and state.legs[state.route_index]
-			local meta
-			if leg then
-				meta = {
-					path_label = leg.path_label,
-					crossroad_id = leg.crossroad_id,
-					road_id = leg.road_id,
-					from_order = leg.from_order,
-					to_order = leg.to_order,
-					route_index = state.route_index,
-				}
-				if not meta.path_label then
-					if meta.crossroad_id and meta.road_id then
-						meta.path_label = tostring(meta.crossroad_id) .. ":" .. tostring(meta.road_id)
-					end
-				end
-			end
-			cache_store(state.anchors[1], state.anchors[#state.anchors], points_from_boxes(state.leg_points), meta)
-		end
-
-		advance_route(state.leg_points)
-
-		return
-	end
-
-	local from_key = state.anchors[state.sub_index]
-	local to_key = state.anchors[state.sub_index + 1]
-	local from_pos = Vector3(from_key.x, from_key.y, from_key.z)
-	local to_pos = Vector3(to_key.x, to_key.y, to_key.z)
-
-	if not state.sub_cache_checked then
-		state.sub_cache_checked = true
-
-		local cached = cache_lookup(from_key, to_key)
-
-		if cached then
-		local leg = state.legs and state.legs[state.route_index]
-		local leg_label = leg and (leg.path_label or (leg.crossroad_id and leg.road_id and (tostring(leg.crossroad_id) .. ":" .. tostring(leg.road_id))))
-		if leg_label then
-			mod:info(
-				"[spillway_route] route %d sub-leg %d/%d (%s) loaded from cache (%d points)",
-				state.route_index,
-				state.sub_index,
-				state.sub_count,
-				leg_label,
-				#cached.points
-			)
-		else
-			mod:info(
-				"[spillway_route] route %d sub-leg %d/%d loaded from cache (%d points)",
-				state.route_index,
-				state.sub_index,
-				state.sub_count,
-				#cached.points
-			)
-		end
-
-			append_points(state.leg_points, boxes_from_points(cached.points))
-
-			state.sub_index = state.sub_index + 1
-			state.sub_cache_checked = false
-
-			return
-		end
-	end
-
-	if not RUN_CACHE then
-		mod:info("[spillway_route] route %d sub-leg %d: no seed/cache entry, skipping generation (RUN_CACHE off)", state.route_index, state.sub_index)
-		advance_route(nil)
-
-		return
-	end
-
-	local nav_world, traverse_logic = get_nav_context()
-
-	if not nav_world or not traverse_logic then
-		state.wait_t = state.wait_t + dt
-
-		if not state.nav_wait_logged and state.wait_t > 1 then
-			state.nav_wait_logged = true
-
-			mod:info("[spillway_route] waiting for a nav world before route %d", state.route_index)
-		end
-
-		return
-	end
-
-	local from_mesh = NavQueries.position_on_mesh(nav_world, from_pos, NAV_CHECK_ABOVE, NAV_CHECK_BELOW, traverse_logic)
-	local to_mesh = NavQueries.position_on_mesh(nav_world, to_pos, NAV_CHECK_ABOVE, NAV_CHECK_BELOW, traverse_logic)
-	local meshes_ready = from_mesh ~= nil and to_mesh ~= nil
-
-	local nav_mesh = Managers.state.nav_mesh
-	local sparse_ok = not (nav_mesh and nav_mesh.is_sparse_graph_connected) or nav_mesh:is_sparse_graph_connected()
-
-	local ready = meshes_ready and (sparse_ok or state.wait_t > SPARSE_GRACE)
-
-	if not ready then
-		state.wait_t = state.wait_t + dt
-
-		if not state.nav_wait_logged and state.wait_t > 1 then
-			state.nav_wait_logged = true
-
-			mod:info(
-				"[spillway_route] waiting for navmesh before route %d (from_on_mesh=%s, to_on_mesh=%s, sparse_graph=%s)",
-				state.route_index,
-				tostring(from_mesh ~= nil),
-				tostring(to_mesh ~= nil),
-				tostring(sparse_ok)
-			)
-		end
-
-		if state.wait_t < NAV_WAIT_MAX then
-			return
-		end
-
-		if not state.nav_wait_logged_out then
-			state.nav_wait_logged_out = true
-
-			mod:info("[spillway_route] navmesh still not ready after %ds, querying anyway", NAV_WAIT_MAX)
-		end
-	end
-
-	local from = from_mesh
-		or NavQueries.position_on_mesh_guaranteed(nav_world, from_pos, NAV_CHECK_ABOVE, NAV_CHECK_BELOW, traverse_logic)
-		or from_pos
-	local to = to_mesh
-		or NavQueries.position_on_mesh_guaranteed(nav_world, to_pos, NAV_CHECK_ABOVE, NAV_CHECK_BELOW, traverse_logic)
-		or to_pos
-	local astar = GwNavAStar.create(nav_world)
-
-	state.query_from = from_key
-	state.query_to = to_key
-
-	local leg_label = leg.path_label or (leg.crossroad_id and leg.road_id and (tostring(leg.crossroad_id) .. ":" .. tostring(leg.road_id))) or string.format("marker %s -> %s", tostring(leg.from_order), tostring(leg.to_order))
-	local from_pos = leg.from and entry_position(leg.from)
-	local to_pos = leg.to and entry_position(leg.to)
-	local from_str = from_pos and string.format("(%.3f,%.3f,%.3f)", from_pos.x, from_pos.y, from_pos.z) or "?"
-	local to_str = to_pos and string.format("(%.3f,%.3f,%.3f)", to_pos.x, to_pos.y, to_pos.z) or "?"
-
-	mod:info(
-		"[spillway_route] querying leg %d (%s) %s -> %s sub-leg %d/%d (attempt %d)",
-		state.route_index,
-		leg_label,
-		from_str,
-		to_str,
-		state.sub_index,
-		state.sub_count,
-		state.attempts + 1
-	)
-
-	GwNavAStar.start(astar, nav_world, from, to, traverse_logic)
-
-	state.astar = astar
+	state.route_points[state.route_index] = boxes
+	state.route_index = state.route_index + 1
 end
 
 local function update_package_stage(dt)
@@ -1543,31 +1064,6 @@ local function update_package_stage(dt)
 			state.package_loaded = true
 		end
 	end)
-end
-
-local function thin_points(points)
-	local count = #points
-
-	if count < 3 then
-		return points
-	end
-
-	local thinned = { points[1] }
-	local last = points[1]:unbox()
-
-	for i = 2, count - 1 do
-		local point = points[i]
-		local position = point:unbox()
-
-		if Vector3.distance(last, position) >= MIN_POINT_SPACING then
-			thinned[#thinned + 1] = point
-			last = position
-		end
-	end
-
-	thinned[#thinned + 1] = points[count]
-
-	return thinned
 end
 
 local function walk_points(points, spacing, callback)
@@ -1909,8 +1405,7 @@ local function start_state(legs, fx)
 		particle_group = nil,
 		particle_timer = 0,
 		particle_wait = 0,
-		astar = nil,
-		stage = "astar",
+		stage = "build",
 		requested_fx = fx,
 		fx = fx,
 		line_object = nil,
@@ -1920,19 +1415,6 @@ local function start_state(legs, fx)
 		package_loaded = false,
 		package_failed = false,
 		package_id = nil,
-		attempts = 0,
-		wait_t = 0,
-		retry_delay = 0,
-		cache_checked = false,
-		nav_wait_logged = false,
-		nav_wait_logged_out = false,
-		query_from = nil,
-		query_to = nil,
-		anchors = nil,
-		leg_points = nil,
-		sub_index = nil,
-		sub_count = nil,
-		sub_cache_checked = false,
 	}
 end
 
@@ -1972,21 +1454,25 @@ mod.update_spillway_path_route = function(dt)
 		local leg_summaries = {}
 		for i = 1, math.min(#legs, 5) do
 			local leg = legs[i]
-			local lbl = leg and (leg.path_label or (leg.crossroad_id and leg.road_id and (tostring(leg.crossroad_id) .. ":" .. tostring(leg.road_id))) or string.format("%s->%s", tostring(leg.from_order), tostring(leg.to_order)))
+			local lbl = leg
+				and (
+					leg.path_label
+					or (leg.crossroad_id and leg.road_id and (tostring(leg.crossroad_id) .. ":" .. tostring(leg.road_id)))
+					or string.format("%s->%s", tostring(leg.from_order), tostring(leg.to_order))
+				)
 			if lbl then
 				leg_summaries[#leg_summaries + 1] = lbl
 			end
 		end
 		local summary = #leg_summaries > 0 and table.concat(leg_summaries, ", ") or "n/a"
-		mod:info("[spillway_route] starting route generation with %d path legs (fx=%s, legs=[%s])", #legs, fx, summary)
 
 		start_state(legs, fx)
 	end
 
 	state.world = state.world or get_world()
 
-	if state.stage == "astar" then
-		update_astar_stage(state.legs, dt)
+	if state.stage == "build" then
+		update_build_stage(state.legs)
 	elseif state.stage == "package" then
 		update_package_stage(dt)
 	elseif state.stage == "render" then
