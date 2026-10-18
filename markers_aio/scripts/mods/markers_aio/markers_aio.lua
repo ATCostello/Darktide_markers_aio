@@ -575,8 +575,6 @@ mod.guide_widget_clear = function()
 end
 
 mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
-	mod.build_frame_settings()
-
 	self._marker_templates[HereticalIdolTemplate.name] = HereticalIdolTemplate
 	self._marker_templates["nurgle_totem"] = HereticalIdolTemplate
 	self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
@@ -584,6 +582,8 @@ mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
 	self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
 	self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
 	self._marker_templates[SpillwayPathMarkerTemplate.name] = SpillwayPathMarkerTemplate
+
+	mod.build_frame_settings()
 
 	mod.active_chests = {}
 	mod.current_heretical_idol_markers = {}
@@ -1051,6 +1051,10 @@ mod:hook_origin(
 	"_calculate_markers",
 	function(self, dt, t, input_service, ui_renderer, render_settings)
 		mod._aio_frame = mod._aio_frame + 1
+
+		if self._marker_templates then
+			self._marker_templates[SpillwayPathMarkerTemplate.name] = SpillwayPathMarkerTemplate
+		end
 
 		local update_interval = 20
 		self._update_time = (self._update_time or 0) + dt
