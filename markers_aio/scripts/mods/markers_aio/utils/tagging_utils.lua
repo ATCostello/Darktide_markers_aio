@@ -1,5 +1,6 @@
 local mod = get_mod("markers_aio")
 local has_extension = ScriptUnit.has_extension
+local UISettings = require("scripts/settings/ui/ui_settings")
 
 mod:hook_origin(HudElementSmartTagging, "_is_marker_valid_for_tagging", function(self, player_unit, marker, distance)
 	local template = marker.template
