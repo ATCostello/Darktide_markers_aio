@@ -433,67 +433,112 @@ mod.build_settings = function()
 	fs.expedition_colour_B = mod:get("expedition_colour_B")
 end
 
-mod.update_runtime_state = function()
+mod._runtime_state_timer = 0
+mod._runtime_state_unit = nil
+
+mod.update_runtime_state = function(dt)
 	local fs = mod.frame_settings
 
-	-- ADS
 	mod.update_ads_state()
+
+	local player = mod.get_local_player()
+	local unit = player and player.player_unit
+
+	-- Immediately clear state when the player disappears or dies.
+	if not unit or not ALIVE[unit] then
+		fs.servo_skull_equipped = false
+		fs.inject_ally = nil
+		fs.servo_skull_injecting = false
+
+		mod._runtime_state_unit = nil
+		mod._runtime_state_timer = 0
+
+		return
+	end
+
+	-- Refresh immediately when the player changes.
+	local unit_changed = mod._runtime_state_unit ~= unit
+
+	mod._runtime_state_timer = mod._runtime_state_timer - (dt or 0)
+
+	if not unit_changed and mod._runtime_state_timer > 0 then
+		return
+	end
+
+	mod._runtime_state_unit = unit
+	mod._runtime_state_timer = 0.15
 
 	fs.servo_skull_equipped = false
 	fs.inject_ally = nil
-
-	local player = mod.get_local_player()
-	if player and player.player_unit and Unit.alive(player.player_unit) then
-		local talent_ext = has_extension(player.player_unit, "talent_system")
-
-		-- Has servo skull equipped
-		if talent_ext then
-			local sr = SpecialRulesSettings.special_rules
-			fs.servo_skull_equipped = talent_ext:has_special_rule(sr.cryptic_servo_skull_hack)
-				or talent_ext:has_special_rule(sr.cryptic_servo_skull_inject_ally)
-				or talent_ext:has_special_rule(sr.cryptic_servo_skull_flamethrower)
-		end
-
-		-- Is injecting
-		if
-			talent_ext
-			and talent_ext:has_special_rule(SpecialRulesSettings.special_rules.cryptic_servo_skull_inject_ally)
-		then
-			local spawner_ext = has_extension(player.player_unit, "companion_spawner_system")
-			if spawner_ext then
-				local comp_unit =
-					spawner_ext:spawned_unit_lookup(SpecialRulesSettings.special_rules.cryptic_servo_skull_inject_ally)
-				if comp_unit and Unit.alive(comp_unit) then
-					local ability_ext = has_extension(player.player_unit, "ability_system")
-					if
-						ability_ext
-						and ability_ext:remaining_ability_charges("grenade_ability")
-							>= CompanionServoSkullSettings.ability_charges.inject_ally
-					then
-						fs.inject_ally = {
-							companion_unit = comp_unit,
-						}
-					end
-				end
-			end
-		end
-	end
-
-	-- Servo skull injecting
 	fs.servo_skull_injecting = false
-	if fs.inject_ally then
-		local comp_unit = fs.inject_ally.companion_unit
-		if comp_unit and Unit.alive(comp_unit) then
-			local game_session = Managers.state.game_session:game_session()
-			local go_id = Managers.state.unit_spawner:game_object_id(comp_unit)
-			if game_session and go_id then
-				local state = GameSession.game_object_field(game_session, go_id, "state")
-				if state == "inject_ally" then
-					fs.servo_skull_injecting = true
-				end
-			end
-		end
+
+	local talent_ext = has_extension(unit, "talent_system")
+
+	if not talent_ext then
+		return
 	end
+
+	local sr = SpecialRulesSettings.special_rules
+	local inject_rule = sr.cryptic_servo_skull_inject_ally
+
+	local has_inject_rule = talent_ext:has_special_rule(inject_rule)
+
+	fs.servo_skull_equipped = has_inject_rule
+		or talent_ext:has_special_rule(sr.cryptic_servo_skull_hack)
+		or talent_ext:has_special_rule(sr.cryptic_servo_skull_flamethrower)
+
+	if not has_inject_rule then
+		return
+	end
+
+	local spawner_ext = has_extension(unit, "companion_spawner_system")
+
+	if not spawner_ext then
+		return
+	end
+
+	local comp_unit = spawner_ext:spawned_unit_lookup(inject_rule)
+
+	if not comp_unit or not ALIVE[comp_unit] then
+		return
+	end
+
+	local ability_ext = has_extension(unit, "ability_system")
+
+	if not ability_ext then
+		return
+	end
+
+	if
+		ability_ext:remaining_ability_charges("grenade_ability")
+		< CompanionServoSkullSettings.ability_charges.inject_ally
+	then
+		return
+	end
+
+	local inject_data = mod._inject_ally_data
+
+	if not inject_data then
+		inject_data = {}
+		mod._inject_ally_data = inject_data
+	end
+
+	inject_data.companion_unit = comp_unit
+	fs.inject_ally = inject_data
+
+	local game_session = Managers.state.game_session:game_session()
+
+	if not game_session then
+		return
+	end
+
+	local go_id = Managers.state.unit_spawner:game_object_id(comp_unit)
+
+	if not go_id then
+		return
+	end
+
+	fs.servo_skull_injecting = GameSession.game_object_field(game_session, go_id, "state") == "inject_ally"
 end
 
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/ammo_med/ammo_med_markers")
@@ -793,15 +838,16 @@ end
 mod.get_marker_extension = function(marker, extension_name)
 	local unit = marker.unit
 
-	if not unit or not Unit.alive(unit) then
+	if not unit or not ALIVE[unit] then
 		return nil
 	end
 
 	local cache = marker._aio_ext
 
-	if not cache then
+	if not cache or marker._aio_ext_unit ~= unit then
 		cache = {}
 		marker._aio_ext = cache
+		marker._aio_ext_unit = unit
 	end
 
 	local extension = cache[extension_name]
@@ -810,7 +856,7 @@ mod.get_marker_extension = function(marker, extension_name)
 		return extension or nil
 	end
 
-	extension = ScriptUnit.has_extension(unit, extension_name)
+	extension = has_extension(unit, extension_name)
 
 	cache[extension_name] = extension or false
 
@@ -950,23 +996,50 @@ local temp_drawable_normal = {}
 local temp_drawable_aio = {}
 
 local function sort_drawable_markers(a, b)
-	if a.type == "objective" and b.type ~= "objective" then
-		return false
-	elseif b.type == "objective" and a.type ~= "objective" then
-		return true
-	end
-
-	if a.markers_aio_type and not b.markers_aio_type then
-		return false
-	elseif not a.markers_aio_type and b.markers_aio_type then
-		return true
-	end
-
 	return (a.distance or 0) > (b.distance or 0)
 end
 
 local HudElementWorldMarkersSettings =
 	require("scripts/ui/hud/elements/world_markers/hud_element_world_markers_settings")
+
+local BASE_Z = 0
+local Z_STRIDE = 4
+
+local function draw_marker_list(self, markers, ui_renderer, draw_index)
+	for i = 1, #markers do
+		local marker = markers[i]
+		local widget = marker.widget
+
+		draw_index = draw_index + 1
+
+		local offset = widget.offset
+
+		if offset then
+			offset[3] = BASE_Z + draw_index * Z_STRIDE
+		end
+
+		local alpha_multiplier = widget.alpha_multiplier or 1
+
+		if marker.markers_aio_type == nil then
+			local template = marker.template
+			local fade_settings = template and template.fade_settings
+
+			if fade_settings and not marker.block_fade_settings then
+				local fade = self:_get_fade(fade_settings, marker.distance) or 1
+
+				widget.alpha_multiplier = alpha_multiplier * fade
+				UIWidget.draw(widget, ui_renderer)
+				widget.alpha_multiplier = alpha_multiplier
+			else
+				UIWidget.draw(widget, ui_renderer)
+			end
+		else
+			UIWidget.draw(widget, ui_renderer)
+		end
+	end
+
+	return draw_index
+end
 
 mod:hook_origin(
 	HudElementWorldMarkers,
@@ -1003,52 +1076,19 @@ mod:hook_origin(
 			end
 		end
 
-		table.sort(normal, sort_drawable_markers)
-		table.sort(aio, sort_drawable_markers)
-
-		local BASE_Z = 0
-		local Z_STRIDE = 4
-		local draw_index = 0
-
-		local function draw_list(markers)
-			for i = 1, #markers do
-				local marker = markers[i]
-				local widget = marker.widget
-
-				draw_index = draw_index + 1
-
-				local offset = widget.offset
-
-				if offset then
-					offset[3] = BASE_Z + (draw_index * Z_STRIDE)
-				end
-
-				widget.alpha_multiplier = widget.alpha_multiplier or 1
-
-				if marker.markers_aio_type == nil then
-					local template = marker.template
-					local alpha_multiplier = 1
-
-					if template and template.fade_settings and not marker.block_fade_settings then
-						alpha_multiplier = self:_get_fade(template.fade_settings, marker.distance) or 1
-					end
-
-					local previous_alpha_multiplier = widget.alpha_multiplier
-
-					widget.alpha_multiplier = previous_alpha_multiplier * alpha_multiplier
-
-					UIWidget.draw(widget, ui_renderer)
-
-					widget.alpha_multiplier = previous_alpha_multiplier
-				else
-					UIWidget.draw(widget, ui_renderer)
-				end
-			end
+		if #normal > 1 then
+			table.sort(normal, sort_drawable_markers)
 		end
 
-		draw_list(objectives)
-		draw_list(normal)
-		draw_list(aio)
+		if #aio > 1 then
+			table.sort(aio, sort_drawable_markers)
+		end
+
+		local draw_index = 0
+
+		draw_index = draw_marker_list(self, objectives, ui_renderer, draw_index)
+		draw_index = draw_marker_list(self, normal, ui_renderer, draw_index)
+		draw_index = draw_marker_list(self, aio, ui_renderer, draw_index)
 	end
 )
 
@@ -1195,6 +1235,54 @@ local function classify_aio_marker(self, marker, marker_type)
 	marker._aio_classified = true
 end
 
+local function update_distance_text_style(widget, fs)
+	local style = widget.style.marker_distance_text
+
+	if not style then
+		return
+	end
+
+	local scale = fs.distance_text_scale * 0.01
+	local position = fs.distance_text_position
+
+	local background = widget.style.background
+	local icon = widget.style.icon
+
+	if not background or not icon then
+		return
+	end
+
+	-- Update font size continuously to follow marker scaling.
+	style.font_size = icon.size[2] * 0.5 * scale
+
+	local offset = style.offset
+
+	if not offset then
+		return
+	end
+
+	offset[1] = 0
+	offset[2] = 0
+
+	if position == "Top" then
+		offset[2] = -background.size[2] * 0.5 * scale
+	elseif position == "Left" then
+		offset[1] = -background.size[1] * 0.5 * scale - 8
+	elseif position == "Right" then
+		offset[1] = background.size[1] * 0.5 * scale + 8
+	elseif position == "Center" then
+		style.font_size = icon.size[2] / 2.4 * scale
+
+		local ring = widget.style.ring
+
+		if ring and ring.offset then
+			offset[3] = ring.offset[3] + 1
+		end
+	else
+		offset[2] = background.size[2] * 0.5 * scale
+	end
+end
+
 mod:hook_origin(
 	HudElementWorldMarkers,
 	"_calculate_markers",
@@ -1210,7 +1298,7 @@ mod:hook_origin(
 			mod.build_settings()
 		end
 
-		mod.update_runtime_state()
+		mod.update_runtime_state(dt)
 
 		local fs = mod.frame_settings
 		local enable_objective = fs.enable.objective
@@ -1296,10 +1384,23 @@ mod:hook_origin(
 
 								if ALIVE[unit] then
 									local unit_node = template.unit_node
-									local node = unit_node
-											and Unit.has_node(unit, unit_node)
-											and Unit.node(unit, unit_node)
-										or 1
+									local node = 1
+
+									if unit_node then
+										if marker._aio_node_unit ~= unit or marker._aio_node_name ~= unit_node then
+											marker._aio_node_unit = unit
+											marker._aio_node_name = unit_node
+
+											if Unit.has_node(unit, unit_node) then
+												marker._aio_node_id = Unit.node(unit, unit_node)
+											else
+												marker._aio_node_id = 1
+											end
+										end
+
+										node = marker._aio_node_id or 1
+									end
+
 									marker_position = Unit.world_position(unit, node)
 								else
 									remove = true
@@ -1341,22 +1442,31 @@ mod:hook_origin(
 							local delta = marker_position - camera_position
 							local distance_sq = Vector3.length_squared(delta)
 
-							local max_distance_sq = max_distance and max_distance * max_distance
+							local max_distance_sq
+
+							if max_distance then
+								if marker._aio_cached_max_distance ~= max_distance then
+									marker._aio_cached_max_distance = max_distance
+									marker._aio_cached_max_distance_sq = max_distance * max_distance
+								end
+
+								max_distance_sq = marker._aio_cached_max_distance_sq
+							end
 
 							local out_of_reach = max_distance_sq and distance_sq > max_distance_sq
 
 							local draw = not out_of_reach
 
-							--local distance = vector_distance(marker_position, camera_position)
 							local distance = math.sqrt(distance_sq)
+
 							content.distance = distance
 							marker.distance = distance
 
 							if not out_of_reach then
-								local marker_delta = marker_position - camera_position
-								local forward_dot_dir = vector_dot(camera_direction, marker_delta)
+								local forward_dot_dir = vector_dot(camera_direction, delta)
+								local left_dot_dir = vector_dot(camera_left_direction, delta)
 								local is_inside_frustum = Camera.inside_frustum(camera, marker_position) > 0
-								local left_dot_dir = vector_dot(camera_left_direction, marker_delta)
+
 								local angle = math.atan2(left_dot_dir, forward_dot_dir)
 								local is_behind = forward_dot_dir < 0 and true or false
 								local is_under = marker_position.z < camera_position.z
@@ -1555,51 +1665,7 @@ mod:hook_origin(
 								widget.content.marker_distance_text = ""
 							end
 
-							local style = widget.style.marker_distance_text
-
-							local distance_scale = fs.distance_text_scale / 100
-							local position = fs.distance_text_position
-
-							local distance_text_pos = fs.distance_text_position
-							local distance_text_scale = fs.distance_text_scale / 100
-							widget.style.marker_distance_text.font_size = (widget.style.icon.size[2] / 2)
-								* distance_text_scale
-
-							if distance_text_pos == "Top" then
-								widget.style.marker_distance_text.offset[2] = -widget.style.background.size[2]
-									/ 2
-									* distance_text_scale
-								widget.style.marker_distance_text.offset[1] = 0
-							elseif distance_text_pos == "Left" then
-								widget.style.marker_distance_text.offset[1] = -widget.style.background.size[1]
-										/ 2
-										* distance_text_scale
-									- 8
-								widget.style.marker_distance_text.offset[2] = 0
-							elseif distance_text_pos == "Right" then
-								widget.style.marker_distance_text.offset[1] = widget.style.background.size[1]
-										/ 2
-										* distance_text_scale
-									+ 8
-								widget.style.marker_distance_text.offset[2] = 0
-							elseif distance_text_pos == "Center" then
-								widget.style.marker_distance_text.offset[2] = 0
-								widget.style.marker_distance_text.offset[1] = 0
-								local ring_style = widget.style.ring
-
-								if ring_style and ring_style.offset then
-									widget.style.marker_distance_text.offset[3] = ring_style.offset[3] + 1
-								end
-								widget.style.icon.color[1] = 150
-								widget.style.marker_distance_text.font_size = (widget.style.icon.size[2] / 2.4)
-									* distance_text_scale
-							else
-								-- default to  Bottom if errors/nil
-								widget.style.marker_distance_text.offset[2] = widget.style.background.size[2]
-									/ 2
-									* distance_text_scale
-								widget.style.marker_distance_text.offset[1] = 0
-							end
+							update_distance_text_style(widget, fs)
 						end
 					end
 				end
@@ -1642,14 +1708,13 @@ mod:hook_origin(HudElementInteraction, "_update_interactee_data", function(self,
 	local player_unit = player.player_unit
 	local camera = parent:player_camera()
 	local camera_position = camera and Camera.local_position(camera)
-	local render_marker = extension:active() and extension:show_marker(player_unit) and interactee_unit ~= player_unit
 
-	if
-		interactee_unit ~= player_unit
-		and extension:active()
-		and not render_marker
-		and not extension._active_interaction_type
-	then
+	local is_active = extension:active()
+	local is_other_unit = interactee_unit ~= player_unit
+
+	local render_marker = is_active and is_other_unit and extension:show_marker(player_unit)
+
+	if is_other_unit and is_active and not render_marker and not extension._active_interaction_type then
 		local health_station_extension = has_extension(interactee_unit, "health_station_system")
 
 		if health_station_extension then
@@ -1850,97 +1915,110 @@ mod.adjust_los_requirement = function(marker, pt)
 	end
 end
 
+local SCALE_EPSILON = 0.001
+
 mod.adjust_scale = function(self, marker, ui_renderer, t, pt)
-	marker.scale_original = marker.scale
-
 	local widget = marker.widget
-	local content = widget.content
-	local distance = content.distance
 	local template = marker.template
-	local scale_settings = template.scale_settings
+	local settings = template.scale_settings
 
-	if not scale_settings then
+	if not settings then
 		return
 	end
 
+	local distance = marker.distance
 	local scale = 1
 
 	if marker.markers_aio_type then
 		pt = pt or mod.frame_settings.per_type[marker.markers_aio_type]
-		scale = (pt and pt.scale or 100) / 100
+		scale = (pt and pt.scale or 100) * 0.01
 	end
 
-	marker.scale = compute_marker_scale(scale_settings, distance)
-	local new_scale = marker.ignore_scale and 1 or marker.scale * scale
+	local target = compute_marker_scale(settings, distance)
+
+	if marker.ignore_scale then
+		target = 1
+	else
+		target = target * scale
+	end
 
 	if marker.servo_skull_pulse and t then
-		local pulse_speed = 2
-		local pulse_amplitude = 0.2
-		local pulse = (math.sin(t * pulse_speed * math.pi * 2) + 1) / 2
-		new_scale = new_scale * (1 + pulse * pulse_amplitude)
+		target = target * (1 + (math.sin(t * math.pi * 4) + 1) * 0.1)
 	end
 
-	marker.scale = new_scale
+	marker.scale = target
 
-	self:_apply_scale(widget, new_scale)
+	if marker._aio_scale_target ~= target then
+		marker._aio_scale_target = target
+	end
 
-	--[[if marker.data and marker.data.type == "medical_crate_deployable" then
-        local style = widget.style
-        local lerp_multiplier = 1
+	self:_apply_scale(widget, target)
+end
 
-        for _, pass_style in pairs(style) do
-        local current_size = pass_style.area_size or pass_style.texture_size or pass_style.size
-        if current_size then
-            local default_size = 96
+local function cache_widget_scale_styles(widget)
+	local styles = widget.style
+	local cache = {}
 
-            if _ == "background" or _ == "ping" or _ == "ring" then
-            default_size = 96
-            else
-            default_size = 48
-            end
+	for _, pass_style in pairs(styles) do
+		local size = pass_style.area_size or pass_style.texture_size or pass_style.size
 
-            current_size[1] = math.lerp(current_size[1], default_size * new_scale, lerp_multiplier)
-            current_size[2] = math.lerp(current_size[2], default_size * new_scale, lerp_multiplier)
-        end
+		if pass_style.default_size and size then
+			cache[#cache + 1] = {
+				size = size,
+				default_size = pass_style.default_size,
+			}
+		end
 
-        if pass_style.font_size then
-            local font_size = math.lerp(pass_style.font_size, 16 * new_scale, lerp_multiplier)
-            marker.widget.style.marker_text.font_size = font_size
-        end
-        end
-        end]]
+		if pass_style.default_offset and pass_style.offset then
+			cache[#cache + 1] = {
+				offset = pass_style.offset,
+				default_offset = pass_style.default_offset,
+			}
+		end
+
+		if pass_style.default_pivot and pass_style.pivot then
+			cache[#cache + 1] = {
+				pivot = pass_style.pivot,
+				default_pivot = pass_style.default_pivot,
+			}
+		end
+	end
+
+	widget._aio_scale_styles = cache
 end
 
 mod:hook_origin(HudElementWorldMarkers, "_apply_scale", function(self, widget, scale)
-	local style = widget.style
-	local lerp_multiplier = 0.2
+	local cache = widget._aio_scale_styles
 
-	for _, pass_style in pairs(style) do
-		local default_size = pass_style.default_size
+	if not cache then
+		cache_widget_scale_styles(widget)
+		cache = widget._aio_scale_styles
+	end
 
-		if default_size then
-			local current_size = pass_style.area_size or pass_style.texture_size or pass_style.size
+	local lerp = math.lerp
+	local multiplier = 0.2
 
-			current_size[1] = math.lerp(current_size[1], default_size[1] * scale, lerp_multiplier)
-			current_size[2] = math.lerp(current_size[2], default_size[2] * scale, lerp_multiplier)
-		end
+	for i = 1, #cache do
+		local entry = cache[i]
 
-		local default_offset = pass_style.default_offset
+		if entry.size then
+			local size = entry.size
+			local default = entry.default_size
 
-		if default_offset then
-			local offset = pass_style.offset
+			size[1] = lerp(size[1], default[1] * scale, multiplier)
+			size[2] = lerp(size[2], default[2] * scale, multiplier)
+		elseif entry.offset then
+			local offset = entry.offset
+			local default = entry.default_offset
 
-			offset[1] = math.lerp(offset[1], default_offset[1] * scale, lerp_multiplier)
-			offset[2] = math.lerp(offset[2], default_offset[2] * scale, lerp_multiplier)
-		end
+			offset[1] = lerp(offset[1], default[1] * scale, multiplier)
+			offset[2] = lerp(offset[2], default[2] * scale, multiplier)
+		elseif entry.pivot then
+			local pivot = entry.pivot
+			local default = entry.default_pivot
 
-		local default_pivot = pass_style.default_pivot
-
-		if default_pivot then
-			local pivot = pass_style.pivot
-
-			pivot[1] = math.lerp(pivot[1], default_pivot[1] * scale, lerp_multiplier)
-			pivot[2] = math.lerp(pivot[2], default_pivot[2] * scale, lerp_multiplier)
+			pivot[1] = lerp(pivot[1], default[1] * scale, multiplier)
+			pivot[2] = lerp(pivot[2], default[2] * scale, multiplier)
 		end
 	end
 end)
