@@ -562,6 +562,8 @@ local check_recolorstimms = function()
 end
 
 mod.on_all_mods_loaded = function()
+	mod.build_settings()
+
 	local is_mod_loading = true
 	mod:hook_require("scripts/extension_systems/unit_templates", function(instance)
 		if is_mod_loading then
@@ -613,7 +615,7 @@ end
 mod:hook_safe(CLASS.UIViewHandler, "close_view", function(self, view_name, ...)
 	if view_name == "dmf_options_view" or view_name == "options_view" then
 		check_recolorstimms()
-		mod.build_frame_settings()
+		mod.build_settings()
 	end
 end)
 

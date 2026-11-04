@@ -13,8 +13,6 @@ mod.update_unknown_markers = function(self, marker)
 			return
 		end
 
-		marker._aio_effected = true
-
 		-- Toggle to allow unwanted markers to be affected.
 		if not fs.unknown_markers_extra_allowed then
 			if
