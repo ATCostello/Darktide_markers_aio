@@ -1301,7 +1301,7 @@ mod:hook_origin(
 		mod.update_runtime_state(dt)
 
 		local fs = mod.frame_settings
-		local enable_objective = fs.enable.objective
+		local enable_objective = fs and fs.enable and fs.enable.objective or false
 
 		if mod._needs_totem_scan then
 			mod._needs_totem_scan = false
