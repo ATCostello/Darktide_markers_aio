@@ -7,6 +7,13 @@ local UISettings = require("scripts/settings/ui/ui_settings")
 local SpecialRulesSettings = require("scripts/settings/ability/special_rules_settings")
 local CompanionServoSkullSettings = require("scripts/settings/companion/companion_servo_skull_settings")
 
+mod.enabled = mod:get("enabled")
+
+if not mod.enabled then
+	mod:debug("Markers AIO is disabled in the DMF settings pages.")
+	return
+end
+
 mod.frame_settings = {}
 mod._aio_frame = 0
 mod._settings_version = 0
