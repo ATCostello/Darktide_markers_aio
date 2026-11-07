@@ -10,6 +10,7 @@ local CompanionServoSkullSettings = require("scripts/settings/companion/companio
 mod.frame_settings = {}
 mod._aio_frame = 0
 mod._settings_version = 0
+mod.frame_settings.mod_enabled = mod:is_enabled() or false
 
 -- cached functions
 local has_extension = ScriptUnit.has_extension
@@ -106,6 +107,8 @@ local marker_types = {
 
 mod.build_settings = function()
 	local fs = mod.frame_settings
+
+	fs.mod_enabled = mod:is_enabled() or false
 
 	mod._settings_version = mod._settings_version + 1
 
@@ -542,6 +545,20 @@ end
 
 mod.build_settings()
 
+local HereticalIdolTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/heretical_idols/heretical_idol_markers_template")
+local MedMarkerTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/ammo_med/ammo_med_markers_template")
+local ChestMarkerTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/chest_markers/chest_markers_template")
+local MartyrsSkullMarkerTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers_template")
+local MartyrsSkullMarkerGuideTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers_guide_template")
+local SpillwayPathMarkerTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_path_markers_template")
+local GUIDE_WIDGET_PATH = "markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_guide_widget"
+
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/ammo_med/ammo_med_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/chest_markers/chest_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/heretical_idols/heretical_idol_markers")
@@ -567,32 +584,125 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/utilities")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/tagging_utils")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/marker_dispatcher")
 
-local HereticalIdolTemplate =
-	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/heretical_idols/heretical_idol_markers_template")
-local MedMarkerTemplate =
-	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/ammo_med/ammo_med_markers_template")
-local ChestMarkerTemplate =
-	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/chest_markers/chest_markers_template")
-local MartyrsSkullMarkerTemplate =
-	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers_template")
-local MartyrsSkullMarkerGuideTemplate =
-	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers_guide_template")
-local SpillwayPathMarkerTemplate =
-	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_path_markers_template")
-local GUIDE_WIDGET_PATH = "markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_guide_widget"
-mod:add_require_path(GUIDE_WIDGET_PATH)
+mod.refresh_templates = function()
+	mod.build_settings()
 
-local guide_element_def = {
-	class_name = "MartyrsSkullGuideElement",
-	filename = GUIDE_WIDGET_PATH,
-	visibility_groups = {
-		"dead",
-		"alive",
-		"player_in_danger_zone",
-	},
-}
+	if mod.frame_settings.mod_enabled then
+		local is_mod_loading = true
 
-mod.marker_dispatcher.initialize()
+		mod:add_require_path(GUIDE_WIDGET_PATH)
+
+		local guide_element_def = {
+			class_name = "MartyrsSkullGuideElement",
+			filename = GUIDE_WIDGET_PATH,
+			visibility_groups = {
+				"dead",
+				"alive",
+				"player_in_danger_zone",
+			},
+		}
+
+		mod:hook_require("scripts/extension_systems/unit_templates", function(instance)
+			if is_mod_loading then
+				-- live games
+				mod:hook_safe(
+					instance.medical_crate_deployable,
+					"husk_init",
+					function(unit, config, template_context, game_session, game_object_id, owner_id)
+						mod.add_medkit_marker_and_proximity(nil, unit)
+					end
+				)
+
+				-- private games
+				mod:hook_safe(
+					instance.medical_crate_deployable,
+					"local_unit_spawned",
+					function(
+						unit,
+						template_context,
+						game_object_data,
+						side_id,
+						deployable,
+						placed_on_unit,
+						owner_unit_or_nil
+					)
+						mod.add_medkit_marker_and_proximity(nil, unit)
+					end
+				)
+
+				is_mod_loading = false
+			end
+		end)
+
+		local load_package = function(path, id)
+			if not Managers.package:has_loaded(path) then
+				Managers.package:load(path, id)
+				return
+			end
+		end
+
+		mod._ensure_icon_packages_loaded()
+
+		load_package("content/levels/training_grounds/missions/mission_tg_basic_combat_01", "medkit_radius")
+		load_package("packages/ui/views/options_view/options_view", "large_ammo1")
+		load_package("packages/ui/views/inventory_background_view/inventory_background_view", "large_ammo2")
+
+		mod.marker_dispatcher.initialize()
+
+		mod.check_recolorstimms()
+
+		-- Init stuff
+		mod.active_chests = {}
+		mod.current_heretical_idol_markers = {}
+		mod.totem_units = {}
+		mod.medical_crate_charges = {}
+		mod.reset_martyrs_skull_guides()
+		mod.reset_spillway_path_markers()
+		mod.reset_spillway_path_route()
+		mod._needs_totem_scan = true
+
+		local loc = Managers and Managers.localization
+
+		if loc and loc._string_cache then
+			local cache = loc._string_cache
+			local mod_names = {
+				"mod_marker_chest_name",
+				"mod_marker_item_name",
+				"mod_marker_medicae_station_name",
+				"mod_marker_heretical_idol_name",
+				"mod_marker_stimm_name",
+				"mod_marker_power_stimm_name",
+				"mod_marker_speed_stimm_name",
+				"mod_marker_boost_stimm_name",
+				"mod_marker_medic_stimm_name",
+				"mod_marker_broker_stimm_name",
+				"mod_marker_tome_name",
+				"mod_marker_material_name",
+				"mod_marker_luggable_name",
+				"mod_marker_expedition_name",
+				"mod_marker_event_name",
+				"mod_marker_servo_skull_name",
+				"mod_marker_unknown_name",
+			}
+			for _, key in ipairs(mod_names) do
+				local resolved = mod:localize(key)
+				if resolved and resolved ~= key then
+					cache[key] = resolved
+				end
+			end
+		end
+	end
+end
+
+mod.on_all_mods_loaded = function()
+	mod.refresh_templates()
+end
+
+mod:hook_safe(CLASS.UIViewHandler, "close_view", function(self, view_name, ...)
+	if view_name == "dmf_options_view" or view_name == "options_view" then
+		mod.refresh_templates()
+	end
+end)
 
 mod:hook(
 	"UIManager",
@@ -635,21 +745,50 @@ mod.guide_widget_clear = function()
 end
 
 mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
-	self._marker_templates[HereticalIdolTemplate.name] = HereticalIdolTemplate
-	self._marker_templates["nurgle_totem"] = HereticalIdolTemplate
-	self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
-	self._marker_templates[ChestMarkerTemplate.name] = ChestMarkerTemplate
-	self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
-	self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
-	self._marker_templates[SpillwayPathMarkerTemplate.name] = SpillwayPathMarkerTemplate
+	if
+		HereticalIdolTemplate
+		and MedMarkerTemplate
+		and ChestMarkerTemplate
+		and MartyrsSkullMarkerTemplate
+		and MartyrsSkullMarkerGuideTemplate
+		and SpillwayPathMarkerTemplate
+	then
+		if not self._marker_templates[HereticalIdolTemplate.name] then
+			self._marker_templates[HereticalIdolTemplate.name] = HereticalIdolTemplate
+		end
+		if not self._marker_templates["nurgle_totem"] then
+			self._marker_templates["nurgle_totem"] = HereticalIdolTemplate
+		end
+		if not self._marker_templates[MedMarkerTemplate.name] then
+			self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
+		end
+		if not self._marker_templates[ChestMarkerTemplate.name] then
+			self._marker_templates[ChestMarkerTemplate.name] = ChestMarkerTemplate
+		end
+		if not self._marker_templates[MartyrsSkullMarkerTemplate.name] then
+			self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
+		end
+		if not self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] then
+			self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
+		end
+		if not self._marker_templates[SpillwayPathMarkerTemplate.name] then
+			self._marker_templates[SpillwayPathMarkerTemplate.name] = SpillwayPathMarkerTemplate
+		end
+	end
 
 	mod.active_chests = {}
 	mod.current_heretical_idol_markers = {}
 	mod.totem_units = {}
 	mod.medical_crate_charges = {}
-	mod.reset_martyrs_skull_guides()
-	mod.reset_spillway_path_markers()
-	mod.reset_spillway_path_route()
+	if mod.reset_martyrs_skull_guides then
+		mod.reset_martyrs_skull_guides()
+	end
+	if mod.reset_spillway_path_markers then
+		mod.reset_spillway_path_markers()
+	end
+	if mod.reset_spillway_path_route then
+		mod.reset_spillway_path_route()
+	end
 	mod._needs_totem_scan = true
 
 	local loc = Managers and Managers.localization
@@ -1135,6 +1274,10 @@ local function compute_distance_alpha(marker, max_distance)
 end
 
 local function classify_aio_marker(self, marker, marker_type)
+	if not mod.frame_settings.mod_enabled or not mod:is_enabled() then
+		return
+	end
+
 	local type_old -- previous marker type (If there is one)
 	local marker_function -- The matching function to run for this marker
 
@@ -1142,7 +1285,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		return
 	end
 
-	if mod.frame_settings.enable.objective then
+	if mod.frame_settings.enable.objective and mod.update_objective_markers then
 		type_old = marker.markers_aio_type
 		mod.update_objective_markers(self, marker)
 
@@ -1151,7 +1294,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.tome then
+	if mod.frame_settings.enable.tome and mod.update_tome_markers then
 		type_old = marker.markers_aio_type
 		mod.update_tome_markers(self, marker)
 
@@ -1160,7 +1303,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.material then
+	if mod.frame_settings.enable.material and mod.update_material_markers then
 		type_old = marker.markers_aio_type
 		mod.update_material_markers(self, marker)
 
@@ -1169,7 +1312,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.ammo_med then
+	if mod.frame_settings.enable.ammo_med and mod.update_ammo_med_markers then
 		type_old = marker.markers_aio_type
 		mod.update_ammo_med_markers(self, marker)
 
@@ -1178,7 +1321,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.stimm then
+	if mod.frame_settings.enable.stimm and mod.update_stimm_markers then
 		type_old = marker.markers_aio_type
 		mod.update_stimm_markers(self, marker)
 
@@ -1187,7 +1330,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.chest then
+	if mod.frame_settings.enable.chest and mod.update_chest_markers then
 		type_old = marker.markers_aio_type
 		mod.update_chest_markers(self, marker)
 
@@ -1196,7 +1339,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.heretical_idol then
+	if mod.frame_settings.enable.heretical_idol and mod.update_marker_icon then
 		type_old = marker.markers_aio_type
 		mod.update_marker_icon(self, marker)
 
@@ -1205,7 +1348,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.luggable then
+	if mod.frame_settings.enable.luggable and mod.update_luggable_markers then
 		type_old = marker.markers_aio_type
 		mod.update_luggable_markers(self, marker)
 
@@ -1214,7 +1357,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.expedition then
+	if mod.frame_settings.enable.expedition and mod.update_expedition_markers then
 		type_old = marker.markers_aio_type
 		mod.update_expedition_markers(self, marker)
 
@@ -1223,7 +1366,7 @@ local function classify_aio_marker(self, marker, marker_type)
 		end
 	end
 
-	if mod.frame_settings.enable.unknown and not marker.markers_aio_type then
+	if mod.frame_settings.enable.unknown and not marker.markers_aio_type and mod.update_unknown_markers then
 		type_old = marker.markers_aio_type
 		mod.update_unknown_markers(self, marker)
 
@@ -1284,26 +1427,103 @@ local function update_distance_text_style(widget, fs)
 	end
 end
 
+local toggle_check_complete = true
+
+mod.on_disabled = function(initial_call)
+	toggle_check_complete = false
+end
+mod.on_enabled = function(initial_call)
+	toggle_check_complete = false
+end
+
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
-	mod._aio_frame = mod._aio_frame + 1
-
-	if self._marker_templates then
-		self._marker_templates[SpillwayPathMarkerTemplate.name] = SpillwayPathMarkerTemplate
+	self._next_update = self._next_update or 0
+	if t < self._next_update then
+		return
 	end
 
-	if mod._frame_settings_dirty then
-		mod._frame_settings_dirty = false
-		mod.build_settings()
-	end
-
-	mod.update_runtime_state(dt)
+	self._next_update = t + 0.01
 
 	local fs = mod.frame_settings
-	local enable_objective = fs and fs.enable and fs.enable.objective or false
 
-	if mod._needs_totem_scan then
-		mod._needs_totem_scan = false
-		mod.scan_for_existing_totems()
+	if fs.mod_enabled then
+		mod._aio_frame = mod._aio_frame + 1
+
+		if mod._frame_settings_dirty then
+			mod._frame_settings_dirty = false
+			mod.build_settings()
+		end
+
+		mod.update_runtime_state(dt)
+
+		local enable_objective = fs and fs.enable and fs.enable.objective or false
+
+		if mod._needs_totem_scan then
+			mod._needs_totem_scan = false
+			mod.scan_for_existing_totems()
+		end
+
+		-- make sure the templates are loaded for our custom markers.
+		--[[if
+			HereticalIdolTemplate
+			and MedMarkerTemplate
+			and ChestMarkerTemplate
+			and MartyrsSkullMarkerTemplate
+			and MartyrsSkullMarkerGuideTemplate
+			and SpillwayPathMarkerTemplate
+		then
+			if not self._marker_templates[HereticalIdolTemplate.name] then
+				self._marker_templates[HereticalIdolTemplate.name] = HereticalIdolTemplate
+			end
+			if not self._marker_templates["nurgle_totem"] then
+				self._marker_templates["nurgle_totem"] = HereticalIdolTemplate
+			end
+			if not self._marker_templates[MedMarkerTemplate.name] then
+				self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
+			end
+			if not self._marker_templates[ChestMarkerTemplate.name] then
+				self._marker_templates[ChestMarkerTemplate.name] = ChestMarkerTemplate
+			end
+			if not self._marker_templates[MartyrsSkullMarkerTemplate.name] then
+				self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
+			end
+			if not self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] then
+				self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
+			end
+			if not self._marker_templates[SpillwayPathMarkerTemplate.name] then
+				self._marker_templates[SpillwayPathMarkerTemplate.name] = SpillwayPathMarkerTemplate
+			end
+		end]]
+	end
+
+	-- Runs a single pass when mod is enabled or disabled. Used to "reload" markers to their corresponding states without a full mod reload required.
+	if not toggle_check_complete then
+		if mod:is_enabled() then
+			--
+		else
+			-- RESET TO DEFAULT TEMPLATES ON MOD DISABLE
+			local marker_templates = HudElementWorldMarkersSettings.marker_templates
+
+			for i = 1, #marker_templates do
+				local template_path = marker_templates[i]
+				local template = require(template_path)
+				local name = template.name
+
+				self._marker_templates[name] = template
+			end
+
+			-- Remove markers_aio_type
+			for marker_type, markers in pairs(markers_by_type) do
+				for i = 1, #markers do
+					local marker = markers[i]
+					if marker.markers_aio_type then
+						marker.markers_aio_type = nil
+					end
+				end
+			end
+
+			toggle_check_complete = true
+		end
 	end
 
 	local raycasts_allowed = self._raycast_frame_counter == 0
@@ -1358,7 +1578,8 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					end
 
 					if
-						not enable_objective
+						fs.mod_enabled
+						and not enable_objective
 						and (marker.type == "objective" or (template and template.name == "objective"))
 					then
 						max_distance = nil
@@ -1384,7 +1605,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 								local unit_node = template.unit_node
 								local node = 1
 
-								if unit_node then
+								if unit_node and fs.mod_enabled then
 									if marker._aio_node_unit ~= unit or marker._aio_node_name ~= unit_node then
 										marker._aio_node_unit = unit
 										marker._aio_node_name = unit_node
@@ -1442,7 +1663,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 						local max_distance_sq
 
-						if max_distance then
+						if max_distance and fs.mod_enabled then
 							if marker._aio_cached_max_distance ~= max_distance then
 								marker._aio_cached_max_distance = max_distance
 								marker._aio_cached_max_distance_sq = max_distance * max_distance
@@ -1607,7 +1828,10 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					end
 
 					-- Static classification.
-					if not marker._aio_classified or marker._aio_classified_settings ~= mod._settings_version then
+					if
+						fs.mod_enabled and not marker._aio_classified
+						or marker._aio_classified_settings ~= mod._settings_version
+					then
 						classify_aio_marker(self, marker, marker_type)
 						marker._aio_classified_settings = mod._settings_version
 					end
@@ -1620,7 +1844,11 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					end
 
 					-- Handle marker types (Dispatcher)
-					mod.marker_dispatcher.dispatch(self, marker, marker_type, dt, t)
+					if fs.mod_enabled then
+						if mod.marker_dispatcher then
+							mod.marker_dispatcher.dispatch(self, marker, marker_type, dt, t)
+						end
+					end
 
 					local pt = marker.markers_aio_type and fs.per_type[marker.markers_aio_type]
 
@@ -1674,7 +1902,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 			table.clear(temp_marker_raycast_queue)
 		end
 
-		if mod._spillway_route_frame ~= mod._aio_frame then
+		if fs.mod_enabled and mod._spillway_route_frame ~= mod._aio_frame and mod.update_spillway_path_route then
 			mod._spillway_route_frame = mod._aio_frame
 			mod.update_spillway_path_route(dt)
 		end

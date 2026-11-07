@@ -2,6 +2,7 @@ local mod = get_mod("markers_aio")
 
 local Dispatcher = {}
 mod.marker_dispatcher = Dispatcher
+local fs = mod.frame_settings
 
 Dispatcher.handlers = {}
 Dispatcher.registered = false
@@ -75,6 +76,10 @@ function Dispatcher.initialize()
 		return
 	end
 
+	if not fs.mod_enabled then
+		return
+	end
+
 	Dispatcher.registered = true
 
 	Dispatcher.register("martyrs_skull", "martyrs_skull", function(self, marker)
@@ -143,6 +148,10 @@ end
 
 -- Main per-marker dispatch function.
 function Dispatcher.dispatch(self, marker, marker_type, dt, t)
+	if not fs.mod_enabled then
+		return
+	end
+
 	local enable = mod.frame_settings.enable
 
 	-- Direct route lookup instead of repeated name searches.

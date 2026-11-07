@@ -1419,6 +1419,10 @@ local function start_state(legs, fx)
 end
 
 mod.update_spillway_path_route = function(dt)
+	if not fs.mod_enabled then
+		return
+	end
+
 	mod.ensure_spillway_mission()
 
 	local enable = fs.enable

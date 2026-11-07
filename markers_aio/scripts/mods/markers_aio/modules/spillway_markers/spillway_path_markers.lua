@@ -296,7 +296,10 @@ mod.get_spillway_route_legs = function()
 	return legs
 end
 
-local function create_spillway_markers()
+local SpillwayPathMarkerTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_path_markers_template")
+
+local function create_spillway_markers(self)
 	if spillway_markers_placed or not is_spillway_mission() then
 		return
 	end
@@ -305,6 +308,12 @@ local function create_spillway_markers()
 
 	if not active_markers or #active_markers == 0 then
 		return
+	end
+
+	if SpillwayPathMarkerTemplate then
+		if not self._marker_templates[SpillwayPathMarkerTemplate.name] then
+			self._marker_templates[SpillwayPathMarkerTemplate.name] = SpillwayPathMarkerTemplate
+		end
 	end
 
 	spillway_markers_placed = true
@@ -332,6 +341,10 @@ local function create_spillway_markers()
 end
 
 mod.update_spillway_path_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	mod.ensure_spillway_mission()
 
 	local enabled = fs.enable and fs.enable.spillway_path
@@ -341,7 +354,7 @@ mod.update_spillway_path_markers = function(self, marker)
 		mod._spillway_setup_frame = frame
 
 		if enabled then
-			create_spillway_markers()
+			create_spillway_markers(self)
 		end
 	end
 

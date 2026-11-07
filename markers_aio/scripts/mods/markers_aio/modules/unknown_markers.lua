@@ -6,7 +6,12 @@ local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local fs = mod.frame_settings
+
 mod.update_unknown_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and marker.type and marker.type == "interaction" and not marker.markers_aio_type then
 		-- filter out unwanted
 		if marker.ui_interaction_type and (marker.ui_interaction_type == "player_interaction") then

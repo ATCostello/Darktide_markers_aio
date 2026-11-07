@@ -27,6 +27,10 @@ local material_types = {
 }
 
 mod.update_material_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and self then
 		local unit = marker.unit
 

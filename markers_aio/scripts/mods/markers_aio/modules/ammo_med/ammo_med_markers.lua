@@ -545,7 +545,7 @@ local function apply_ammo_status_marker_visuals(marker)
 	end
 end
 
-local check_recolorstimms = function()
+mod.check_recolorstimms = function()
 	if fs.recolor_stimm_compat_enable then
 		local dmf = get_mod("DMF")
 		local _disabled_mods = dmf:get("disabled_mods_list") or {}
@@ -560,64 +560,6 @@ local check_recolorstimms = function()
 		mod.RecolorStimms = nil
 	end
 end
-
-mod.on_all_mods_loaded = function()
-	mod.build_settings()
-
-	local is_mod_loading = true
-	mod:hook_require("scripts/extension_systems/unit_templates", function(instance)
-		if is_mod_loading then
-			-- live games
-			mod:hook_safe(
-				instance.medical_crate_deployable,
-				"husk_init",
-				function(unit, config, template_context, game_session, game_object_id, owner_id)
-					mod.add_medkit_marker_and_proximity(nil, unit)
-				end
-			)
-
-			-- private games
-			mod:hook_safe(
-				instance.medical_crate_deployable,
-				"local_unit_spawned",
-				function(
-					unit,
-					template_context,
-					game_object_data,
-					side_id,
-					deployable,
-					placed_on_unit,
-					owner_unit_or_nil
-				)
-					mod.add_medkit_marker_and_proximity(nil, unit)
-				end
-			)
-
-			is_mod_loading = false
-		end
-	end)
-
-	local load_package = function(path, id)
-		if not Managers.package:has_loaded(path) then
-			Managers.package:load(path, id)
-			return
-		end
-	end
-	mod._ensure_icon_packages_loaded()
-
-	load_package("content/levels/training_grounds/missions/mission_tg_basic_combat_01", "medkit_radius")
-	load_package("packages/ui/views/options_view/options_view", "large_ammo1")
-	load_package("packages/ui/views/inventory_background_view/inventory_background_view", "large_ammo2")
-
-	check_recolorstimms()
-end
-
-mod:hook_safe(CLASS.UIViewHandler, "close_view", function(self, view_name, ...)
-	if view_name == "dmf_options_view" or view_name == "options_view" then
-		check_recolorstimms()
-		mod.build_settings()
-	end
-end)
 
 local get_max_distance = function()
 	local max_distance = fs.ammo_med_max_distance
@@ -1014,6 +956,10 @@ local ammo_med_pickup_types = {
 }
 
 mod.update_ammo_med_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	local frame = mod._aio_frame
 
 	-- remove med proximity circle (once per frame, not once per marker)

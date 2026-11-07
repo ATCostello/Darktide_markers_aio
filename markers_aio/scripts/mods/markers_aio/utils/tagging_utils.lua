@@ -253,6 +253,50 @@ HudElementSmartTagging._handle_interaction_draw = function(self, dt, t, input_se
 	end
 end
 
+HudElementSmartTagging._can_present_tag_interaction = function(self)
+	local parent = self._parent
+	local player = parent:player()
+
+	if not player then
+		return false
+	end
+
+	local player_unit = player.player_unit
+
+	if not ALIVE[player_unit] then
+		return false
+	end
+
+	local interactor_extension = has_extension(player_unit, "interactor_system")
+
+	if interactor_extension then
+		local interactee_unit = interactor_extension:target_unit()
+		local focus_unit = interactor_extension:focus_unit()
+
+		if ALIVE[focus_unit] and interactor_extension:hud_block_text() then
+			return false
+		end
+
+		if ALIVE[interactee_unit] and interactor_extension:can_interact(interactee_unit) then
+			if has_extension(interactee_unit, "smart_tag_system") then
+				if self._world_markers_list then
+					for i = 1, #self._world_markers_list do
+						local marker = self._world_markers_list[i]
+
+						if marker.unit == interactee_unit and marker.markers_aio_type then
+							return true
+						end
+					end
+				end
+
+				return false
+			end
+		end
+	end
+
+	return true
+end
+
 mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", function(self, data)
 	if data and data.marker then
 		local widget = self._interaction_line_widget
@@ -354,47 +398,3 @@ mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", fun
 		end
 	end
 end)
-
-HudElementSmartTagging._can_present_tag_interaction = function(self)
-	local parent = self._parent
-	local player = parent:player()
-
-	if not player then
-		return false
-	end
-
-	local player_unit = player.player_unit
-
-	if not ALIVE[player_unit] then
-		return false
-	end
-
-	local interactor_extension = has_extension(player_unit, "interactor_system")
-
-	if interactor_extension then
-		local interactee_unit = interactor_extension:target_unit()
-		local focus_unit = interactor_extension:focus_unit()
-
-		if ALIVE[focus_unit] and interactor_extension:hud_block_text() then
-			return false
-		end
-
-		if ALIVE[interactee_unit] and interactor_extension:can_interact(interactee_unit) then
-			if has_extension(interactee_unit, "smart_tag_system") then
-				if self._world_markers_list then
-					for i = 1, #self._world_markers_list do
-						local marker = self._world_markers_list[i]
-
-						if marker.unit == interactee_unit and marker.markers_aio_type then
-							return true
-						end
-					end
-				end
-
-				return false
-			end
-		end
-	end
-
-	return true
-end

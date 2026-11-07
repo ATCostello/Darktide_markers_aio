@@ -20,6 +20,10 @@ local get_max_distance = function()
 end
 
 mod.update_tome_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	local max_distance = get_max_distance()
 
 	if marker and self then

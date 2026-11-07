@@ -36,6 +36,10 @@ local function _player_is_assisted(unit_data_extension)
 end
 
 mod.update_player_assistance_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and self then
 		local unit = marker.unit
 		if not unit or type(unit) ~= "userdata" then

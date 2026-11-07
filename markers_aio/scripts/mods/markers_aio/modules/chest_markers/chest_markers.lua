@@ -71,6 +71,10 @@ mod.get_all_items_in_chest = function(self, chest_unit)
 end
 
 mod.update_chest_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	local frame = mod._aio_frame
 
 	if mod._chest_cleanup_frame ~= frame then

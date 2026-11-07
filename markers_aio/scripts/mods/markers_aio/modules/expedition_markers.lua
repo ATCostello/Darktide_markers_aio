@@ -52,6 +52,10 @@ for i = 1, #expedition_pickup_types do
 end
 
 mod.update_expedition_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and self then
 		local unit = marker.unit
 

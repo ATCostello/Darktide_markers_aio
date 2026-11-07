@@ -44,7 +44,7 @@ DestructibleExtension.update = function(self, unit, dt, t)
 		end
 	end
 
-	if self._collectible_data then
+	if self._collectible_data and mod.frame_settings.mod_enabled then
 		if self._collectible_data.unit and self._collectible_data.section_id then
 			mod.add_heretical_idol_marker(self, self._collectible_data.unit, self._collectible_data.section_id)
 		end
@@ -110,7 +110,7 @@ DestructibleExtension.rpc_destructible_last_destruction = function(self)
 
 	remove_totem_from_tracking_safe(self._unit)
 
-	if self._collectible_data then
+	if self._collectible_data and mod.frame_settings.mod_enabled then
 		if self._collectible_data.unit and self._collectible_data.section_id then
 			mod.remove_heretical_idol_marker(self, self._collectible_data.unit, self._collectible_data.section_id)
 		end
@@ -160,6 +160,10 @@ mod.remove_heretical_idol_marker = function(self, unit, section_id)
 end
 
 mod.update_marker_icon = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker then
 		if marker.type and (marker.type == "heretical_idol") then
 			local max_distance = get_max_distance()

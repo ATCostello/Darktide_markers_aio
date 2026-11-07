@@ -7,7 +7,12 @@ local WorldMarkerTemplateInteraction =
 	require("scripts/ui/hud/elements/world_markers/templates/world_marker_template_interaction")
 local UIWidget = require("scripts/managers/ui/ui_widget")
 local fs = mod.frame_settings
+
 mod.update_TaintedDevices_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and self then
 		local unit = marker.unit
 

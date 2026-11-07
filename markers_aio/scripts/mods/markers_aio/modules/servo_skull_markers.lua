@@ -10,6 +10,10 @@ local function _is_decoder_active(minigame_extension)
 end
 
 mod.update_servo_skull_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and self then
 		local unit = marker.unit
 		if not unit or type(unit) ~= "userdata" or not Unit.alive(unit) then

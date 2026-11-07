@@ -9,6 +9,10 @@ local UIWidget = require("scripts/managers/ui/ui_widget")
 local fs = mod.frame_settings
 
 mod.update_luggable_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and self then
 		local unit = marker.unit
 

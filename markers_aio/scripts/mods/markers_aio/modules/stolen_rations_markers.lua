@@ -12,6 +12,10 @@ local function string_starts(String, Start)
 end
 
 mod.update_stolenrations_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and self then
 		local unit = marker.unit
 

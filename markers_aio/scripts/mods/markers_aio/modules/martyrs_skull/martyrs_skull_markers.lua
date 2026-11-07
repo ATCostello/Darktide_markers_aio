@@ -14,6 +14,10 @@ local walkthrough_update_interval = 0.1 -- throttle for walkthrough update in se
 local fs = mod.frame_settings
 
 mod.update_martyrs_skull_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	local fs = mod.frame_settings
 	local frame = mod._aio_frame
 
@@ -2015,17 +2019,23 @@ mod.is_player_near_position = function(self, position, threshold)
 end
 
 local player_near_skull = false
+local MartyrsSkullMarkerTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers_template")
+local MartyrsSkullMarkerGuideTemplate =
+	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_markers_guide_template")
 
 mod.setup_walkthrough_markers = function(self)
 	table.clear(guide_check_cache)
 
 	self._level = Managers.state.mission:mission()
+
 	if not self._level then
 		if fs.martyrs_skull_guide_enable == true then
 			mod.guide_widget_clear()
 		end
 		return
 	end
+
 	local current_level_name = self._level.name
 	player_near_skull = false
 
@@ -2066,6 +2076,15 @@ mod.setup_walkthrough_markers = function(self)
 
 			local guide_lines = {}
 			local first_marker_seen = nil
+
+			if MartyrsSkullMarkerTemplate and MartyrsSkullMarkerGuideTemplate then
+				if not self._marker_templates[MartyrsSkullMarkerTemplate.name] then
+					self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
+				end
+				if not self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] then
+					self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
+				end
+			end
 
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]

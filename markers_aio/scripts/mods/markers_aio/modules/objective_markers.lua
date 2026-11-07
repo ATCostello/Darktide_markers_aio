@@ -4,6 +4,10 @@ local fs = mod.frame_settings
 local temp_colour = { 255, 255, 255, 255 }
 
 mod.update_objective_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if not marker or not marker.type then
 		return
 	end

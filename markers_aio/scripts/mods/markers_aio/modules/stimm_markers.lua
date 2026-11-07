@@ -56,6 +56,10 @@ local stimm_types = {
 }
 
 mod.update_stimm_markers = function(self, marker)
+	if not fs.mod_enabled then
+		return
+	end
+
 	if marker and self then
 		local unit = marker.unit
 
