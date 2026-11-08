@@ -823,114 +823,6 @@ mod:hook_safe(CLASS.HudElementWorldMarkers, "init", function(self)
 	end
 end)
 
-mod.totem_units = {}
-
-mod.is_totem_unit = function(unit)
-	if not unit or not Unit.alive(unit) then
-		return false
-	end
-	local ude = has_extension(unit, "unit_data_system")
-	if not ude then
-		return false
-	end
-	if ude._breed and ude._breed.name == "nurgle_totem" then
-		return true
-	end
-	local armor_name = Unit.get_data(unit, "armor_data_name")
-	if armor_name == "nurgle_totem" then
-		return true
-	end
-	return false
-end
-
-mod.find_totem_marker_by_unit = function(unit)
-	local ui_manager = Managers.ui
-	if not ui_manager then
-		return
-	end
-	local hud = ui_manager:get_hud()
-	if not hud then
-		return
-	end
-	local world_markers = hud:element("HudElementWorldMarkers")
-	if not world_markers then
-		return
-	end
-	local markers = world_markers._markers_by_type and world_markers._markers_by_type["nurgle_totem"]
-	if not markers then
-		return
-	end
-	for i = 1, #markers do
-		local marker = markers[i]
-		if marker.unit == unit then
-			return marker
-		end
-	end
-end
-
-mod.add_totem_marker = function(unit)
-	if not unit or not Unit.alive(unit) then
-		return
-	end
-	if not mod.totem_units then
-		mod.totem_units = {}
-	end
-	if mod.totem_units[unit] then
-		return
-	end
-	local existing = mod.find_totem_marker_by_unit(unit)
-	if existing then
-		mod.totem_units[unit] = existing.id
-		return
-	end
-	local marker_id
-	Managers.event:trigger("add_world_marker_unit", "nurgle_totem", unit, function(id)
-		marker_id = id
-	end)
-	mod.totem_units[unit] = marker_id
-end
-
-mod.remove_totem_from_tracking = function(unit)
-	if not mod.totem_units or not unit then
-		return
-	end
-	local marker_id = mod.totem_units[unit]
-	if marker_id then
-		Managers.event:trigger("remove_world_marker", marker_id)
-	end
-	mod.totem_units[unit] = nil
-end
-
-mod.scan_for_existing_totems = function()
-	if not Managers.world then
-		return
-	end
-	local world = Managers.world:world("level_world")
-	if not world then
-		return
-	end
-	local units = World.units(world)
-	if not units then
-		return
-	end
-	for i = 1, #units do
-		local unit = units[i]
-		if Unit.alive(unit) and mod.is_totem_unit(unit) then
-			mod.add_totem_marker(unit)
-		end
-	end
-end
-
-mod:hook_safe(CLASS.PropUnitDataExtension, "setup_from_component", function(self, prop_data_name)
-	if prop_data_name == "nurgle_totem" then
-		mod.add_totem_marker(self._unit)
-	end
-end)
-
-mod:hook_safe(CLASS.DestructibleExtension, "destroy", function(self)
-	mod.remove_totem_from_tracking(self._unit)
-end)
-
 mod:hook_safe(CLASS.MissionObjectiveSystem, "hot_join_sync", function(self, sender, channel)
 	mod.reset_martyrs_skull_guides()
 	mod.scan_for_existing_totems()
@@ -1464,36 +1356,39 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		end
 
 		-- make sure the templates are loaded for our custom markers.
-		--[[if
-			HereticalIdolTemplate
-			and MedMarkerTemplate
-			and ChestMarkerTemplate
-			and MartyrsSkullMarkerTemplate
-			and MartyrsSkullMarkerGuideTemplate
-			and SpillwayPathMarkerTemplate
-		then
+		if HereticalIdolTemplate then
 			if not self._marker_templates[HereticalIdolTemplate.name] then
 				self._marker_templates[HereticalIdolTemplate.name] = HereticalIdolTemplate
 			end
 			if not self._marker_templates["nurgle_totem"] then
 				self._marker_templates["nurgle_totem"] = HereticalIdolTemplate
 			end
+		end
+		if MedMarkerTemplate then
 			if not self._marker_templates[MedMarkerTemplate.name] then
 				self._marker_templates[MedMarkerTemplate.name] = MedMarkerTemplate
 			end
+		end
+		if ChestMarkerTemplate then
 			if not self._marker_templates[ChestMarkerTemplate.name] then
 				self._marker_templates[ChestMarkerTemplate.name] = ChestMarkerTemplate
 			end
+		end
+		if MartyrsSkullMarkerTemplate then
 			if not self._marker_templates[MartyrsSkullMarkerTemplate.name] then
 				self._marker_templates[MartyrsSkullMarkerTemplate.name] = MartyrsSkullMarkerTemplate
 			end
+		end
+		if MartyrsSkullMarkerGuideTemplate then
 			if not self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] then
 				self._marker_templates[MartyrsSkullMarkerGuideTemplate.name] = MartyrsSkullMarkerGuideTemplate
 			end
+		end
+		if SpillwayPathMarkerTemplate then
 			if not self._marker_templates[SpillwayPathMarkerTemplate.name] then
 				self._marker_templates[SpillwayPathMarkerTemplate.name] = SpillwayPathMarkerTemplate
 			end
-		end]]
+		end
 	end
 
 	-- Runs a single pass when mod is enabled or disabled. Used to "reload" markers to their corresponding states without a full mod reload required.
