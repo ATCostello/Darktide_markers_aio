@@ -145,6 +145,21 @@ mod.build_settings = function()
 	fs.spillway_route_fx = mod:get("spillway_path_route_fx")
 	fs.spillway_path_route_thickness = mod:get("spillway_path_route_thickness")
 
+	fs.proximity_enable = mod:get("proximity_enable") == true
+	fs.proximity_range = mod:get("proximity_range") or 15
+	fs.proximity_message_destination = mod:get("proximity_message_destination") or "chat"
+	fs.proximity_message_format = mod:get("proximity_message_format")
+
+	fs.proximity_types = fs.proximity_types or {}
+
+	for _, marker_type in ipairs(marker_types) do
+		fs.proximity_types[marker_type] = mod:get("proximity_" .. marker_type) == true
+	end
+
+	if mod.clear_proximity_name_cache then
+		mod.clear_proximity_name_cache()
+	end
+
 	fs.marker_background_colour = mod:get("marker_background_colour")
 	fs.font_type = mod:get("font_type")
 	fs.recolor_stimm_compat_enable = mod:get("recolor_stimm_compat_enable")
@@ -446,7 +461,6 @@ mod.update_runtime_state = function(dt)
 	local player = mod.get_local_player()
 	local unit = player and player.player_unit
 
-	-- Immediately clear state when the player disappears or dies.
 	if not unit or not ALIVE[unit] then
 		fs.servo_skull_equipped = false
 		fs.inject_ally = nil
@@ -458,7 +472,6 @@ mod.update_runtime_state = function(dt)
 		return
 	end
 
-	-- Refresh immediately when the player changes.
 	local unit_changed = mod._runtime_state_unit ~= unit
 
 	mod._runtime_state_timer = mod._runtime_state_timer - (dt or 0)
@@ -558,6 +571,17 @@ local MartyrsSkullMarkerGuideTemplate =
 local SpillwayPathMarkerTemplate =
 	mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_path_markers_template")
 local GUIDE_WIDGET_PATH = "markers_aio/scripts/mods/markers_aio/modules/martyrs_skull/martyrs_skull_guide_widget"
+mod:add_require_path(GUIDE_WIDGET_PATH)
+
+local guide_element_def = {
+	class_name = "MartyrsSkullGuideElement",
+	filename = GUIDE_WIDGET_PATH,
+	visibility_groups = {
+		"dead",
+		"alive",
+		"player_in_danger_zone",
+	},
+}
 
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/ammo_med/ammo_med_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/chest_markers/chest_markers")
@@ -578,6 +602,7 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/servo_skull_markers"
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/player_assistance_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_path_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_path_route")
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/proximity_notifications")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/icon_package_loader")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/utilities")
@@ -589,18 +614,6 @@ mod.refresh_templates = function()
 
 	if mod.frame_settings.mod_enabled then
 		local is_mod_loading = true
-
-		mod:add_require_path(GUIDE_WIDGET_PATH)
-
-		local guide_element_def = {
-			class_name = "MartyrsSkullGuideElement",
-			filename = GUIDE_WIDGET_PATH,
-			visibility_groups = {
-				"dead",
-				"alive",
-				"player_in_danger_zone",
-			},
-		}
 
 		mod:hook_require("scripts/extension_systems/unit_templates", function(instance)
 			if is_mod_loading then
@@ -708,7 +721,11 @@ mod:hook(
 	"UIManager",
 	"create_player_hud",
 	function(original_func, self, peer_id, local_player_id, elements, visibility_groups)
-		table.insert(elements, guide_element_def)
+		mod:add_require_path(GUIDE_WIDGET_PATH)
+
+		if elements then
+			table.insert(elements, guide_element_def)
+		end
 		return original_func(self, peer_id, local_player_id, elements, visibility_groups)
 	end
 )
@@ -717,7 +734,11 @@ mod:hook(
 	"UIManager",
 	"create_spectator_hud",
 	function(original_func, self, world_viewport_name, peer_id, local_player_id, elements, visibility_groups)
-		table.insert(elements, guide_element_def)
+		mod:add_require_path(GUIDE_WIDGET_PATH)
+
+		if elements then
+			table.insert(elements, guide_element_def)
+		end
 		return original_func(self, world_viewport_name, peer_id, local_player_id, elements, visibility_groups)
 	end
 )
@@ -1170,8 +1191,8 @@ local function classify_aio_marker(self, marker, marker_type)
 		return
 	end
 
-	local type_old -- previous marker type (If there is one)
-	local marker_function -- The matching function to run for this marker
+	local type_old 
+	local marker_function 
 
 	if not mod.frame_settings or mod.frame_settings and not mod.frame_settings.enable then
 		return
@@ -1288,7 +1309,6 @@ local function update_distance_text_style(widget, fs)
 		return
 	end
 
-	-- Update font size continuously to follow marker scaling.
 	style.font_size = icon.size[2] * 0.5 * scale
 
 	local offset = style.offset
@@ -1341,6 +1361,10 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 	if fs.mod_enabled then
 		mod._aio_frame = mod._aio_frame + 1
 
+		if t then
+			mod._aio_ping_progress = 0.5 + math.sin(t * 7) * 0.5
+		end
+
 		if mod._frame_settings_dirty then
 			mod._frame_settings_dirty = false
 			mod.build_settings()
@@ -1391,7 +1415,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		end
 	end
 
-	-- Runs a single pass when mod is enabled or disabled. Used to "reload" markers to their corresponding states without a full mod reload required.
 	if not toggle_check_complete then
 		if mod:is_enabled() then
 			--
@@ -1408,11 +1431,16 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 			end
 
 			-- Remove markers_aio_type
-			for marker_type, markers in pairs(markers_by_type) do
-				for i = 1, #markers do
-					local marker = markers[i]
-					if marker.markers_aio_type then
-						marker.markers_aio_type = nil
+			local markers_by_type = self._markers_by_type
+
+			if markers_by_type then
+				for marker_type, markers in pairs(markers_by_type) do
+					for i = 1, #markers do
+						local marker = markers[i]
+
+						if marker and marker.markers_aio_type then
+							marker.markers_aio_type = nil
+						end
 					end
 				end
 			end
@@ -1545,10 +1573,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 							marker_position.x = marker_position.x + position_offset[1]
 							marker_position.y = marker_position.y + position_offset[2]
 							marker_position.z = marker_position.z + position_offset[3]
-						end
-
-						if marker.data and marker.data._active_interaction_type == "health_station" then
-							marker_position.z = marker_position.z
 						end
 
 						Vector3Box.store(marker.position, marker_position)
@@ -1699,9 +1723,6 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 
 				-- custom markers aio stuff
 				if marker and marker.update then
-					--marker.markers_aio_type = nil
-					--marker.aio_suppress = nil
-
 					local template = marker.template
 					local update_function = template and template.update_function
 
@@ -1800,6 +1821,10 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 		if fs.mod_enabled and mod._spillway_route_frame ~= mod._aio_frame and mod.update_spillway_path_route then
 			mod._spillway_route_frame = mod._aio_frame
 			mod.update_spillway_path_route(dt)
+		end
+
+		if fs.mod_enabled and fs.proximity_enable and mod.update_proximity_notifications then
+			mod.update_proximity_notifications(self, dt, t)
 		end
 	else
 		self._player_camera = self._parent:player_camera()
@@ -1933,12 +1958,10 @@ mod.fade_icon_not_in_los = function(marker, ui_renderer, pt)
 	if mod_max_distance and marker.distance then
 		local d = math.clamp(marker.distance / mod_max_distance, 0, 1)
 
-		-- Remap [0.75 → 1.0] → [1 → 0]
 		if d >= 0.75 then
-			local t = (d - 0.75) / 0.25 -- 0 → 1
+			local t = (d - 0.75) / 0.25
 			t = math.clamp(t, 0, 1)
 
-			-- Smoothstep (no pop-in)
 			t = t * t * (3 - 2 * t)
 
 			distance_factor = 1 - t
@@ -2036,6 +2059,10 @@ mod.adjust_los_requirement = function(marker, pt)
 end
 
 local SCALE_EPSILON = 0.001
+local SCALE_SNAP_EPSILON = 0.005
+local SCALE_LERP_MULTIPLIER = 0.2
+local math_abs = math.abs
+local math_lerp = math.lerp
 
 mod.adjust_scale = function(self, marker, ui_renderer, t, pt)
 	local widget = marker.widget
@@ -2115,8 +2142,18 @@ HudElementWorldMarkers._apply_scale = function(self, widget, scale)
 		cache = widget._aio_scale_styles
 	end
 
-	local lerp = math.lerp
-	local multiplier = 0.2
+	if not cache then
+		return
+	end
+
+	local applied_scale = widget._aio_applied_scale
+	local scale_difference = applied_scale and math_abs(applied_scale - scale) or math.huge
+
+	if scale_difference < SCALE_EPSILON then
+		return
+	end
+
+	local snap = scale_difference < SCALE_SNAP_EPSILON
 
 	for i = 1, #cache do
 		local entry = cache[i]
@@ -2124,23 +2161,31 @@ HudElementWorldMarkers._apply_scale = function(self, widget, scale)
 		if entry.size then
 			local size = entry.size
 			local default = entry.default_size
+			local target_1 = default[1] * scale
+			local target_2 = default[2] * scale
 
-			size[1] = lerp(size[1], default[1] * scale, multiplier)
-			size[2] = lerp(size[2], default[2] * scale, multiplier)
+			size[1] = snap and target_1 or math_lerp(size[1], target_1, SCALE_LERP_MULTIPLIER)
+			size[2] = snap and target_2 or math_lerp(size[2], target_2, SCALE_LERP_MULTIPLIER)
 		elseif entry.offset then
 			local offset = entry.offset
 			local default = entry.default_offset
+			local target_1 = default[1] * scale
+			local target_2 = default[2] * scale
 
-			offset[1] = lerp(offset[1], default[1] * scale, multiplier)
-			offset[2] = lerp(offset[2], default[2] * scale, multiplier)
+			offset[1] = snap and target_1 or math_lerp(offset[1], target_1, SCALE_LERP_MULTIPLIER)
+			offset[2] = snap and target_2 or math_lerp(offset[2], target_2, SCALE_LERP_MULTIPLIER)
 		elseif entry.pivot then
 			local pivot = entry.pivot
 			local default = entry.default_pivot
+			local target_1 = default[1] * scale
+			local target_2 = default[2] * scale
 
-			pivot[1] = lerp(pivot[1], default[1] * scale, multiplier)
-			pivot[2] = lerp(pivot[2], default[2] * scale, multiplier)
+			pivot[1] = snap and target_1 or math_lerp(pivot[1], target_1, SCALE_LERP_MULTIPLIER)
+			pivot[2] = snap and target_2 or math_lerp(pivot[2], target_2, SCALE_LERP_MULTIPLIER)
 		end
 	end
+
+	widget._aio_applied_scale = scale
 end
 
 mod.adjust_distance_visibility = function(marker, pt)

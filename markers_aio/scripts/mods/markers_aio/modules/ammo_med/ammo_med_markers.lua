@@ -27,6 +27,13 @@ local AMMO_STATUS_CIRCLE_SIZE = {
 	30,
 }
 
+local DEFAULT_BACKGROUND_SIZE = {
+	128,
+	128,
+}
+
+local temp_numeric_parts = {}
+
 local FIELD_IMPROV_ICON = "content/ui/materials/hud/interactions/icons/cosmetics_store"
 
 mod.ammo_status_colour_markup = function(text, kind)
@@ -46,47 +53,62 @@ mod.ammo_status_colour_markup = function(text, kind)
 	return string.format("{#color(%d,%d,%d)}%s{#reset()}", r or 255, g or 255, b or 255, text)
 end
 
-local function read_weapon_ammo_slots(unit)
+local function new_weapon_slots()
+	return {
+		{ reserve = 0, max_reserve = 0, clip = 0, max_clip = 0 },
+		{ reserve = 0, max_reserve = 0, clip = 0, max_clip = 0 },
+	}
+end
+
+local temp_local_slots = new_weapon_slots()
+local temp_teammate_slots = new_weapon_slots()
+
+local function read_weapon_ammo_slots(unit, slots)
 	local unit_data_extension = ScriptUnit.has_extension(unit, "unit_data_system")
 
-	if not unit_data_extension then
-		return nil
+	if not unit_data_extension or not unit_data_extension.has_component then
+		return 0
 	end
 
-	local slots = {}
+	local count = 0
 
 	for i = 1, #STATIC_WEAPON_SLOTS do
 		local slot_name = STATIC_WEAPON_SLOTS[i]
-		local ok, component = pcall(unit_data_extension.read_component, unit_data_extension, slot_name)
 
-		if ok and component and component.max_ammunition_reserve and component.max_ammunition_reserve > 0 then
-			slots[#slots + 1] = {
-				reserve = component.current_ammunition_reserve or 0,
-				max_reserve = component.max_ammunition_reserve,
-				clip = AmmoUtility.current_ammo_in_clips(component),
-				max_clip = AmmoUtility.max_ammo_in_clips(component),
-			}
+		if unit_data_extension:has_component(slot_name) then
+			local component = unit_data_extension:read_component(slot_name)
+			local max_reserve = component and component.max_ammunition_reserve
+
+			if max_reserve and max_reserve > 0 then
+				count = count + 1
+
+				local slot = slots[count]
+
+				if not slot then
+					slot = { reserve = 0, max_reserve = 0, clip = 0, max_clip = 0 }
+					slots[count] = slot
+				end
+
+				slot.reserve = component.current_ammunition_reserve or 0
+				slot.max_reserve = max_reserve
+				slot.clip = AmmoUtility.current_ammo_in_clips(component)
+				slot.max_clip = AmmoUtility.max_ammo_in_clips(component)
+			end
 		end
 	end
 
-	if #slots == 0 then
-		return nil
-	end
-
-	return slots
+	return count
 end
 
-local function player_ammo_percentage(unit)
-	local slots = read_weapon_ammo_slots(unit)
-
-	if not slots then
+local function player_ammo_percentage(slots, slot_count)
+	if not slots or not slot_count or slot_count == 0 then
 		return nil
 	end
 
 	local total = 0
 	local max_total = 0
 
-	for i = 1, #slots do
+	for i = 1, slot_count do
 		total = total + slots[i].reserve
 		max_total = max_total + slots[i].max_reserve
 	end
@@ -112,31 +134,38 @@ local function get_ammo_pickup_modifier()
 	return difficulty and difficulty:get_ammo_modifier() or 1
 end
 
-local function predict_ammo_restore(unit, pickup_name)
-	local slots = read_weapon_ammo_slots(unit)
+local pickup_data_cache = {}
 
-	if not slots then
-		return 0, 0
+local function get_pickup_data(pickup_name, modifier)
+	local data = pickup_data_cache[pickup_name]
+
+	if not data then
+		local source = Pickups.by_name[pickup_name]
+
+		if not source or type(source.ammo_amount_func) ~= "function" then
+			return nil
+		end
+
+		data = table.clone(source)
+		pickup_data_cache[pickup_name] = data
 	end
-
-	local pickup_data = Pickups.by_name[pickup_name]
-
-	if not pickup_data or type(pickup_data.ammo_amount_func) ~= "function" then
-		return 0, 0
-	end
-
-	local modifier = get_ammo_pickup_modifier()
-
-	local data = table.clone(pickup_data)
 
 	data.modifier = modifier
+
+	return data
+end
+
+local function predict_ammo_restore(slots, slot_count, pickup_data)
+	if not slots or not slot_count or slot_count == 0 or not pickup_data then
+		return 0, 0
+	end
 
 	local total_restored = 0
 	local total_potential = 0
 
-	for i = 1, #slots do
+	for i = 1, slot_count do
 		local slot = slots[i]
-		local pickup_amount = pickup_data.ammo_amount_func(slot.max_reserve, slot.max_clip, data)
+		local pickup_amount = pickup_data.ammo_amount_func(slot.max_reserve, slot.max_clip, pickup_data)
 
 		if pickup_amount and pickup_amount > 0 then
 			local missing_clip = math.max(0, slot.max_clip - slot.clip)
@@ -162,11 +191,13 @@ local function find_most_needy_teammate(self_unit, local_percentage)
 	local most_needy = nil
 	local lowest_percentage = math.huge
 
-	for _, player in pairs(alive_players) do
-		local player_unit = player.player_unit
+	for i = 1, #alive_players do
+		local player = alive_players[i]
+		local player_unit = player and player.player_unit
 
-		if player_unit and player_unit ~= self_unit then
-			local ammo_percentage = player_ammo_percentage(player_unit)
+		if player_unit and player_unit ~= self_unit and Unit.alive(player_unit) then
+			local slot_count = read_weapon_ammo_slots(player_unit, temp_teammate_slots)
+			local ammo_percentage = player_ammo_percentage(temp_teammate_slots, slot_count)
 
 			if ammo_percentage and ammo_percentage < lowest_percentage then
 				lowest_percentage = ammo_percentage
@@ -188,18 +219,35 @@ local function find_most_needy_teammate(self_unit, local_percentage)
 	return most_needy
 end
 
-local ammo_status_frame = -1
+local AMMO_STATUS_REFRESH_FRAMES = 10
+local ammo_status_frame = -math.huge
 local ammo_status_cache = {}
 
+local STATUS_COLOUR_WASTED = { 255, 255, 255 }
+local STATUS_COLOUR_TEAMMATE = { 255, 255, 255 }
+local STATUS_COLOUR_TAKEALL = { 255, 255, 255 }
+
 local function compute_ammo_status(status_fs, pickup_type, player_unit)
-	local gain, potential = predict_ammo_restore(player_unit, pickup_type)
+	local slot_count = read_weapon_ammo_slots(player_unit, temp_local_slots)
+
+	if slot_count == 0 then
+		return false
+	end
+
+	local pickup_data = get_pickup_data(pickup_type, get_ammo_pickup_modifier())
+
+	if not pickup_data then
+		return false
+	end
+
+	local gain, potential = predict_ammo_restore(temp_local_slots, slot_count, pickup_data)
 
 	if not gain or potential <= 0 then
 		return false
 	end
 
 	local waste = math.max(0, potential - gain)
-	local local_percentage = player_ammo_percentage(player_unit)
+	local local_percentage = player_ammo_percentage(temp_local_slots, slot_count)
 	local status = "takeall"
 	local needy_player = nil
 
@@ -213,32 +261,24 @@ local function compute_ammo_status(status_fs, pickup_type, player_unit)
 
 	local teammate_more_needy = needy_player and local_percentage and needy_player.percentage > margin
 
+	local status_colour = STATUS_COLOUR_TAKEALL
+
 	if status_fs.ammo_status_show_most_needy and teammate_more_needy then
 		status = "teammate"
+		status_colour = STATUS_COLOUR_TEAMMATE
+		status_colour[1] = status_fs.ammo_status_orange_colour_R or 255
+		status_colour[2] = status_fs.ammo_status_orange_colour_G or 255
+		status_colour[3] = status_fs.ammo_status_orange_colour_B or 255
 	elseif waste > 0 then
 		status = "wasted"
-	end
-
-	local status_colour
-
-	if status == "wasted" then
-		status_colour = {
-			status_fs.ammo_status_red_colour_R,
-			status_fs.ammo_status_red_colour_G,
-			status_fs.ammo_status_red_colour_B,
-		}
-	elseif status == "teammate" then
-		status_colour = {
-			status_fs.ammo_status_orange_colour_R,
-			status_fs.ammo_status_orange_colour_G,
-			status_fs.ammo_status_orange_colour_B,
-		}
+		status_colour = STATUS_COLOUR_WASTED
+		status_colour[1] = status_fs.ammo_status_red_colour_R or 255
+		status_colour[2] = status_fs.ammo_status_red_colour_G or 255
+		status_colour[3] = status_fs.ammo_status_red_colour_B or 255
 	else
-		status_colour = {
-			status_fs.ammo_status_green_colour_R,
-			status_fs.ammo_status_green_colour_G,
-			status_fs.ammo_status_green_colour_B,
-		}
+		status_colour[1] = status_fs.ammo_status_green_colour_R or 255
+		status_colour[2] = status_fs.ammo_status_green_colour_G or 255
+		status_colour[3] = status_fs.ammo_status_green_colour_B or 255
 	end
 
 	return {
@@ -300,7 +340,7 @@ local function update_ammo_status(marker, unit, player_unit)
 
 	local frame = mod._aio_frame
 
-	if ammo_status_frame ~= frame then
+	if frame - ammo_status_frame >= AMMO_STATUS_REFRESH_FRAMES then
 		ammo_status_frame = frame
 		table.clear(ammo_status_cache)
 	end
@@ -370,36 +410,37 @@ local function apply_ammo_status_marker_visuals(marker)
 		if status_fs.ammo_status_circle_enable then
 			local circle_status = status.teammate_more_needy and "teammate" or status.status
 			local teammate_status = status_fs.ammo_status_show_most_needy and circle_status == "teammate"
-			local circle_colour
 
 			if circle_status == "wasted" then
-				circle_colour = {
+				mod.set_colour_argb(
+					circle_style.color,
+					255,
 					status_fs.ammo_status_red_colour_R,
 					status_fs.ammo_status_red_colour_G,
-					status_fs.ammo_status_red_colour_B,
-				}
+					status_fs.ammo_status_red_colour_B
+				)
 			elseif circle_status == "teammate" then
-				circle_colour = {
+				mod.set_colour_argb(
+					circle_style.color,
+					255,
 					status_fs.ammo_status_orange_colour_R,
 					status_fs.ammo_status_orange_colour_G,
-					status_fs.ammo_status_orange_colour_B,
-				}
+					status_fs.ammo_status_orange_colour_B
+				)
 			else
-				circle_colour = {
+				mod.set_colour_argb(
+					circle_style.color,
+					255,
 					status_fs.ammo_status_green_colour_R,
 					status_fs.ammo_status_green_colour_G,
-					status_fs.ammo_status_green_colour_B,
-				}
+					status_fs.ammo_status_green_colour_B
+				)
 			end
 
-			mod.set_colour_argb(circle_style.color, 255, circle_colour[1], circle_colour[2], circle_colour[3])
 			widget.content.ammo_status_circle_visible = true
 
 			local circle_size = AMMO_STATUS_CIRCLE_SIZE[1] * marker.scale
-			local bg_size = widget.style.background and widget.style.background.size or {
-				128,
-				128,
-			}
+			local bg_size = widget.style.background and widget.style.background.size or DEFAULT_BACKGROUND_SIZE
 			local circle_offset_x = bg_size[1] * 0.4 - circle_size * 0.5
 			local circle_offset_y = -bg_size[2] * 0.4 + circle_size * 0.5
 
@@ -453,23 +494,6 @@ local function apply_ammo_status_marker_visuals(marker)
 		end
 	end
 
-	--[[if status_fs.ammo_status_show_most_needy and widget.style.ammo_needy_icon then
-		local needy = status.needy_player
-
-		if status.status == "teammate" and needy and needy.icon and needy.icon ~= "" then
-			local player_color = UISettings.player_slot_colors[needy.slot]
-
-			if player_color then
-				mod.set_colour(widget.style.ammo_needy_icon.text_color, player_color)
-			end
-
-			widget.content.ammo_needy_icon = needy.icon
-			widget.style.ammo_needy_icon.font_size = 40 * marker.scale
-		else
-			widget.content.ammo_needy_icon = ""
-		end
-	end]]
-
 	local is_direct_ammo_pickup = marker.pickup_type == "small_clip" or marker.pickup_type == "large_clip"
 	local marker_text_style = widget.style.marker_text_ammo_med
 
@@ -479,50 +503,66 @@ local function apply_ammo_status_marker_visuals(marker)
 
 	if status_fs.ammo_status_numeric_enable and status_fs.ammo_status_marker_text_enable and is_direct_ammo_pickup then
 		if (status_fs.ammo_status_show_gain and status.gain) or (status_fs.ammo_status_show_waste and status.waste) then
-			local numeric_parts = {}
+			if marker._aio_ammo_text_status ~= status or marker._aio_ammo_text_version ~= mod._settings_version then
+				local numeric_parts = temp_numeric_parts
+				local numeric_count = 0
 
-			if status.status == "teammate" and status.needy_player then
-				local needy = status.needy_player
-				local needy_slot = needy.player and needy.player:slot() or needy.slot
-				local needy_colour = UISettings.player_slot_colors[needy_slot]
+				table.clear(numeric_parts)
 
-				numeric_parts[#numeric_parts + 1] = string.format(
-					"{#color(%d,%d,%d)}%s{#reset()}",
-					needy_colour and needy_colour[2] or 255,
-					needy_colour and needy_colour[3] or 255,
-					needy_colour and needy_colour[4] or 255,
-					needy.icon
-				) .. " (+" .. math.ceil((needy.percentage or 0) * 100) .. "%)"
+				if status.status == "teammate" and status.needy_player then
+					local needy = status.needy_player
+					local needy_slot = needy.player and needy.player:slot() or needy.slot
+					local needy_colour = UISettings.player_slot_colors[needy_slot]
+
+					numeric_count = numeric_count + 1
+					numeric_parts[numeric_count] = string.format(
+						"{#color(%d,%d,%d)}%s{#reset()}",
+						needy_colour and needy_colour[2] or 255,
+						needy_colour and needy_colour[3] or 255,
+						needy_colour and needy_colour[4] or 255,
+						needy.icon
+					) .. " (+" .. math.ceil((needy.percentage or 0) * 100) .. "%)"
+				end
+
+				if status_fs.ammo_status_show_gain and status.gain then
+					numeric_count = numeric_count + 1
+					numeric_parts[numeric_count] = mod.ammo_status_colour_markup("+" .. status.gain, "gain")
+				end
+
+				if status_fs.ammo_status_show_waste and status.waste then
+					numeric_count = numeric_count + 1
+					numeric_parts[numeric_count] =
+						mod.ammo_status_colour_markup("(-" .. status.waste .. ")", "waste")
+				end
+
+				marker._aio_ammo_text = table.concat(numeric_parts, " ")
+				marker._aio_ammo_text_status = status
+				marker._aio_ammo_text_version = mod._settings_version
 			end
 
-			if status_fs.ammo_status_show_gain and status.gain then
-				numeric_parts[#numeric_parts + 1] = mod.ammo_status_colour_markup("+" .. status.gain, "gain")
-			end
-
-			if status_fs.ammo_status_show_waste and status.waste then
-				numeric_parts[#numeric_parts + 1] = mod.ammo_status_colour_markup("(-" .. status.waste .. ")", "waste")
-			end
-
-			widget.content.marker_text_ammo_med = table.concat(numeric_parts, " ")
+			widget.content.marker_text_ammo_med = marker._aio_ammo_text or ""
 
 			local font_size = (status_fs.ammo_status_text_font_size or 22) * marker.scale
 
 			marker_text_style.font_size = font_size
 			marker_text_style.default_font_size = font_size
-			marker_text_style.size = {
-				status_fs.ammo_status_text_width or 500,
-				64,
-			}
+
+			local text_size = marker_text_style.size
+
+			if text_size then
+				text_size[1] = status_fs.ammo_status_text_width or 500
+				text_size[2] = 64
+			else
+				marker_text_style.size = { status_fs.ammo_status_text_width or 500, 64 }
+			end
+
 			marker_text_style.word_wrap = false
 			marker_text_style.text_horizontal_alignment = "center"
 			marker_text_style.text_vertical_alignment = "center"
 
 			local position = status_fs.ammo_status_text_position or "Top"
 			local extra_offset = status_fs.ammo_status_text_offset or 0
-			local bg_size = widget.style.background and widget.style.background.size or {
-				128,
-				128,
-			}
+			local bg_size = widget.style.background and widget.style.background.size or DEFAULT_BACKGROUND_SIZE
 
 			marker_text_style.offset[1] = 0
 			marker_text_style.offset[2] = 0
@@ -581,8 +621,10 @@ ProximityHeal._cb_world_markers_list_request = function(self, world_markers)
 end
 
 mod:hook_safe(ProximityHeal, "update", function(self, dt, t)
-	if self and self._unit then
-		med_crate_units[self._unit] = true
+	local unit = self and self._unit
+
+	if unit and not med_crate_units[unit] then
+		med_crate_units[unit] = true
 	end
 end)
 
@@ -633,26 +675,22 @@ local function player_heal_multipliers(player_unit)
 		return 1, 1, true
 	end
 
-	local ok_character_state, character_state_component = pcall(function()
-		return unit_data_extension:read_component("character_state")
-	end)
+	if unit_data_extension.has_component and unit_data_extension:has_component("character_state") then
+		local character_state_component = unit_data_extension:read_component("character_state")
 
-	if
-		ok_character_state
-		and character_state_component
-		and PlayerUnitStatus.is_knocked_down(character_state_component)
-	then
-		return get_med_crate_init_data_value("knock_down_player_heal_speed_multiplier", 0.1),
-			get_med_crate_init_data_value("knock_down_player_heal_cost_multiplier", 0.3),
-			true
+		if character_state_component and PlayerUnitStatus.is_knocked_down(character_state_component) then
+			return get_med_crate_init_data_value("knock_down_player_heal_speed_multiplier", 0.1),
+				get_med_crate_init_data_value("knock_down_player_heal_cost_multiplier", 0.3),
+				true
+		end
 	end
 
-	local ok_disabled_state, disabled_state_component = pcall(function()
-		return unit_data_extension:read_component("disabled_character_state")
-	end)
+	if unit_data_extension.has_component and unit_data_extension:has_component("disabled_character_state") then
+		local disabled_state_component = unit_data_extension:read_component("disabled_character_state")
 
-	if ok_disabled_state and disabled_state_component and PlayerUnitStatus.is_consumed(disabled_state_component) then
-		return 1, 1, false
+		if disabled_state_component and PlayerUnitStatus.is_consumed(disabled_state_component) then
+			return 1, 1, false
+		end
 	end
 
 	return 1, 1, true
@@ -692,8 +730,9 @@ local function estimate_medcrate_consumption(unit, dt)
 	local heal_amount_modifier = improved_medical_crate_modifier()
 	local total_consumed = 0
 
-	for _, player in pairs(alive_players) do
-		local player_unit = player.player_unit
+	for i = 1, #alive_players do
+		local player = alive_players[i]
+		local player_unit = player and player.player_unit
 
 		if player_unit and POSITION_LOOKUP and POSITION_LOOKUP[player_unit] then
 			local player_position = POSITION_LOOKUP[player_unit]
@@ -742,17 +781,16 @@ mod.update_med_crate_estimates = function(unit)
 		return
 	end
 
+	local gameplay_time = Managers.time:time("gameplay")
 	local estimate_data = med_crate_estimates[unit]
 
 	if not estimate_data then
 		estimate_data = {
 			amount_healed = 0,
-			deployed_at = Managers.time:time("gameplay"),
+			deployed_at = gameplay_time,
 		}
 		med_crate_estimates[unit] = estimate_data
 	end
-
-	local gameplay_time = Managers.time:time("gameplay")
 
 	if estimate_data.last_update_t == gameplay_time then
 		return
@@ -962,7 +1000,6 @@ mod.update_ammo_med_markers = function(self, marker)
 
 	local frame = mod._aio_frame
 
-	-- remove med proximity circle (once per frame, not once per marker)
 	if mod._med_decal_frame ~= frame then
 		mod._med_decal_frame = frame
 

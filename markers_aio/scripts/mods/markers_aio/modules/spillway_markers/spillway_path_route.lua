@@ -115,11 +115,9 @@ end
 
 local function destroy_line_object()
 	if state and state.line_object and state.world and state.world == get_world() then
-		pcall(function()
-			LineObject.reset(state.line_object)
-			LineObject.dispatch(state.world, state.line_object)
-			World.destroy_line_object(state.world, state.line_object)
-		end)
+		LineObject.reset(state.line_object)
+		LineObject.dispatch(state.world, state.line_object)
+		World.destroy_line_object(state.world, state.line_object)
 	end
 
 	if state then
@@ -161,7 +159,7 @@ local function destroy_particles()
 	local world = state.world
 
 	if world and world == get_world() then
-		pcall(World.destroy_particle_group, world, state.particle_group)
+		World.destroy_particle_group(world, state.particle_group)
 	end
 
 	state.particle_group = nil
@@ -251,9 +249,9 @@ local function find_route_entry(from_table, to_table)
 end
 
 local function waypoint_entries()
-	local ok, data = pcall(mod.get, mod, WAYPOINT_KEY)
+	local data = mod:get(WAYPOINT_KEY)
 
-	if not ok or type(data) ~= "table" or data.version ~= WAYPOINT_VERSION then
+	if type(data) ~= "table" or data.version ~= WAYPOINT_VERSION then
 		return {}
 	end
 
@@ -273,7 +271,7 @@ local function find_waypoint_entry(entries, from_table, to_table)
 end
 
 local function save_waypoint_entries(entries)
-	pcall(mod.set, mod, WAYPOINT_KEY, {
+	mod:set(WAYPOINT_KEY, {
 		version = WAYPOINT_VERSION,
 		entries = entries,
 	})
@@ -380,16 +378,14 @@ mod.clear_spillway_route_cache = function()
 
 	_seed_entries = {}
 
-	local file_ok = pcall(function()
-		local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
+	local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
+	local file_ok = false
 
-		if not file then
-			error("could not open " .. SEED_WRITE_PATH)
-		end
-
+	if file then
 		file:write(build_seed_source({}))
 		file:close()
-	end)
+		file_ok = true
+	end
 
 	mod.reset_spillway_path_route()
 
@@ -814,27 +810,23 @@ mod.save_spillway_route = function(leg)
 	end
 
 	local source = build_seed_source(entries)
-	local ok, err = pcall(function()
-		local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
+	local file = Mods.lua.io.open(SEED_WRITE_PATH, "w")
 
-		if not file then
-			error("could not open " .. SEED_WRITE_PATH)
-		end
+	if not file then
+		local err = "could not open " .. SEED_WRITE_PATH
 
-		file:write(source)
-		file:close()
-	end)
-
-	if not ok then
-		mod:info("[spillway_route] route save failed (%s); dumping source below", tostring(err))
+		mod:info("[spillway_route] route save failed (%s); dumping source below", err)
 		mod:echo("Could not write the seed file; dumping route source to the log instead.")
 
 		for line in string.gmatch(source, "[^\n]+") do
 			mod:info("[spillway_route][seed] %s", line)
 		end
 
-		return false, tostring(err)
+		return false, err
 	end
+
+	file:write(source)
+	file:close()
 
 	_seed_entries = nil
 
@@ -1116,9 +1108,9 @@ local function ensure_line_object()
 		return
 	end
 
-	local ok, line_object = pcall(World.create_line_object, world)
+	local line_object = World.create_line_object(world)
 
-	if ok and line_object then
+	if line_object then
 		state.line_object = line_object
 		state.line_object_world = world
 	end
@@ -1137,28 +1129,41 @@ local function draw_line_route()
 	local dashed = state.fx == FX_DASHED
 	local color = get_route_color()
 
-	pcall(function()
-		LineObject.reset(line_object)
+	LineObject.reset(line_object)
 
-		for r = 1, #state.route_points do
-			local points = state.route_points[r]
+	for r = 1, #state.route_points do
+		local points = state.route_points[r]
 
-			if points then
-				for i = 1, #points - 1 do
-					local a = points[i]:unbox() + Vector3(0, 0, ROUTE_Z_OFFSET)
-					local b = points[i + 1]:unbox() + Vector3(0, 0, ROUTE_Z_OFFSET)
+		if points then
+			for i = 1, #points - 1 do
+				local a = points[i]:unbox() + Vector3(0, 0, ROUTE_Z_OFFSET)
+				local b = points[i + 1]:unbox() + Vector3(0, 0, ROUTE_Z_OFFSET)
 
-					if dashed then
-						LineObject.add_segmented_line(line_object, color, a, b, DASH_GAP, DASH_SUBDIVISIONS)
-					else
-						LineObject.add_segmented_line(line_object, color, a, b, 0, SOLID_SUBDIVISIONS)
-					end
+				if dashed then
+					LineObject.add_segmented_line(line_object, color, a, b, DASH_GAP, DASH_SUBDIVISIONS)
+				else
+					LineObject.add_segmented_line(line_object, color, a, b, 0, SOLID_SUBDIVISIONS)
 				end
 			end
 		end
+	end
 
-		LineObject.dispatch(world, line_object)
-	end)
+	LineObject.dispatch(world, line_object)
+end
+
+local function add_dot_position(position)
+	local line_object = state.line_object
+
+	if line_object then
+		LineObject.add_circle(
+			line_object,
+			state.draw_color,
+			position + Vector3(0, 0, ROUTE_Z_OFFSET),
+			DOT_RADIUS,
+			state.draw_up,
+			16
+		)
+	end
 end
 
 local function draw_dot_route()
@@ -1171,31 +1176,20 @@ local function draw_dot_route()
 		return
 	end
 
-	local color = get_route_color()
-	local up = Vector3.up()
+	state.draw_color = get_route_color()
+	state.draw_up = Vector3.up()
 
-	pcall(function()
-		LineObject.reset(line_object)
+	LineObject.reset(line_object)
 
-		for r = 1, #state.route_points do
-			local points = state.route_points[r]
+	for r = 1, #state.route_points do
+		local points = state.route_points[r]
 
-			if points then
-				walk_points(points, DOT_SPACING, function(position)
-					LineObject.add_circle(
-						line_object,
-						color,
-						position + Vector3(0, 0, ROUTE_Z_OFFSET),
-						DOT_RADIUS,
-						up,
-						16
-					)
-				end)
-			end
+		if points then
+			walk_points(points, DOT_SPACING, add_dot_position)
 		end
+	end
 
-		LineObject.dispatch(world, line_object)
-	end)
+	LineObject.dispatch(world, line_object)
 end
 
 local function draw_arrow_route()
@@ -1211,57 +1205,55 @@ local function draw_arrow_route()
 	local color = get_route_color()
 	local up = Vector3.up()
 
-	pcall(function()
-		LineObject.reset(line_object)
+	LineObject.reset(line_object)
 
-		for r = 1, #state.route_points do
-			local points = state.route_points[r]
+	for r = 1, #state.route_points do
+		local points = state.route_points[r]
 
-			if points then
-				for i = 1, #points - 1 do
-					local a = points[i]:unbox()
-					local b = points[i + 1]:unbox()
-					local diff = b - a
-					local distance = Vector3.length(diff)
+		if points then
+			for i = 1, #points - 1 do
+				local a = points[i]:unbox()
+				local b = points[i + 1]:unbox()
+				local diff = b - a
+				local distance = Vector3.length(diff)
 
-					if distance > 0.01 then
-						local direction = diff / distance
-						local perpendicular = Vector3.normalize(Vector3.cross(direction, up))
-						local half = ARROW_SIZE * 0.5
-						local travelled = ARROW_SPACING * 0.5
+				if distance > 0.01 then
+					local direction = diff / distance
+					local perpendicular = Vector3.normalize(Vector3.cross(direction, up))
+					local half = ARROW_SIZE * 0.5
+					local travelled = ARROW_SPACING * 0.5
 
-						while travelled < distance do
-							local center = a + direction * travelled + Vector3(0, 0, ROUTE_Z_OFFSET)
-							local tip = center + direction * half
-							local back_left = center - direction * half + perpendicular * half
-							local back_right = center - direction * half - perpendicular * half
+					while travelled < distance do
+						local center = a + direction * travelled + Vector3(0, 0, ROUTE_Z_OFFSET)
+						local tip = center + direction * half
+						local back_left = center - direction * half + perpendicular * half
+						local back_right = center - direction * half - perpendicular * half
 
-							LineObject.add_segmented_line(
-								line_object,
-								color,
-								back_left,
-								tip,
-								ARROW_GAP,
-								ARROW_SUBDIVISIONS
-							)
-							LineObject.add_segmented_line(
-								line_object,
-								color,
-								back_right,
-								tip,
-								ARROW_GAP,
-								ARROW_SUBDIVISIONS
-							)
+						LineObject.add_segmented_line(
+							line_object,
+							color,
+							back_left,
+							tip,
+							ARROW_GAP,
+							ARROW_SUBDIVISIONS
+						)
+						LineObject.add_segmented_line(
+							line_object,
+							color,
+							back_right,
+							tip,
+							ARROW_GAP,
+							ARROW_SUBDIVISIONS
+						)
 
-							travelled = travelled + ARROW_SPACING
-						end
+						travelled = travelled + ARROW_SPACING
 					end
 				end
 			end
 		end
+	end
 
-		LineObject.dispatch(world, line_object)
-	end)
+	LineObject.dispatch(world, line_object)
 end
 
 local function ensure_particle_group(world)
@@ -1269,13 +1261,35 @@ local function ensure_particle_group(world)
 		return state.particle_group
 	end
 
-	local ok, group = pcall(World.create_particle_group, world)
+	local group = World.create_particle_group(world)
 
-	if ok and group then
+	if group then
 		state.particle_group = group
 	end
 
 	return state.particle_group
+end
+
+local function spawn_particle_at_position(position)
+	local config = state.particle_config
+	local group = state.particle_group
+
+	if not (config and group and state.world) then
+		return
+	end
+
+	local id = World.create_particles(
+		state.world,
+		config.path,
+		position + Vector3(0, 0, config.z),
+		nil,
+		nil,
+		group
+	)
+
+	if id then
+		state.particle_spawned = state.particle_spawned + 1
+	end
 end
 
 local function spawn_particle_route()
@@ -1296,34 +1310,21 @@ local function spawn_particle_route()
 		return
 	end
 
-	local spawned = 0
+	state.particle_config = config
+	state.particle_spawned = 0
 
 	for r = 1, #state.route_points do
 		local points = state.route_points[r]
 
 		if points then
-			walk_points(points, config.spacing, function(position)
-				local ok, id = pcall(
-					World.create_particles,
-					world,
-					config.path,
-					position + Vector3(0, 0, config.z),
-					nil,
-					nil,
-					group
-				)
-
-				if ok and id then
-					spawned = spawned + 1
-				end
-			end)
+			walk_points(points, config.spacing, spawn_particle_at_position)
 		end
 	end
 
 	state.particle_timer = 0
 
-	if spawned > 0 then
-		mod:info("[spillway_route] spawned %d '%s' effects", spawned, state.fx)
+	if state.particle_spawned > 0 then
+		mod:info("[spillway_route] spawned %d '%s' effects", state.particle_spawned, state.fx)
 
 		state.stage = "done"
 

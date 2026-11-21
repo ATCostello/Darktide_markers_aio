@@ -353,8 +353,34 @@ mod.update_spillway_path_markers = function(self, marker)
 	if mod._spillway_setup_frame ~= frame then
 		mod._spillway_setup_frame = frame
 
-		if enabled then
+		local lookup = mod._spillway_order_to_marker
+
+		if lookup then
+			table.clear(lookup)
+		else
+			lookup = {}
+			mod._spillway_order_to_marker = lookup
+		end
+
+		if enabled and is_spillway_mission() then
 			create_spillway_markers(self)
+
+			local markers = self and self._markers
+
+			if markers then
+				for i = 1, #markers do
+					local route_marker = markers[i]
+
+					if route_marker and route_marker.type == SPILLWAY_MARKER_TYPE then
+						local data = route_marker.data
+						local order = type(data) == "table" and rawget(data, "spillway_order") or nil
+
+						if order ~= nil and lookup[order] == nil then
+							lookup[order] = route_marker
+						end
+					end
+				end
+			end
 		end
 	end
 

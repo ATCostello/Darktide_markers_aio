@@ -207,6 +207,74 @@ local spillway_route_fx_options = {
 		value = "off",
 	},
 }
+
+local proximity_message_destinations = {
+	{
+		text = "chat",
+		value = "chat",
+	},
+	{
+		text = "combat_feed",
+		value = "combat_feed",
+	},
+}
+
+local proximity_sub_widgets = {
+	{
+		setting_id = "proximity_enable",
+		type = "checkbox",
+		default_value = false,
+		tooltip = "proximity_enable_tooltip",
+	},
+	{
+		setting_id = "proximity_range",
+		type = "numeric",
+		default_value = 15,
+		range = { 1, 100 },
+		step_size_value = 1,
+		tooltip = "proximity_range_tooltip",
+	},
+	{
+		setting_id = "proximity_message_destination",
+		type = "dropdown",
+		options = proximity_message_destinations,
+		default_value = "chat",
+		tooltip = "proximity_message_destination_tooltip",
+	},
+	{
+		setting_id = "proximity_message_format",
+		type = "text",
+		default_value = mod:localize("proximity_message_default"),
+		placeholder_text = "proximity_message_format_placeholder",
+		max_length = 128,
+		show_length_limit = true,
+		tooltip = "proximity_message_format_tooltip",
+	},
+}
+
+local proximity_marker_types = {
+	"tome",
+	"material",
+	"ammo_med",
+	"stimm",
+	"chest",
+	"heretical_idol",
+	"event",
+	"objective",
+	"luggable",
+	"martyrs_skull",
+	"expedition",
+}
+
+for i = 1, #proximity_marker_types do
+	proximity_sub_widgets[#proximity_sub_widgets + 1] = {
+		setting_id = "proximity_" .. proximity_marker_types[i],
+		type = "checkbox",
+		default_value = false,
+		tooltip = "proximity_type_tooltip",
+	}
+end
+
 return {
 	name = mod:localize("mod_name"),
 	description = mod:localize("mod_description"),
@@ -284,6 +352,14 @@ return {
 						tooltip = "scale_tooltip",
 					},
 				},
+			},
+
+			-- PROXIMITY
+			{
+				setting_id = "proximity_settings",
+				type = "group",
+				tab = mod:localize("tab_proximity"),
+				sub_widgets = proximity_sub_widgets,
 			},
 
 			-- AMMO / MED
@@ -1961,7 +2037,8 @@ return {
 					{
 						setting_id = "martyrs_skull_guide_x_offset",
 						type = "numeric",
-						default_value = -1400,
+						default_value = 0,
+						step_size_value = 5,
 						tooltip = "martyrs_skull_guide_x_offset_tooltip",
 						range = { -2000, 2000 },
 						decimals_number = 0,
@@ -1969,7 +2046,8 @@ return {
 					{
 						setting_id = "martyrs_skull_guide_y_offset",
 						type = "numeric",
-						default_value = -90,
+						default_value = 10,
+						step_size_value = 5,
 						tooltip = "martyrs_skull_guide_y_offset_tooltip",
 						range = { -1200, 1200 },
 						decimals_number = 0,

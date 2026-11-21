@@ -329,9 +329,7 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	local ping_max_size = template.ping_max_size
 	local ping_style = style.ping
 	local ping_size = ping_style.size
-	local ping_speed = 7
-	local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
-	local ping_pulse_size_increase = ping_anim_progress * 15
+	local ping_pulse_size_increase = (mod._aio_ping_progress or 0.5) * 15
 
 	ping_size[1] = (
 		ping_min_size[1]

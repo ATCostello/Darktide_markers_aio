@@ -32,24 +32,6 @@ local background_size = {
 }
 local scale_fraction = 0.75
 
-local function find_marker_by_order(parent, order)
-	local markers = parent and parent._markers
-
-	if markers then
-		for i = 1, #markers do
-			local marker = markers[i]
-
-			if marker and marker.type == "spillway_path_marker" then
-				local data = marker.data
-
-				if data and data.spillway_order == order then
-					return marker
-				end
-			end
-		end
-	end
-end
-
 template.size = size
 template.name = "spillway_path_marker"
 template.min_distance = 15
@@ -394,9 +376,7 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	local ping_max_size = template.ping_max_size
 	local ping_style = style.ping
 	local ping_size = ping_style.size
-	local ping_speed = 7
-	local ping_anim_progress = 0.5 + math.sin(Application.time_since_launch() * ping_speed) * 0.5
-	local ping_pulse_size_increase = ping_anim_progress * 15
+	local ping_pulse_size_increase = (mod._aio_ping_progress or 0.5) * 15
 
 	ping_size[1] = (
 		ping_min_size[1]
@@ -442,7 +422,8 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	local route_arrow_angle
 
 	if target_order and parent._markers then
-		local target_marker = find_marker_by_order(parent, target_order)
+		local lookup = mod._spillway_order_to_marker
+		local target_marker = lookup and lookup[target_order]
 		local camera = parent._get_camera and parent:_get_camera()
 		local from_position = marker.position and marker.position:unbox()
 		local to_position = target_marker and target_marker.position and target_marker.position:unbox()

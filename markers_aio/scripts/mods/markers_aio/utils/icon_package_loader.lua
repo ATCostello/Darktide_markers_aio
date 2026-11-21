@@ -133,13 +133,7 @@ local function _package_is_available(package_name)
 		return false
 	end
 
-	local ok, exists = pcall(application.can_get_resource, "package", package_name)
-
-	if not ok then
-		mod:error("MARKERS AIO PACKAGE FAILED: " .. tostring(package_name))
-	end
-
-	return ok and exists or false
+	return application.can_get_resource("package", package_name) or false
 end
 
 local function _package_is_loaded(package_name)
@@ -150,13 +144,7 @@ local function _package_is_loaded(package_name)
 		return false
 	end
 
-	local ok, is_loaded = pcall(package_manager.has_loaded, package_manager, package_name)
-
-	if not ok then
-		mod:error("MARKERS AIO PACKAGE FAILED: " .. tostring(package_name))
-	end
-
-	return ok and is_loaded or false
+	return package_manager:has_loaded(package_name) or false
 end
 
 local function _load_package_list(package_list)
@@ -172,14 +160,12 @@ local function _load_package_list(package_list)
 			if _package_is_loaded(pkg) then
 				mod._required_icon_packages[pkg] = true
 			else
-				local ok = pcall(package_manager.load, package_manager, pkg, PACKAGE_REF, nil, true)
+				local package_id = package_manager:load(pkg, PACKAGE_REF, nil, true)
 
-				if not ok then
-					mod:error("MARKERS AIO PACKAGE FAILED: " .. tostring(package_name))
-				end
-
-				if ok then
+				if package_id then
 					mod._required_icon_packages[pkg] = true
+				else
+					mod:error("MARKERS AIO PACKAGE FAILED: " .. tostring(pkg))
 				end
 			end
 		end

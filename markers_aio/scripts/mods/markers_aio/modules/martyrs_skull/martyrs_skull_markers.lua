@@ -70,6 +70,25 @@ local function vector3_equals_4dp(v1, v2)
 	return round(v1.x, 4) == round(v2.x, 4) and round(v1.y, 4) == round(v2.y, 4) and round(v1.z, 4) == round(v2.z, 4)
 end
 
+local function wmarker_position(wmarker)
+	return Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3])
+end
+
+local function wmarker_check_position(wmarker)
+	return Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
+end
+
+local function wmarker_guide_key(wmarker)
+	local key = wmarker.guide_key
+
+	if not key then
+		key = string.format("%.4f_%.4f_%.4f", wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
+		wmarker.guide_key = key
+	end
+
+	return key
+end
+
 local maryrs_skull_walkthrough_markers = {
 	["cm_habs"] = {
 		["title_placed"] = false,
@@ -1844,8 +1863,9 @@ local maryrs_skull_walkthrough_markers = {
 }
 
 local need_skull_cache = {
-	time = -1,
+	time = 0,
 	value = false,
+	valid = false,
 }
 
 local function compute_player_needs_skull()
@@ -1914,20 +1934,24 @@ end
 mod.does_player_need_skull = function()
 	local now = os.clock()
 
-	if now - need_skull_cache.time < 5 then
+	if need_skull_cache.valid and now - need_skull_cache.time < 5 then
 		return need_skull_cache.value
 	end
 
 	need_skull_cache.time = now
 	need_skull_cache.value = compute_player_needs_skull()
+	need_skull_cache.valid = true
 
 	return need_skull_cache.value
 end
 
 local guide_check_cache = {}
 
-mod.check_guide_marker_exists = function(self, guide_position)
-	local key = string.format("%.4f_%.4f_%.4f", guide_position.x, guide_position.y, guide_position.z)
+mod.check_guide_marker_exists = function(self, guide_position, key)
+	if not key then
+		key = string.format("%.4f_%.4f_%.4f", guide_position.x, guide_position.y, guide_position.z)
+	end
+
 	local cached = guide_check_cache[key]
 
 	if cached ~= nil then
@@ -2046,19 +2070,16 @@ mod.setup_walkthrough_markers = function(self)
 
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]
-				local wpos = Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3])
+				local wpos = wmarker_position(wmarker)
 				local near = false
 
 				if markers_enabled then
-					local marker = mod.check_guide_marker_exists(
-						self,
-						Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
-					)
+					local marker = mod.check_guide_marker_exists(self, wmarker_check_position(wmarker), wmarker_guide_key(wmarker))
 					near = mod:is_player_near_marker(marker, 30)
 				end
 
 				if not near and widget_enabled then
-					near = mod:is_player_near_position(self, wpos, 30)
+					near = mod:is_player_near_position(wpos, 30)
 				end
 
 				if near then
@@ -2067,7 +2088,9 @@ mod.setup_walkthrough_markers = function(self)
 				end
 			end
 
-			if fs.martyrs_skull_guide_disable_if_collected == true and mod.does_player_need_skull() == false then
+			local needs_skull = mod.does_player_need_skull()
+
+			if fs.martyrs_skull_guide_disable_if_collected == true and needs_skull == false then
 				if widget_enabled then
 					mod.guide_widget_clear()
 				end
@@ -2075,7 +2098,6 @@ mod.setup_walkthrough_markers = function(self)
 			end
 
 			local guide_lines = {}
-			local first_marker_seen = nil
 
 			if MartyrsSkullMarkerTemplate and MartyrsSkullMarkerGuideTemplate then
 				if not self._marker_templates[MartyrsSkullMarkerTemplate.name] then
@@ -2088,17 +2110,14 @@ mod.setup_walkthrough_markers = function(self)
 
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]
-				local marker = mod.check_guide_marker_exists(
-					self,
-					Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3] + 1)
-				)
+				local marker = mod.check_guide_marker_exists(self, wmarker_check_position(wmarker), wmarker_guide_key(wmarker))
 
 				if markers_enabled then
 					if wmarker.placed == false and marker == nil then
 						Managers.event:trigger(
 							"add_world_marker_position",
 							"martyrs_skull_guide",
-							Vector3(wmarker.position[1], wmarker.position[2], wmarker.position[3])
+							wmarker_position(wmarker)
 						)
 						wmarker.placed = true
 					end
@@ -2135,7 +2154,7 @@ mod.setup_walkthrough_markers = function(self)
 							if marker.widget.style.field_improv_ammo_med and marker.widget.style.icon then
 								marker.widget.style.field_improv_ammo_med.size[1] = marker.widget.style.icon.size[1]
 								marker.widget.style.field_improv_ammo_med.size[2] = marker.widget.style.icon.size[2]
-								marker.widget.style.field_improv_ammo_med.color = { 255, 210, 175, 0 }
+								mod.set_colour_argb(marker.widget.style.field_improv_ammo_med.color, 255, 210, 175, 0)
 								marker.widget.style.field_improv_ammo_med.offset[1] = 35 * marker.scale
 
 								mod.set_colour(
@@ -2143,10 +2162,6 @@ mod.setup_walkthrough_markers = function(self)
 									mod.lookup_colour(fs.martyrs_skull_border_colour)
 								)
 							end
-						end
-
-						if not first_marker_seen then
-							first_marker_seen = marker
 						end
 					end
 				end
@@ -2163,12 +2178,9 @@ mod.setup_walkthrough_markers = function(self)
 
 			if widget_enabled then
 				if player_near_skull == true then
-					local needed = ""
-					if mod.does_player_need_skull() == true then
-						needed = "{#color(232,188,109)}" .. mod:localize("martyrs_skull_not_collected") .. "{#reset()}"
-					else
-						needed = "{#color(232,188,109)}" .. mod:localize("martyrs_skull_collected") .. "{#reset()}"
-					end
+					local needed = "{#color(232,188,109)}"
+						.. mod:localize(needs_skull and "martyrs_skull_not_collected" or "martyrs_skull_collected")
+						.. "{#reset()}"
 
 					local mission_name = ""
 					if self._level and self._level.mission_name then
@@ -2189,7 +2201,7 @@ mod.setup_walkthrough_markers = function(self)
 end
 
 mod.reset_martyrs_skull_guides = function()
-	need_skull_cache.time = -1
+	need_skull_cache.valid = false
 	table.clear(guide_check_cache)
 
 	for level_name, walkthrough_markers in pairs(maryrs_skull_walkthrough_markers) do

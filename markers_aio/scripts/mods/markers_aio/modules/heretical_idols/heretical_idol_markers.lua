@@ -47,8 +47,11 @@ DestructibleExtension.update = function(self, unit, dt, t)
 	end
 
 	if self._collectible_data and mod.frame_settings.mod_enabled then
-		if self._collectible_data.unit and self._collectible_data.section_id then
-			mod.add_heretical_idol_marker(self, self._collectible_data.unit, self._collectible_data.section_id)
+		local collectible_unit = self._collectible_data.unit
+		local section_id = self._collectible_data.section_id
+
+		if collectible_unit and section_id and mod.current_heretical_idol_markers[section_id] ~= collectible_unit then
+			mod.add_heretical_idol_marker(self, collectible_unit, section_id)
 		end
 	end
 end
