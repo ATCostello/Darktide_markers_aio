@@ -511,17 +511,23 @@ local function apply_ammo_status_marker_visuals(marker)
 
 				if status.status == "teammate" and status.needy_player then
 					local needy = status.needy_player
-					local needy_slot = needy.player and needy.player:slot() or needy.slot
-					local needy_colour = UISettings.player_slot_colors[needy_slot]
+					local player_unit = needy.player and needy.player.player_unit
 
-					numeric_count = numeric_count + 1
-					numeric_parts[numeric_count] = string.format(
-						"{#color(%d,%d,%d)}%s{#reset()}",
-						needy_colour and needy_colour[2] or 255,
-						needy_colour and needy_colour[3] or 255,
-						needy_colour and needy_colour[4] or 255,
-						needy.icon
-					) .. " (+" .. math.ceil((needy.percentage or 0) * 100) .. "%)"
+					if player_unit and Unit.alive(player_unit) then
+						local needy_slot = needy.player and needy.player.slot and needy.player:slot() or needy.slot
+						local needy_colour = needy_slot and UISettings.player_slot_colors[needy_slot]
+
+						if needy_colour then
+							numeric_count = numeric_count + 1
+							numeric_parts[numeric_count] = string.format(
+								"{#color(%d,%d,%d)}%s{#reset()}",
+								needy_colour and needy_colour[2] or 255,
+								needy_colour and needy_colour[3] or 255,
+								needy_colour and needy_colour[4] or 255,
+								needy.icon
+							) .. " (+" .. math.ceil((needy.percentage or 0) * 100) .. "%)"
+						end
+					end
 				end
 
 				if status_fs.ammo_status_show_gain and status.gain then
@@ -531,8 +537,7 @@ local function apply_ammo_status_marker_visuals(marker)
 
 				if status_fs.ammo_status_show_waste and status.waste then
 					numeric_count = numeric_count + 1
-					numeric_parts[numeric_count] =
-						mod.ammo_status_colour_markup("(-" .. status.waste .. ")", "waste")
+					numeric_parts[numeric_count] = mod.ammo_status_colour_markup("(-" .. status.waste .. ")", "waste")
 				end
 
 				marker._aio_ammo_text = table.concat(numeric_parts, " ")
