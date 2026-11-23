@@ -40,7 +40,22 @@ local function fallback_name(marker_type)
 	return name
 end
 
+local function get_article(name)
+	local first = string.sub(name or "", 1, 1):lower()
+
+	if first == "" then
+		return "a"
+	end
+
+	return string.find("aeiou", first, 1, true) and "an" or "a"
+end
+
 local function build_coloured_message(format, name)
+	local article = get_article(name)
+
+	format = string.gsub(format, "%{a/an%}", article)
+	format = string.gsub(format, "a/an", article)
+
 	local parts = {}
 	local last = 1
 	local from, to = string.find(format, "{name}", 1, true)
@@ -110,7 +125,7 @@ mod.update_proximity_notifications = function(self, dt, t)
 	end
 
 	local player = mod.get_local_player()
-	local player_unit = player and player.player_unit
+	local player_unit = mod.get_player_unit(player)
 
 	if not player_unit or not Unit.alive(player_unit) then
 		return

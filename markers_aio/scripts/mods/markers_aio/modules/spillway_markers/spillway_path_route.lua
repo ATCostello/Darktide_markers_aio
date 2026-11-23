@@ -71,7 +71,7 @@ local state
 
 local function get_world()
 	local player = mod.get_local_player()
-	local unit = player and player.player_unit
+	local unit = mod.get_player_unit(player)
 
 	if unit and Unit.alive(unit) then
 		return Unit.world(unit)
@@ -421,7 +421,7 @@ end
 
 local function get_player_position()
 	local player = mod.get_local_player()
-	local unit = player and player.player_unit
+	local unit = mod.get_player_unit(player)
 
 	if not (unit and Unit.alive(unit)) then
 		return nil

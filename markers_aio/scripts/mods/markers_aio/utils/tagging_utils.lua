@@ -269,7 +269,7 @@ HudElementSmartTagging._handle_interaction_draw = function(self, dt, t, input_se
 			self:_find_best_smart_tag_interaction(ui_renderer, render_settings, force_update_targets)
 		local parent = self._parent
 		local player = parent:player()
-		local player_unit = player.player_unit
+		local player_unit = mod.get_player_unit(player)
 		local previous_active_interaction_data = self._active_interaction_data
 
 		if not best_marker and best_unit then
@@ -323,7 +323,7 @@ HudElementSmartTagging._can_present_tag_interaction = function(self)
 		return false
 	end
 
-	local player_unit = player.player_unit
+	local player_unit = mod.get_player_unit(player)
 
 	if not ALIVE[player_unit] then
 		return false
@@ -395,7 +395,7 @@ mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", fun
 
 						if status.status == "teammate" and status.needy_player then
 							local needy = status.needy_player
-							local needy_slot = needy.player and needy.player:slot() or needy.slot
+							local needy_slot = needy.slot
 							local needy_colour = UISettings.player_slot_colors[needy_slot]
 
 							numeric_count = numeric_count + 1

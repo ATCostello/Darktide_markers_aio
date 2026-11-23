@@ -238,7 +238,7 @@ local proximity_sub_widgets = {
 		setting_id = "proximity_message_destination",
 		type = "dropdown",
 		options = proximity_message_destinations,
-		default_value = "chat",
+		default_value = "combat_feed",
 		tooltip = "proximity_message_destination_tooltip",
 	},
 	{

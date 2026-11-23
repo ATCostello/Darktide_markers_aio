@@ -104,7 +104,7 @@ mod.update_chest_markers = function(self, marker)
 				chest_items = mod.get_all_items_in_chest(self, unit)
 
 				local local_player = Managers.player:local_player(1)
-				local local_player_unit = local_player.player_unit
+				local local_player_unit = mod.get_player_unit(local_player)
 
 				local chest_pos = POSITION_LOOKUP[unit]
 

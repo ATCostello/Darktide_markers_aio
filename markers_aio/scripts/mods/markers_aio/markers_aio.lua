@@ -18,12 +18,65 @@ local vector_distance = Vector3.distance
 local vector_distance_squared = Vector3.distance_squared
 local vector_dot = Vector3.dot
 
+local function player_is_usable(player)
+	return type(player) == "table" and rawget(player, "__deleted") ~= true
+end
+
+local function get_player_unit(player)
+	if not player_is_usable(player) then
+		return nil
+	end
+
+	return rawget(player, "player_unit")
+end
+
+mod.player_is_usable = player_is_usable
+mod.get_player_unit = get_player_unit
+
+local function get_valid_hud_camera(hud)
+	if type(hud) ~= "table" then
+		return nil
+	end
+
+	local state = Managers.state
+	local camera_manager = state and state.camera
+	local viewport_name = rawget(hud, "_world_viewport_name")
+
+	if not camera_manager or not camera_manager.has_camera or not viewport_name then
+		return nil
+	end
+
+	local camera = camera_manager:has_camera(viewport_name)
+
+	if camera and rawget(hud, "_camera") ~= camera then
+		hud._camera = camera
+	end
+
+	return camera
+end
+
+local function get_valid_world_marker_camera(hud_element)
+	if type(hud_element) ~= "table" then
+		return nil
+	end
+
+	local camera = get_valid_hud_camera(rawget(hud_element, "_parent"))
+
+	hud_element._player_camera = camera
+
+	return camera
+end
+
+mod.get_valid_hud_camera = get_valid_hud_camera
+mod.get_valid_world_marker_camera = get_valid_world_marker_camera
+
 mod.get_local_player = function()
 	local frame = mod._aio_frame
 
 	if mod._local_player_frame ~= frame then
 		mod._local_player_frame = frame
-		mod._local_player_cached = Managers.player:local_player_safe(1)
+		local player = Managers.player:local_player_safe(1)
+		mod._local_player_cached = player_is_usable(player) and player or nil
 	end
 
 	return mod._local_player_cached
@@ -47,7 +100,7 @@ mod.get_player_units = function()
 		local players = Managers.player:players()
 
 		for _, player in pairs(players) do
-			local unit = player.player_unit
+			local unit = get_player_unit(player)
 
 			if unit then
 				units[unit] = true
@@ -62,7 +115,7 @@ mod.update_ads_state = function()
 	local fs = mod.frame_settings
 	local player = mod.get_local_player()
 
-	local unit = player and player.player_unit
+	local unit = get_player_unit(player)
 
 	if not unit or not Unit.alive(unit) then
 		fs.is_ads = false
@@ -459,7 +512,7 @@ mod.update_runtime_state = function(dt)
 	mod.update_ads_state()
 
 	local player = mod.get_local_player()
-	local unit = player and player.player_unit
+	local unit = get_player_unit(player)
 
 	if not unit or not ALIVE[unit] then
 		fs.servo_skull_equipped = false
@@ -1095,7 +1148,7 @@ local function draw_marker_list(self, markers, ui_renderer, draw_index)
 end
 
 HudElementWorldMarkers._draw_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
-	local camera = self:_get_camera()
+	local camera = mod.get_valid_world_marker_camera(self)
 	if not camera then
 		return
 	end
@@ -1454,7 +1507,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 	self._raycast_frame_counter = (self._raycast_frame_counter + 1)
 		% HudElementWorldMarkersSettings.raycasts_frame_delay
 
-	local camera = self:_get_camera()
+	local camera = get_valid_world_marker_camera(self)
 
 	if camera then
 		local scale = ui_renderer.scale
@@ -1827,7 +1880,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 			mod.update_proximity_notifications(self, dt, t)
 		end
 	else
-		self._player_camera = self._parent:player_camera()
+		get_valid_world_marker_camera(self)
 	end
 
 	local markers_to_remove = #temp_array_markers_to_remove
@@ -1850,8 +1903,8 @@ local DEFAULT_HUD_INTERACTION_MAX_SPAWN_DISTANCE_SQ = HudElementInteractionSetti
 HudElementInteraction._update_interactee_data = function(self, interactee_unit, extension)
 	local parent = self._parent
 	local player = parent:player()
-	local player_unit = player.player_unit
-	local camera = parent:player_camera()
+	local player_unit = get_player_unit(player)
+	local camera = get_valid_hud_camera(parent)
 	local camera_position = camera and Camera.local_position(camera)
 
 	local is_active = extension:active()

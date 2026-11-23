@@ -92,7 +92,7 @@ mod.update_servo_skull_markers = function(self, marker)
 			else
 				local interactee_extension = ScriptUnit.has_extension(unit, "interactee_system")
 				local player = mod.get_local_player()
-				local player_unit = player and player.player_unit
+				local player_unit = mod.get_player_unit(player)
 
 				if minigame_extension and _is_decoder_active(minigame_extension) then
 					colour_type = "servo_skull_active"

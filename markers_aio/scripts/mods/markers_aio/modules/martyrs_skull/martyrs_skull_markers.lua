@@ -1901,15 +1901,17 @@ local function compute_player_needs_skull()
 			end
 		end
 
-		local player_id = player._local_player_id
-		local player_character_name = player._profile.name
+		local player_usable = mod.player_is_usable(player)
+		local player_id = player_usable and rawget(player, "_local_player_id") or nil
+		local player_profile = player_usable and rawget(player, "_profile") or nil
+		local player_character_name = player_profile and player_profile.name
 
 		local collected = false
 
 		if player_character_name then
 			-- set collected to achievement status
 
-			if player and current_mission_martyrskull_achievement_id then
+			if player_usable and current_mission_martyrskull_achievement_id then
 				if
 					Managers.achievements:_achievement_completed(player_id, current_mission_martyrskull_achievement_id)
 				then
@@ -1990,7 +1992,7 @@ mod.is_player_near_marker = function(self, marker, threshold)
 			return false
 		end
 
-		local player_unit = player.player_unit
+		local player_unit = mod.get_player_unit(player)
 		if not player_unit or not Unit.alive(player_unit) then
 			return false
 		end
@@ -2028,7 +2030,7 @@ mod.is_player_near_position = function(self, position, threshold)
 		return false
 	end
 
-	local player_unit = player.player_unit
+	local player_unit = mod.get_player_unit(player)
 	if not player_unit or not Unit.alive(player_unit) then
 		return false
 	end
@@ -2216,7 +2218,9 @@ end
 -- Debug teleport command
 mod:command("tpm", "Teleport to a Martyr's Skull or Spillway Path marker by index or marker_text", function(args)
 	local player = Managers.player:local_player(1)
-	if not player or not player.player_unit or not Unit.alive(player.player_unit) then
+	local player_unit = mod.get_player_unit(player)
+
+	if not player_unit or not Unit.alive(player_unit) then
 		mod:echo("Player not available.")
 		return
 	end
@@ -2231,7 +2235,7 @@ mod:command("tpm", "Teleport to a Martyr's Skull or Spillway Path marker by inde
 		local entry = index and spillway_markers[index]
 
 		if entry then
-			PlayerMovement.teleport_fixed_update(player.player_unit, entry.position)
+			PlayerMovement.teleport_fixed_update(player_unit, entry.position)
 			mod:echo("Teleported to Spillway Path marker " .. index)
 			return
 		end
@@ -2278,6 +2282,6 @@ mod:command("tpm", "Teleport to a Martyr's Skull or Spillway Path marker by inde
 
 	local pos = Vector3(target_marker.position[1], target_marker.position[2], target_marker.position[3])
 
-	PlayerMovement.teleport_fixed_update(player.player_unit, pos)
+	PlayerMovement.teleport_fixed_update(player_unit, pos)
 	mod:echo("Teleported to marker " .. (target_marker.marker_text_ammo_med or arg))
 end)

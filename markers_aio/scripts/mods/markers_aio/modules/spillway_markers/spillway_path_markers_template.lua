@@ -424,7 +424,7 @@ template.update_function = function(parent, ui_renderer, widget, marker, templat
 	if target_order and parent._markers then
 		local lookup = mod._spillway_order_to_marker
 		local target_marker = lookup and lookup[target_order]
-		local camera = parent._get_camera and parent:_get_camera()
+		local camera = mod.get_valid_world_marker_camera(parent)
 		local from_position = marker.position and marker.position:unbox()
 		local to_position = target_marker and target_marker.position and target_marker.position:unbox()
 

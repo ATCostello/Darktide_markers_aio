@@ -193,9 +193,9 @@ local function find_most_needy_teammate(self_unit, local_percentage)
 
 	for i = 1, #alive_players do
 		local player = alive_players[i]
-		local player_unit = player and player.player_unit
+		local player_unit = mod.get_player_unit(player)
 
-		if player_unit and player_unit ~= self_unit and Unit.alive(player_unit) then
+		if mod.player_is_usable(player) and player_unit and player_unit ~= self_unit and Unit.alive(player_unit) then
 			local slot_count = read_weapon_ammo_slots(player_unit, temp_teammate_slots)
 			local ammo_percentage = player_ammo_percentage(temp_teammate_slots, slot_count)
 
@@ -206,7 +206,7 @@ local function find_most_needy_teammate(self_unit, local_percentage)
 				local archetype_name = profile and profile.archetype and profile.archetype.name
 
 				most_needy = {
-					player = player,
+					player_unit = player_unit,
 					percentage = local_percentage and math.max(0, local_percentage - ammo_percentage)
 						or ammo_percentage,
 					icon = archetype_name and UISettings.archetype_font_icon[archetype_name] or "",
@@ -511,10 +511,10 @@ local function apply_ammo_status_marker_visuals(marker)
 
 				if status.status == "teammate" and status.needy_player then
 					local needy = status.needy_player
-					local player_unit = needy.player and needy.player.player_unit
+					local player_unit = needy.player_unit
 
 					if player_unit and Unit.alive(player_unit) then
-						local needy_slot = needy.player and needy.player.slot and needy.player:slot() or needy.slot
+						local needy_slot = needy.slot
 						local needy_colour = needy_slot and UISettings.player_slot_colors[needy_slot]
 
 						if needy_colour then
@@ -737,7 +737,7 @@ local function estimate_medcrate_consumption(unit, dt)
 
 	for i = 1, #alive_players do
 		local player = alive_players[i]
-		local player_unit = player and player.player_unit
+		local player_unit = mod.get_player_unit(player)
 
 		if player_unit and POSITION_LOOKUP and POSITION_LOOKUP[player_unit] then
 			local player_position = POSITION_LOOKUP[player_unit]
@@ -893,7 +893,7 @@ local FIELD_IMPROV_BUFF_KEYWORDS = {
 }
 
 local function has_field_improv_talent(player)
-	local profile = player and player._profile
+	local profile = mod.player_is_usable(player) and rawget(player, "_profile") or nil
 	local talents = profile and profile.talents
 	local talent_data = talents and talents[FIELD_IMPROV_TALENT]
 
@@ -923,7 +923,7 @@ mod.check_players_talents_for_Field_Improvisation = function()
 					break
 				end
 
-				local player_unit = player.player_unit
+				local player_unit = mod.get_player_unit(player)
 				local buff_extension = player_unit and ScriptUnit.has_extension(player_unit, "buff_system")
 
 				if buff_extension and buff_extension._keywords then
@@ -1031,7 +1031,7 @@ mod.update_ammo_med_markers = function(self, marker)
 	if marker and self then
 		local unit = marker.unit
 		local player = mod.get_local_player()
-		local player_unit = player and player.player_unit
+		local player_unit = mod.get_player_unit(player)
 
 		local is_native_med_crate = marker.type == "interaction"
 			and marker.data

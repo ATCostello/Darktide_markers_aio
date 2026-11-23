@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.17.1"
+mod.version = "2.17.2"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -3998,7 +3998,7 @@ local loc = {
 		en = "Visual style used to draw the safe path routes between path markers. (On Spillway map)\n",
 		ru = "Визуальный стиль, используемый для отрисовки маршрутов Spillway между нумерованными маркерами пути.\nПунктирная линия, Стрелки, Точки: линии без дополнительных ресурсов.\nДым, Пламя, Молнии, Варп, Маяки: эффекты частиц вдоль маршрута (загружают пакет эффекта; при недоступности заменяются пунктиром).",
 		["zh-cn"] = "用于绘制 Spillway 编号路径标记之间路线的视���样式。\n虚线、箭头、圆点：无需额外资源。\n烟雾、火焰、闪电、灵能、信标：沿路线放置的粒子效果（加载效果资源包，不可用时回退为虚线）。",
-		["zh-tw"] = "用於繪製 Spillway 編������路徑標記之間路線的視覺樣式。\n虛線、箭頭、圓點：無需額外資源。\n煙霧、火焰、閃電、靈能、信標：沿路線放置的粒子效果（載入效果資源包，不可用時回退為虛線）。",
+		["zh-tw"] = "用於繪製 Spillway 編�������路徑標記之間路線的視覺樣式。\n虛線、箭頭、圓點：無需額外資源。\n煙霧、火焰、閃電、靈能、信標：沿路線放置的粒子效果（載入效果資源包，不可用時回退為虛線）。",
 	},
 	spillway_path_route_thickness_tooltip = {
 		en = "Thickness of the safe path route decals. (On Spillway map)",
@@ -4812,25 +4812,25 @@ local proximity_localizations = {
 		["zh-cn"] = "消息格式",
 	},
 	proximity_message_default = {
-		en = "{name} nearby",
+		en = "You sense the presence of {a/an} {name} nearby...",
 		fr = "{name} à proximité",
 		ru = "{name} рядом",
 		["zh-tw"] = "{name} 在附近",
 		["zh-cn"] = "{name} 在附近",
 	},
 	proximity_message_format_placeholder = {
-		en = "{name} nearby",
+		en = "{a/an} {name} nearby",
 		fr = "{name} à proximité",
 		ru = "{name} рядом",
 		["zh-tw"] = "{name} 在附近",
 		["zh-cn"] = "{name} 在附近",
 	},
 	proximity_message_format_tooltip = {
-		en = "Edit the notification text. {name} is replaced with the marker name.",
-		fr = "Modifiez le texte de la notification. {name} est remplacé par le nom du marqueur.",
-		ru = "Измените текст уведомления. {name} заменяется на название маркера.",
-		["zh-tw"] = "編輯通知文字。{name} 將替換為標記名稱。",
-		["zh-cn"] = "编辑通知文字。{name} 将替换为标记名称。",
+		en = "Edit the notification text. \n\n{name} is replaced with the marker name, \n\n{a/an} with 'a' or 'an' depending on the name.",
+		fr = "Modifiez le texte de la notification. {name} est remplacé par le nom du marqueur, {a/an} par « un » ou « une » selon le nom.",
+		ru = "Измените текст уведомления. {name} заменяется на название маркера, {a/an} — на «a» или «an» в зависимости от названия.",
+		["zh-tw"] = "編輯通知文字。{name} 將替換為標記名稱，{a/an} 會依名稱替換為適當的冠詞。",
+		["zh-cn"] = "编辑通知文字。{name} 将替换为标记名称，{a/an} 会依据名称替换为适当的冠词。",
 	},
 	proximity_enable = {
 		en = "Enable Proximity Alerts",
