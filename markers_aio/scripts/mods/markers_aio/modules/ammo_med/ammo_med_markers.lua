@@ -606,14 +606,10 @@ mod.check_recolorstimms = function()
 	end
 end
 
-local get_max_distance = function()
-	local max_distance = fs.ammo_med_max_distance
+local get_max_distance = function(is_med_station)
+	local max_distance = is_med_station and fs.med_station_max_distance or fs.ammo_med_max_distance
 
-	if max_distance == nil then
-		max_distance = fs.ammo_med_max_distance
-	end
-
-	return max_distance
+	return tonumber(max_distance) or fs.ammo_med_max_distance or 0
 end
 
 local med_crate_decals = mod:persistent_table("med_crate_decals")
@@ -1050,14 +1046,17 @@ mod.update_ammo_med_markers = function(self, marker)
 
 		local is_health_station = unit and mod.get_marker_extension(marker, "health_station_system") or nil
 
+		local is_med_station = (data and data._active_interaction_type == "health_station") or is_health_station or false
+
+		marker.aio_med_station = is_med_station
+
 		if
 			pickup_type and ammo_med_pickup_types[pickup_type]
 			or data_type and ammo_med_pickup_types[data_type]
 			or marker.type == MarkerTemplate.name
-			or data and data._active_interaction_type == "health_station"
-			or is_health_station
+			or is_med_station
 		then
-			local max_distance = get_max_distance()
+			local max_distance = get_max_distance(is_med_station)
 
 			marker.markers_aio_type = "ammo_med"
 
@@ -1076,8 +1075,11 @@ mod.update_ammo_med_markers = function(self, marker)
 
 			self._marker_templates[MarkerTemplate.name] = MarkerTemplate
 
-			local max_spawn_distance_sq = max_distance * max_distance
-			HUDElementInteractionSettings.max_spawn_distance_sq = max_spawn_distance_sq
+			local ammo_max_distance = tonumber(fs.ammo_med_max_distance) or 0
+			local med_max_distance = tonumber(fs.med_station_max_distance) or 0
+			local interaction_max_distance = math.max(ammo_max_distance, med_max_distance)
+
+			HUDElementInteractionSettings.max_spawn_distance_sq = interaction_max_distance * interaction_max_distance
 
 			if self.fade_settings then
 				self.fade_settings.distance_max = max_distance
@@ -1090,7 +1092,7 @@ mod.update_ammo_med_markers = function(self, marker)
 
 			local med_crate_pos = POSITION_LOOKUP[marker.unit]
 
-			if data and data._active_interaction_type == "health_station" or is_health_station then
+			if is_med_station then
 				marker.aio_check_line_of_sight = fs.med_station_require_line_of_sight
 
 				local health_station_extension = is_health_station

@@ -219,6 +219,95 @@ local proximity_message_destinations = {
 	},
 }
 
+local pickup_name_keys = {
+	"loc_pickup_consumable_small_clip_01",
+	"loc_pickup_consumable_large_clip_01",
+	"loc_pickup_consumable_small_grenade_01",
+	"loc_pickup_deployable_ammo_crate_01",
+	"loc_pickup_deployable_medical_crate_01",
+	"loc_pickup_pocketable_ammo_crate_01",
+	"loc_pickup_pocketable_medical_crate_01",
+	"loc_pickup_pocketable_01",
+	"loc_pickup_syringe_pocketable_02",
+	"loc_pickup_syringe_pocketable_03",
+	"loc_pickup_syringe_pocketable_04",
+	"loc_pickup_side_mission_pocketable_01",
+	"loc_pickup_side_mission_pocketable_02",
+	"loc_pickup_side_mission_consumable_01",
+	"loc_pickup_side_mission_communications_hack_device",
+	"loc_pickup_breaching_charge",
+	"loc_pickup_luggable_battery_01",
+	"loc_pickup_luggable_container_01",
+	"loc_pickup_luggable_control_rod_01",
+	"loc_pickup_luggable_prismata_case_01",
+	"loc_pickup_small_metal",
+	"loc_pickup_large_metal",
+	"loc_pickup_small_platinum",
+	"loc_pickup_large_platinum",
+	"loc_expeditions_pickup_currency_quality_low",
+	"loc_expeditions_pickup_currency_quality_medium",
+	"loc_expeditions_pickup_loot_quality_low",
+	"loc_expeditions_pickup_loot_quality_medium",
+	"loc_expeditions_pickup_loot_quality_high",
+	"loc_expeditions_pickup_loot_player_drop",
+	"loc_expeditions_pickup_loot_luggable_quality_low",
+	"loc_expeditions_pickup_loot_luggable_quality_medium",
+	"loc_expeditions_pickup_loot_luggable_quality_high",
+	"loc_expeditions_pickup_explosive_luggable_01",
+	"loc_expeditions_pickup_airstrike_grenade",
+	"loc_expeditions_pickup_description_artillery_strike",
+	"loc_expeditions_pickup_description_big_grenade",
+	"loc_expeditions_pickup_description_force_field_pocketable",
+	"loc_expeditions_pickup_description_motion_detection_mine_explosive",
+	"loc_expeditions_pickup_description_motion_detection_mine_fire",
+	"loc_expeditions_pickup_description_motion_detection_mine_shock",
+	"loc_expeditions_pickup_description_syringe_timed",
+	"loc_expeditions_pickup_valkyrie_hover_grenade",
+	"loc_interactable_luggable_ammo",
+	"loc_luggable_name_contagion_sample_desc",
+	"loc_leftover_pickup_small",
+	"loc_leftover_pickup_medium",
+	"loc_leftover_pickup_large",
+	"loc_saints_relic_pickup_small",
+	"loc_saints_relic_pickup_medium",
+	"loc_saints_relic_pickup_large",
+	"loc_stolen_rations_pickup_small",
+	"loc_stolen_rations_pickup_medium",
+	"loc_tainted_skull_pickup",
+	"loc_paper_pickup",
+	"loc_mcguffin_pickup",
+}
+
+local pickup_name_options = {}
+for i = 1, #pickup_name_keys do
+	pickup_name_options[i] = {
+		text = pickup_name_keys[i],
+		value = pickup_name_keys[i],
+	}
+end
+pickup_name_options.localize = false
+
+mod.pickup_name_options = pickup_name_options
+
+local pickup_name_sub_widgets = {
+	{
+		setting_id = "pickup_name_target",
+		type = "dropdown",
+		options = pickup_name_options,
+		default_value = "loc_pickup_consumable_small_clip_01",
+		tooltip = "pickup_name_target_tooltip",
+	},
+	{
+		setting_id = "pickup_name_replacement",
+		type = "text",
+		default_value = "",
+		placeholder_text = "pickup_name_placeholder",
+		max_length = 64,
+		show_length_limit = true,
+		tooltip = "pickup_name_replacement_tooltip",
+	},
+}
+
 local proximity_sub_widgets = {
 	{
 		setting_id = "proximity_enable",
@@ -252,6 +341,68 @@ local proximity_sub_widgets = {
 	},
 }
 
+local proximity_subtypes = {
+	ammo_med = {
+		"small_clip",
+		"large_clip",
+		"small_grenade",
+		"ammo_cache_pocketable",
+		"ammo_cache_deployable",
+		"medical_crate_pocketable",
+		"medical_crate_deployable",
+		"health_station",
+	},
+	material = {
+		"small_metal",
+		"large_metal",
+		"small_platinum",
+		"large_platinum",
+	},
+	stimm = {
+		"syringe_power_boost_pocketable",
+		"syringe_speed_boost_pocketable",
+		"syringe_ability_boost_pocketable",
+		"syringe_corruption_pocketable",
+		"syringe_broker_pocketable",
+	},
+	expedition = {
+		"expedition_grenade_airstrike_pocketable",
+		"expedition_grenade_artillery_strike_pocketable",
+		"expedition_grenade_big_pocketable",
+		"expedition_grenade_valkyrie_hover_pocketable",
+		"expedition_deployable_force_field_pocketable",
+		"expedition_loot_crate_tier_1",
+		"expedition_loot_crate_tier_2",
+		"expedition_loot_crate_tier_3",
+		"expedition_loot_small_tier_1",
+		"expedition_loot_small_tier_2",
+		"expedition_loot_small_tier_3",
+		"expedition_loot_player_drop",
+		"expedition_loot_heavy_tier_1",
+		"expedition_loot_heavy_tier_2",
+		"expedition_loot_heavy_tier_3",
+		"expedition_currency_small_tier_1",
+		"expedition_currency_small_tier_2",
+		"expedition_effective_sprinting",
+		"expedition_max_toughness",
+		"expedition_time_syringe_timed",
+		"expedition_common_key",
+		"expedition_deadsider_key",
+		"expedition_dataslate_key",
+	},
+}
+
+local function proximity_subtype_setting_id(marker_type, subtype)
+	if not marker_type or not subtype then
+		return nil
+	end
+
+	return "proximity_" .. marker_type .. "_" .. subtype
+end
+
+mod.proximity_subtypes = proximity_subtypes
+mod.proximity_subtype_setting_id = proximity_subtype_setting_id
+
 local proximity_marker_types = {
 	"tome",
 	"material",
@@ -267,11 +418,154 @@ local proximity_marker_types = {
 }
 
 for i = 1, #proximity_marker_types do
-	proximity_sub_widgets[#proximity_sub_widgets + 1] = {
-		setting_id = "proximity_" .. proximity_marker_types[i],
+	local marker_type = proximity_marker_types[i]
+	local subtypes = proximity_subtypes[marker_type]
+	local widget = {
+		setting_id = "proximity_" .. marker_type,
 		type = "checkbox",
 		default_value = false,
-		tooltip = "proximity_type_tooltip",
+		tooltip = subtypes and "proximity_category_tooltip" or "proximity_type_tooltip",
+	}
+
+	if subtypes then
+		widget.sub_widgets = {}
+
+		for j = 1, #subtypes do
+			widget.sub_widgets[j] = {
+				setting_id = proximity_subtype_setting_id(marker_type, subtypes[j]),
+				type = "checkbox",
+				default_value = true,
+				tooltip = "proximity_subtype_tooltip",
+			}
+		end
+	end
+
+	proximity_sub_widgets[#proximity_sub_widgets + 1] = widget
+end
+
+mod.category_toggles = {
+	--[[{ setting_id = "category_toggle_general", group_setting_id = "aio_settings", tab_key = "tab_general" },
+	{
+		setting_id = "category_toggle_proximity",
+		group_setting_id = "proximity_settings",
+		tab_key = "tab_proximity",
+		frame_keys = { "proximity_enable" },
+	},
+	{
+		setting_id = "category_toggle_pickup_names",
+		group_setting_id = "pickup_names_settings",
+		tab_key = "tab_pickup_names",
+		frame_keys = { "pickup_names_enable" },
+	},]]
+	{
+		setting_id = "category_toggle_ammo_med",
+		group_setting_id = "ammo_med_markers_settings",
+		tab_key = "tab_ammo_med",
+		frame_keys = { "enable.ammo_med" },
+	},
+	--[[{
+		setting_id = "category_toggle_ammo_status",
+		group_setting_id = "ammo_status_settings",
+		tab_key = "tab_ammo_status",
+		frame_keys = { "ammo_status_enable" },
+	},]]
+	{
+		setting_id = "category_toggle_chests",
+		group_setting_id = "chest_markers_settings",
+		tab_key = "tab_chests",
+		frame_keys = { "enable.chest" },
+	},
+	{
+		setting_id = "category_toggle_heretical_idol",
+		group_setting_id = "heretical_idol_markers_settings",
+		tab_key = "tab_heretical_idol",
+		frame_keys = { "enable.heretical_idol" },
+	},
+	{
+		setting_id = "category_toggle_materials",
+		group_setting_id = "material_markers_settings",
+		tab_key = "tab_materials",
+		frame_keys = { "enable.material" },
+	},
+	{
+		setting_id = "category_toggle_stimms",
+		group_setting_id = "stimm_markers_settings",
+		tab_key = "tab_stimms",
+		frame_keys = { "enable.stimm" },
+	},
+	{
+		setting_id = "category_toggle_tomes",
+		group_setting_id = "tome_markers_settings",
+		tab_key = "tab_tomes",
+		frame_keys = { "enable.tome" },
+	},
+	{
+		setting_id = "category_toggle_luggables",
+		group_setting_id = "luggable_markers_settings",
+		tab_key = "tab_luggables",
+		frame_keys = { "enable.luggable" },
+	},
+	{
+		setting_id = "category_toggle_martyrs_skull",
+		group_setting_id = "martyrs_skull_markers_settings",
+		tab_key = "tab_martyrs_skull",
+		frame_keys = { "enable.martyrs_skull" },
+	},
+	{
+		setting_id = "category_toggle_spillway_path",
+		group_setting_id = "spillway_path_markers_settings",
+		tab_key = "tab_spillway_path",
+		frame_keys = { "enable.spillway_path", "enable.spillway_path_route" },
+	},
+	{
+		setting_id = "category_toggle_expedition",
+		group_setting_id = "expedition_markers_settings",
+		tab_key = "tab_expedition",
+		frame_keys = { "enable.expedition" },
+	},
+	{
+		setting_id = "category_toggle_event",
+		group_setting_id = "event_markers_settings",
+		tab_key = "tab_event",
+		frame_keys = { "enable.event", "enable.rations", "enable.atonement" },
+	},
+	{
+		setting_id = "category_toggle_objective",
+		group_setting_id = "objective_markers_settings",
+		tab_key = "tab_objective",
+		frame_keys = { "enable.objective" },
+	},
+	{
+		setting_id = "category_toggle_decoding",
+		group_setting_id = "servo_skull_settings",
+		tab_key = "tab_decoding",
+		frame_keys = { "enable.servo_skull", "enable.servo_skull_enable_assistance_module" },
+	},
+	{
+		setting_id = "category_toggle_player_assistance",
+		group_setting_id = "player_assistance_settings",
+		tab_key = "tab_player_assistance",
+		frame_keys = { "enable.player_assistance" },
+	},
+	{
+		setting_id = "category_toggle_unknown",
+		group_setting_id = "unknown_markers_settings",
+		tab_key = "tab_unknown",
+		frame_keys = { "enable.unknown" },
+	},
+}
+
+local category_toggle_sub_widgets = {}
+
+for i = 1, #(mod.category_toggles or {}) do
+	local entry = mod.category_toggles[i]
+
+	category_toggle_sub_widgets[i] = {
+		setting_id = entry.setting_id,
+		title = entry.tab_key,
+		type = "checkbox",
+		default_value = true,
+		tooltip = "category_toggle_tooltip",
 	}
 end
 
@@ -281,6 +575,15 @@ return {
 	is_togglable = true,
 	options = {
 		widgets = {
+
+			-- CATEGORY TOGGLES
+			{
+				setting_id = "category_toggles_settings",
+				title = "tab_category_toggles",
+				type = "group",
+				tab = mod:localize("tab_category_toggles"),
+				sub_widgets = category_toggle_sub_widgets,
+			},
 
 			-- GLOBAL
 			{
@@ -360,6 +663,14 @@ return {
 				type = "group",
 				tab = mod:localize("tab_proximity"),
 				sub_widgets = proximity_sub_widgets,
+			},
+
+			-- PICKUP NAMES
+			{
+				setting_id = "pickup_names_settings",
+				type = "group",
+				tab = mod:localize("tab_pickup_names"),
+				sub_widgets = pickup_name_sub_widgets,
 			},
 
 			-- AMMO / MED

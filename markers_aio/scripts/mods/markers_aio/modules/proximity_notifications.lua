@@ -9,6 +9,77 @@ local COLOUR_RESET = "{#reset()}"
 local CHAT_EVENT = "system_chat_message"
 local COMBAT_FEED_EVENT = "event_add_combat_feed_message"
 
+local subtype_sets
+local markers_inside = {}
+
+local function get_subtype_sets()
+	if subtype_sets then
+		return subtype_sets
+	end
+
+	subtype_sets = {}
+
+	for marker_type, subtypes in pairs(mod.proximity_subtypes or {}) do
+		local set = {}
+
+		for i = 1, #subtypes do
+			set[subtypes[i]] = true
+		end
+
+		subtype_sets[marker_type] = set
+	end
+
+	return subtype_sets
+end
+
+local function marker_proximity_subtype(marker, marker_type)
+	if not marker then
+		return nil
+	end
+
+	local cached = rawget(marker, "aio_proximity_subtype")
+	if cached ~= nil then
+		return cached
+	end
+
+	local set = get_subtype_sets()[marker_type]
+	if not set then
+		return nil
+	end
+
+	local data = marker.data
+	local pickup_type = mod.get_marker_pickup_type(marker)
+
+	if not pickup_type then
+		pickup_type = data and data.type
+	end
+
+	if not pickup_type then
+		pickup_type = data and data.pickup_name
+	end
+
+	if not pickup_type and marker.pickup_type and set[marker.pickup_type] then
+		pickup_type = marker.pickup_type
+	end
+
+	if pickup_type and set[pickup_type] then
+		marker.aio_proximity_subtype = pickup_type
+		return pickup_type
+	end
+
+	if marker_type == "ammo_med" then
+		if
+			data and data._active_interaction_type == "health_station"
+			or mod.get_marker_extension(marker, "health_station_system")
+		then
+			marker.aio_proximity_subtype = "health_station"
+			return "health_station"
+		end
+	end
+
+	return nil
+end
+
 local function get_message_format()
 	if message_format then
 		return message_format
@@ -30,7 +101,20 @@ local function get_message_format()
 	return message_format
 end
 
-local function fallback_name(marker_type)
+local function fallback_name(marker_type, marker)
+	local subtype = marker and rawget(marker, "aio_proximity_subtype")
+
+	if subtype and marker_type then
+		local key = mod.proximity_subtype_setting_id
+			and mod.proximity_subtype_setting_id(marker_type, subtype)
+			or ("proximity_" .. marker_type .. "_" .. subtype)
+		local subtype_name = mod:localize(key)
+
+		if subtype_name and subtype_name ~= key and string.sub(subtype_name, 1, 1) ~= "<" then
+			return subtype_name
+		end
+	end
+
 	local name = mod:localize("proximity_type_" .. marker_type)
 
 	if not name or name == "" or string.sub(name, 1, 15) == "proximity_type_" or string.sub(name, 1, 1) == "<" then
@@ -101,6 +185,22 @@ end
 
 mod.clear_proximity_name_cache = function()
 	message_format = nil
+
+	for marker in pairs(markers_inside) do
+		marker._aio_proximity_inside = false
+	end
+
+	table.clear(markers_inside)
+end
+
+local function set_marker_inside(marker, inside)
+	marker._aio_proximity_inside = inside
+
+	if inside then
+		markers_inside[marker] = true
+	else
+		markers_inside[marker] = nil
+	end
 end
 
 mod.update_proximity_notifications = function(self, dt, t)
@@ -119,6 +219,7 @@ mod.update_proximity_notifications = function(self, dt, t)
 	mod._proximity_next_scan = (t or 0) + PROXIMITY_SCAN_INTERVAL
 
 	local enabled = fs.proximity_types
+	local subtype_settings = fs.proximity_subtypes
 
 	if not enabled then
 		return
@@ -153,42 +254,50 @@ mod.update_proximity_notifications = function(self, dt, t)
 
 		if marker_type then
 			if enabled[marker_type] and not marker.aio_suppress then
-				local position_box = marker.position
-				local position = position_box
+				local subtype = marker_proximity_subtype(marker, marker_type)
+				local subtype_map = subtype_settings and subtype_settings[marker_type]
+				local subtype_enabled = not subtype_map or not subtype or subtype_map[subtype] ~= false
 
-				if position_box and position_box.unbox then
-					position = position_box:unbox()
-				end
+				if subtype_enabled then
+					local position_box = marker.position
+					local position = position_box
 
-				if position then
-					local dx = position.x - player_pos.x
-					local dy = position.y - player_pos.y
-					local dz = position.z - player_pos.z
-					local distance_sq = dx * dx + dy * dy + dz * dz
-
-					if distance_sq <= range_sq then
-						if not marker._aio_proximity_inside then
-							marker._aio_proximity_inside = true
-							local name
-
-							if mod.get_marker_interaction_name then
-								name = mod.get_marker_interaction_name(self, marker, player_unit)
-							end
-
-							if not name or name == "" then
-								name = fallback_name(marker_type)
-							end
-
-							if not entered[marker_type] then
-								entered[marker_type] = name
-							end
-						end
-					else
-						marker._aio_proximity_inside = false
+					if position_box and position_box.unbox then
+						position = position_box:unbox()
 					end
+
+					if position then
+						local dx = position.x - player_pos.x
+						local dy = position.y - player_pos.y
+						local dz = position.z - player_pos.z
+						local distance_sq = dx * dx + dy * dy + dz * dz
+
+						if distance_sq <= range_sq then
+							if not marker._aio_proximity_inside then
+								set_marker_inside(marker, true)
+								local name
+
+								if mod.get_marker_interaction_name then
+									name = mod.get_marker_interaction_name(self, marker, player_unit)
+								end
+
+								if not name or name == "" then
+									name = fallback_name(marker_type, marker)
+								end
+
+								if not entered[marker_type] then
+									entered[marker_type] = name
+								end
+							end
+						else
+							set_marker_inside(marker, false)
+						end
+					end
+				else
+					set_marker_inside(marker, false)
 				end
 			else
-				marker._aio_proximity_inside = false
+				set_marker_inside(marker, false)
 			end
 		end
 	end

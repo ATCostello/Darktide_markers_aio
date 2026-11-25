@@ -1,5 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.17.2"
+mod.version = "2.17.3"
 mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
 
 mod.lookup_border_color = function(colour_string)
@@ -198,6 +198,55 @@ local loc = {
 		ru = "Общие",
 		["zh-tw"] = "一般",
 		["zh-cn"] = "通用",
+	},
+	tab_pickup_names = {
+		en = "Pickup Names",
+		fr = "Noms des objets",
+		ru = "Названия предметов",
+		["zh-tw"] = "物品名稱",
+		["zh-cn"] = "物品名称",
+	},
+	pickup_names_settings = {
+		en = "Pickup Names",
+		fr = "Noms des objets",
+		ru = "Названия предметов",
+		["zh-tw"] = "物品名稱",
+		["zh-cn"] = "物品名称",
+	},
+	pickup_name_target = {
+		en = "Pickup to Rename",
+		fr = "Objet à renommer",
+		ru = "Предмет для переименования",
+		["zh-tw"] = "要重新命名的物品",
+		["zh-cn"] = "要重命名的物品",
+	},
+	pickup_name_target_tooltip = {
+		en = "Select the base-game pickup name to override.",
+		fr = "Sélectionnez le nom d'objet du jeu à remplacer.",
+		ru = "Выберите название предмета игры для замены.",
+		["zh-tw"] = "選擇要覆蓋的遊戲原生物品名稱。",
+		["zh-cn"] = "选择要覆盖的游戏原生物品名称。",
+	},
+	pickup_name_replacement = {
+		en = "Replacement Name",
+		fr = "Nouveau nom",
+		ru = "Новое название",
+		["zh-tw"] = "替代名稱",
+		["zh-cn"] = "替代名称",
+	},
+	pickup_name_replacement_tooltip = {
+		en = "Starts with the selected base-game name. Edit it to rename that pickup everywhere. Clear it to restore the base name.",
+		fr = "Affiche le nom d'origine sélectionné. Modifiez-le pour renommer l'objet partout. Effacez-le pour restaurer le nom d'origine.",
+		ru = "Показывает выбранное исходное название. Измените его, чтобы переименовать предмет везде. Очистите, чтобы вернуть исходное имя.",
+		["zh-tw"] = "會顯示所選的遊戲原名。編輯即可在所有位置重新命名該物品。清空則恢復原名。",
+		["zh-cn"] = "会显示所选的游戏原名。编辑即可在所有位置重命名该物品。清空则恢复原名。",
+	},
+	pickup_name_placeholder = {
+		en = "Enter a replacement name...",
+		fr = "Saisissez un nouveau nom...",
+		ru = "Введите новое название...",
+		["zh-tw"] = "輸入替代名稱...",
+		["zh-cn"] = "输入替代名称...",
 	},
 	tab_ammo_med = {
 		en = "Ammo & Med",
@@ -4119,7 +4168,7 @@ local loc = {
 		en = "Show a small circle in the top-right corner of ammo pickup markers, tinted with the ammo status colour (green = take it all, orange = a teammate needs it more, red = would waste ammo). A teammate's class icon in their colour is drawn on the circle when they need it more.",
 		fr = "Affiche un petit cercle dans le coin supérieur droit des marqueurs de munitions, coloré selon l'état (vert = tout prendre, orange = un coéquipier en a plus besoin, rouge = perte de munitions). L'icône de classe d'un coéquipier dans sa couleur est dessinée sur le cercle quand il en a plus besoin.",
 		ru = "Показывает маленький круг в правом верхнем углу метки боеприпасов, окрашенный по статусу (зелёный = можно забрать всё, оранжевый = союзнику нужнее, красный = будет потеря). Когда союзнику нужнее, на круге отображается иконка его класса в цвете команды.",
-		["zh-tw"] = "在彈藥拾取標記右上角顯示小圓點，並依狀態著色：綠色表示可全數取得、橘色表示隊友更需要、紅色表示拾取會浪費彈藥。隊友更需要時，圓點上會顯示該隊友的職業圖示與對應顏色。",
+		["zh-tw"] = "在彈藥拾取標記右上角顯示小圓點，並依狀���著色：綠色表示可全數取得、橘色表示隊友更需要、紅色表示拾取會浪費彈藥。隊友更需要時，圓點上會顯示該隊友的職業圖示與對應顏色。",
 		["zh-cn"] = "在弹药拾取标记的右上角显示小圆点，按弹药状态着色（绿=可全拿、橙=队友更需要、红=会浪费）。当队友更需要时，圆上叠加其职业图标并显示队友颜色。",
 	},
 	ammo_status_numeric_enable_tooltip = {
@@ -4761,6 +4810,27 @@ local loc = {
 	},
 }
 
+local category_toggle_localizations = {
+	tab_category_toggles = {
+		en = "Category Toggles",
+		fr = "Bascules de catégorie",
+		ru = "Переключатели категорий",
+		["zh-tw"] = "類別切換",
+		["zh-cn"] = "类别切换",
+	},
+	category_toggle_tooltip = {
+		en = "Show or hide this settings category. When disabled, its individual settings and marker features are ignored.",
+		fr = "Afficher ou masquer cette catégorie de paramètres. Lorsqu'elle est désactivée, ses paramètres individuels et ses fonctionnalités de marqueur sont ignorés.",
+		ru = "Показать или скрыть эту категорию настроек. При отключении её отдельные настройки и функции маркеров игнорируются.",
+		["zh-tw"] = "顯示或隱藏此設定類別。停用時，其個別設定與標記功能都會被忽略。",
+		["zh-cn"] = "显示或隐藏此设置类别。禁用时，其单独设置和标记功能都会被忽略。",
+	},
+}
+
+for key, value in pairs(category_toggle_localizations) do
+	loc[key] = value
+end
+
 local proximity_localizations = {
 	tab_proximity = {
 		en = "Proximity Alerts",
@@ -4784,7 +4854,7 @@ local proximity_localizations = {
 		["zh-cn"] = "通知位置",
 	},
 	proximity_message_destination_tooltip = {
-		en = "Where proximity alerts appear.",
+		en = "Choose where proximity alerts appear.",
 		fr = "Où afficher les alertes de proximité.",
 		ru = "Где отображать оповещения о близости.",
 		["zh-tw"] = "顯示鄰近警告的位置",
@@ -4819,14 +4889,14 @@ local proximity_localizations = {
 		["zh-cn"] = "{name} 在附近",
 	},
 	proximity_message_format_placeholder = {
-		en = "{a/an} {name} nearby",
+		en = "You sense the presence of {a/an} {name} nearby...",
 		fr = "{name} à proximité",
 		ru = "{name} рядом",
 		["zh-tw"] = "{name} 在附近",
 		["zh-cn"] = "{name} 在附近",
 	},
 	proximity_message_format_tooltip = {
-		en = "Edit the notification text. \n\n{name} is replaced with the marker name, \n\n{a/an} with 'a' or 'an' depending on the name.",
+		en = "Edit the notification text. \n\nFORMATTING: \n{name} is replaced with the marker name, \n\n{a/an} with 'a' or 'an' depending on the name.",
 		fr = "Modifiez le texte de la notification. {name} est remplacé par le nom du marqueur, {a/an} par « un » ou « une » selon le nom.",
 		ru = "Измените текст уведомления. {name} заменяется на название маркера, {a/an} — на «a» или «an» в зависимости от названия.",
 		["zh-tw"] = "編輯通知文字。{name} 將替換為標記名稱，{a/an} 會依名稱替換為適當的冠詞。",
@@ -4840,7 +4910,7 @@ local proximity_localizations = {
 		["zh-cn"] = "启用邻近警告",
 	},
 	proximity_enable_tooltip = {
-		en = "Sends a notification when you enter range of an enabled marker type.",
+		en = "Sends a notification when you enter range of a specific pickup.",
 		fr = "Envoie une notification lorsque vous entrez dans la portée d'un type de marqueur activé.",
 		ru = "Отправляет уведомление при входе в зону действия включённого типа маркера.",
 		["zh-tw"] = "當您進入已啟用標記類型的範圍時，傳送通知。",
@@ -4861,11 +4931,25 @@ local proximity_localizations = {
 		["zh-cn"] = "触发邻近警告的距离（米）。",
 	},
 	proximity_type_tooltip = {
-		en = "Send an alert when entering range of this marker type.",
+		en = "Toggle proximity notifications for this specific pickup.",
 		fr = "Envoyer une alerte lors de l'entrée dans la portée de ce type de marqueur.",
 		ru = "Отправлять оповещение при входе в зону этого типа маркера.",
 		["zh-tw"] = "進入此標記類型範圍時傳送警告。",
 		["zh-cn"] = "进入此标记类型范围时发送警告。",
+	},
+	proximity_category_tooltip = {
+		en = "Toggle proximity alerts for this category.",
+		fr = "Activez les alertes de proximité pour cette catégorie, puis choisissez les objets ci-dessous qui doivent les déclencher.",
+		ru = "Включите оповещения о близости для этой категории, затем выберите предметы ниже, которые будут их вызывать.",
+		["zh-tw"] = "啟用此類別的鄰近警告，然後選擇下方哪些物品會觸發警告。",
+		["zh-cn"] = "启用此类别的邻近警报，然后选择下方哪些物品会触发警报。",
+	},
+	proximity_subtype_tooltip = {
+		en = "Toggle proximity notifications for this specific pickup.",
+		fr = "Envoyer une alerte lors de l'entrée dans la portée de cet objet précis.",
+		ru = "Отправлять оповещение при входе в зону этого конкретного предмета.",
+		["zh-tw"] = "進入此特定物品範圍時傳送警告。",
+		["zh-cn"] = "进入此特定物品范围时发送警报。",
 	},
 }
 
@@ -4984,6 +5068,109 @@ end
 for key, value in pairs(proximity_type_names) do
 	loc["proximity_" .. key] = value
 	loc["proximity_type_" .. key] = value
+end
+
+local proximity_subtype_names = {
+	ammo_med_small_clip = { en = "Small Ammo Clip" },
+	ammo_med_large_clip = { en = "Large Ammo Clip" },
+	ammo_med_small_grenade = { en = "Small Grenade" },
+	ammo_med_ammo_cache_pocketable = { en = "Ammo Crate (Pocketable)" },
+	ammo_med_ammo_cache_deployable = { en = "Ammo Crate (Deployable)" },
+	ammo_med_medical_crate_pocketable = { en = "Medical Crate (Pocketable)" },
+	ammo_med_medical_crate_deployable = { en = "Medical Crate (Deployable)" },
+	ammo_med_health_station = { en = "Medicae Station" },
+	material_small_metal = { en = "Small Plasteel" },
+	material_large_metal = { en = "Large Plasteel" },
+	material_small_platinum = { en = "Small Diamantine" },
+	material_large_platinum = { en = "Large Diamantine" },
+	stimm_syringe_power_boost_pocketable = { en = "Power Stimm" },
+	stimm_syringe_speed_boost_pocketable = { en = "Speed Stimm" },
+	stimm_syringe_ability_boost_pocketable = { en = "Boost Stimm" },
+	stimm_syringe_corruption_pocketable = { en = "Medic Stimm" },
+	stimm_syringe_broker_pocketable = { en = "Hive Scum Stimm" },
+	expedition_expedition_grenade_airstrike_pocketable = { en = "Airstrike Grenade" },
+	expedition_expedition_grenade_artillery_strike_pocketable = { en = "Artillery Strike Grenade" },
+	expedition_expedition_grenade_big_pocketable = { en = "Big Grenade" },
+	expedition_expedition_grenade_valkyrie_hover_pocketable = { en = "Valkyrie Hover Grenade" },
+	expedition_expedition_deployable_force_field_pocketable = { en = "Force Field" },
+	expedition_expedition_loot_crate_tier_1 = { en = "Loot Crate I" },
+	expedition_expedition_loot_crate_tier_2 = { en = "Loot Crate II" },
+	expedition_expedition_loot_crate_tier_3 = { en = "Loot Crate III" },
+	expedition_expedition_loot_small_tier_1 = { en = "Tech Remnant I" },
+	expedition_expedition_loot_small_tier_2 = { en = "Tech Remnant II" },
+	expedition_expedition_loot_small_tier_3 = { en = "Tech Remnant III" },
+	expedition_expedition_loot_player_drop = { en = "Player Drop" },
+	expedition_expedition_loot_heavy_tier_1 = { en = "Reliquary I" },
+	expedition_expedition_loot_heavy_tier_2 = { en = "Reliquary II" },
+	expedition_expedition_loot_heavy_tier_3 = { en = "Reliquary III" },
+	expedition_expedition_currency_small_tier_1 = { en = "Salvage I" },
+	expedition_expedition_currency_small_tier_2 = { en = "Salvage II" },
+	expedition_expedition_effective_sprinting = { en = "Sprint Stim" },
+	expedition_expedition_max_toughness = { en = "Toughness Stim" },
+	expedition_expedition_time_syringe_timed = { en = "Timed Stim" },
+	expedition_expedition_common_key = { en = "Common Key" },
+	expedition_expedition_deadsider_key = { en = "Deadsider Key" },
+	expedition_expedition_dataslate_key = { en = "Dataslate Key" },
+}
+
+local proximity_subtype_pickup_keys = {
+	ammo_med_small_clip = "loc_pickup_consumable_small_clip_01",
+	ammo_med_large_clip = "loc_pickup_consumable_large_clip_01",
+	ammo_med_small_grenade = "loc_pickup_consumable_small_grenade_01",
+	ammo_med_ammo_cache_pocketable = "loc_pickup_pocketable_ammo_crate_01",
+	ammo_med_ammo_cache_deployable = "loc_pickup_deployable_ammo_crate_01",
+	ammo_med_medical_crate_pocketable = "loc_pickup_pocketable_medical_crate_01",
+	ammo_med_medical_crate_deployable = "loc_pickup_deployable_medical_crate_01",
+	ammo_med_health_station = "loc_health_station_tutorial",
+	material_small_metal = "loc_pickup_small_metal",
+	material_large_metal = "loc_pickup_large_metal",
+	material_small_platinum = "loc_pickup_small_platinum",
+	material_large_platinum = "loc_pickup_large_platinum",
+	stimm_syringe_power_boost_pocketable = "loc_pickup_syringe_pocketable_03",
+	stimm_syringe_speed_boost_pocketable = "loc_pickup_syringe_pocketable_04",
+	stimm_syringe_ability_boost_pocketable = "loc_pickup_syringe_pocketable_02",
+	stimm_syringe_corruption_pocketable = "loc_pickup_pocketable_01",
+	stimm_syringe_broker_pocketable = "loc_pickup_syringe_pocketable_02",
+	expedition_expedition_grenade_airstrike_pocketable = "loc_expeditions_pickup_airstrike_grenade",
+	expedition_expedition_grenade_artillery_strike_pocketable = "loc_expeditions_pickup_description_artillery_strike",
+	expedition_expedition_grenade_big_pocketable = "loc_expeditions_pickup_description_big_grenade",
+	expedition_expedition_grenade_valkyrie_hover_pocketable = "loc_expeditions_pickup_valkyrie_hover_grenade",
+	expedition_expedition_deployable_force_field_pocketable = "loc_expeditions_pickup_description_force_field_pocketable",
+	expedition_expedition_loot_small_tier_1 = "loc_expeditions_pickup_loot_quality_low",
+	expedition_expedition_loot_small_tier_2 = "loc_expeditions_pickup_loot_quality_medium",
+	expedition_expedition_loot_small_tier_3 = "loc_expeditions_pickup_loot_quality_high",
+	expedition_expedition_loot_player_drop = "loc_expeditions_pickup_loot_player_drop",
+	expedition_expedition_loot_heavy_tier_1 = "loc_expeditions_pickup_loot_luggable_quality_low",
+	expedition_expedition_loot_heavy_tier_2 = "loc_expeditions_pickup_loot_luggable_quality_medium",
+	expedition_expedition_loot_heavy_tier_3 = "loc_expeditions_pickup_loot_luggable_quality_high",
+	expedition_expedition_currency_small_tier_1 = "loc_expeditions_pickup_currency_quality_low",
+	expedition_expedition_currency_small_tier_2 = "loc_expeditions_pickup_currency_quality_medium",
+	expedition_expedition_time_syringe_timed = "loc_expeditions_pickup_description_syringe_timed",
+}
+
+local function game_pickup_name(key)
+	if not key then
+		return nil
+	end
+
+	local localization_manager = Managers and Managers.localization
+	local name = localization_manager and localization_manager.localize and localization_manager:localize(key)
+
+	if not name or name == "" or name == key or string.sub(name, 1, 1) == "<" then
+		name = Localize and Localize(key)
+	end
+
+	if not name or name == "" or name == key or string.sub(name, 1, 1) == "<" then
+		return nil
+	end
+
+	return name
+end
+
+for key, value in pairs(proximity_subtype_names) do
+	local game_name = game_pickup_name(proximity_subtype_pickup_keys[key])
+
+	loc["proximity_" .. key] = game_name and { en = game_name } or value
 end
 
 local apply_color_to_text = function(text, r, g, b)

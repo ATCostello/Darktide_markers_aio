@@ -12,6 +12,8 @@ mod._aio_frame = 0
 mod._settings_version = 0
 mod.frame_settings.mod_enabled = mod:is_enabled() or false
 
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/category_toggles")
+
 -- cached functions
 local has_extension = ScriptUnit.has_extension
 local vector_distance = Vector3.distance
@@ -207,6 +209,43 @@ mod.build_settings = function()
 
 	for _, marker_type in ipairs(marker_types) do
 		fs.proximity_types[marker_type] = mod:get("proximity_" .. marker_type) == true
+	end
+
+	fs.proximity_subtypes = fs.proximity_subtypes or {}
+
+	for marker_type, subtypes in pairs(mod.proximity_subtypes or {}) do
+		local enabled_subtypes = fs.proximity_subtypes[marker_type]
+
+		if not enabled_subtypes then
+			enabled_subtypes = {}
+			fs.proximity_subtypes[marker_type] = enabled_subtypes
+		end
+
+		table.clear(enabled_subtypes)
+
+		for i = 1, #subtypes do
+			local subtype = subtypes[i]
+			local setting_id = mod.proximity_subtype_setting_id
+					and mod.proximity_subtype_setting_id(marker_type, subtype)
+				or ("proximity_" .. marker_type .. "_" .. subtype)
+
+			enabled_subtypes[subtype] = mod:get(setting_id) ~= false
+		end
+	end
+
+	fs.category_enabled = fs.category_enabled or {}
+
+	for _, entry in ipairs(mod.category_toggles or {}) do
+		local enabled = mod:get(entry.setting_id) ~= false
+		fs.category_enabled[entry.group_setting_id] = enabled
+
+		if not enabled then
+			local frame_keys = entry.frame_keys
+
+			for i = 1, #(frame_keys or {}) do
+				mod.set_frame_value(fs, frame_keys[i], false)
+			end
+		end
 	end
 
 	if mod.clear_proximity_name_cache then
@@ -609,6 +648,8 @@ mod.update_runtime_state = function(dt)
 	fs.servo_skull_injecting = GameSession.game_object_field(game_session, go_id, "state") == "inject_ally"
 end
 
+mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/pickup_name_overrides")
+
 mod.build_settings()
 
 local HereticalIdolTemplate =
@@ -761,6 +802,12 @@ mod.refresh_templates = function()
 end
 
 mod.on_all_mods_loaded = function()
+	if mod.refresh_pickup_name_options then
+		mod.refresh_pickup_name_options()
+	end
+	if mod.update_pickup_name_settings then
+		mod.update_pickup_name_settings(nil)
+	end
 	mod.refresh_templates()
 end
 
@@ -1244,8 +1291,8 @@ local function classify_aio_marker(self, marker, marker_type)
 		return
 	end
 
-	local type_old 
-	local marker_function 
+	local type_old
+	local marker_function
 
 	if not mod.frame_settings or mod.frame_settings and not mod.frame_settings.enable then
 		return
@@ -1343,6 +1390,20 @@ local function classify_aio_marker(self, marker, marker_type)
 
 	marker._aio_static_handler = marker_function
 	marker._aio_classified = true
+end
+
+local function marker_max_distance(marker, template, pt)
+	local max_distance = template and template.max_distance
+
+	if marker.markers_aio_type then
+		max_distance = pt and pt.max_distance or max_distance
+	end
+
+	if marker.aio_med_station and marker.markers_aio_type == "ammo_med" then
+		max_distance = tonumber(mod.frame_settings.med_station_max_distance) or max_distance
+	end
+
+	return max_distance
 end
 
 local function update_distance_text_style(widget, fs)
@@ -1547,11 +1608,8 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 					local screen_clamp = template.screen_clamp and not marker.block_screen_clamp
 					local screen_margins = template.screen_margins
 
-					local max_distance = template.max_distance
-					if marker.markers_aio_type then
-						local pt = fs.per_type[marker.markers_aio_type]
-						max_distance = pt and pt.max_distance
-					end
+					local pt = marker.markers_aio_type and fs.per_type[marker.markers_aio_type] or nil
+					local max_distance = marker_max_distance(marker, template, pt)
 
 					if
 						fs.mod_enabled
@@ -1900,6 +1958,26 @@ local HudElementInteraction = require("scripts/ui/hud/elements/interaction/hud_e
 
 local DEFAULT_HUD_INTERACTION_MAX_SPAWN_DISTANCE_SQ = HudElementInteractionSettings.max_spawn_distance_sq
 
+local function interaction_marker_spawn_distance_sq(interactee_unit, extension)
+	local max_distance_sq = HUDElementInteractionSettings
+			and tonumber(HUDElementInteractionSettings.max_spawn_distance_sq)
+		or 3600
+	local fs = mod.frame_settings
+
+	local is_health_station = extension and extension._active_interaction_type == "health_station"
+		or interactee_unit and has_extension(interactee_unit, "health_station_system")
+
+	if is_health_station then
+		local med_max_distance = tonumber(fs and fs.med_station_max_distance)
+
+		if med_max_distance then
+			max_distance_sq = med_max_distance * med_max_distance
+		end
+	end
+
+	return max_distance_sq
+end
+
 HudElementInteraction._update_interactee_data = function(self, interactee_unit, extension)
 	local parent = self._parent
 	local player = parent:player()
@@ -1926,13 +2004,12 @@ HudElementInteraction._update_interactee_data = function(self, interactee_unit, 
 	local interaction_units = self._interaction_units
 	local marker = nil
 
-	local max_spawn_distance_sq = 3600 -- 60m
+	local max_spawn_distance_sq = interaction_marker_spawn_distance_sq(interactee_unit, extension)
 
 	if interactee_unit ~= player_unit and render_marker and camera_position then
 		local interactee_position = Unit.world_position(interactee_unit, 1)
 		local distance_sq = vector_distance_squared(interactee_position, camera_position)
 
-		--render_marker = distance_sq <= HudElementInteractionSettings.max_spawn_distance_sq
 		render_marker = distance_sq <= max_spawn_distance_sq
 	end
 
@@ -2247,7 +2324,7 @@ mod.adjust_distance_visibility = function(marker, pt)
 	end
 
 	pt = pt or mod.frame_settings.per_type[marker.markers_aio_type]
-	local mod_max_distance = pt and pt.max_distance
+	local mod_max_distance = marker_max_distance(marker, nil, pt)
 
 	if mod_max_distance and marker.distance > mod_max_distance then
 		dont_draw(marker, pt)
@@ -2344,6 +2421,7 @@ local MARKER_VISUAL_CACHE_FIELDS = {
 	"ui_target_type",
 	"visual_type",
 	"_aio_pickup_type",
+	"aio_proximity_subtype",
 }
 
 local MARKER_RESET_FIELDS = {
@@ -2398,6 +2476,10 @@ end
 
 mod.on_setting_changed = function(setting_id)
 	mod._frame_settings_dirty = true
+
+	if mod.update_pickup_name_settings then
+		mod.update_pickup_name_settings(setting_id)
+	end
 
 	if not setting_id then
 		return
