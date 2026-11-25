@@ -326,7 +326,7 @@ local loc = {
 		["zh-cn"] = "活动",
 	},
 	tab_objective = {
-		en = "OBJECTIVE MARKERS",
+		en = "Objectives",
 		fr = "Objectifs",
 		ru = "Задачи",
 		["zh-tw"] = "任務目標標記",
