@@ -227,6 +227,20 @@ local loc = {
 		["zh-tw"] = "選擇要覆蓋的遊戲原生物品名稱。",
 		["zh-cn"] = "选择要覆盖的游戏原生物品名称。",
 	},
+	pickup_name_reset = {
+		en = "Reset",
+		fr = "Réinitialiser au nom d'origine",
+		ru = "Сбросить до исходного названия",
+		["zh-tw"] = "重設為原始名稱",
+		["zh-cn"] = "重置为原始名称",
+	},
+	pickup_name_reset_tooltip = {
+		en = "Resets the currently selected item to it's default name.",
+		fr = "Réinitialise l'objet sélectionné à son nom d'origine.",
+		ru = "Сбрасывает выбранный предмет к исходному названию.",
+		["zh-tw"] = "將目前選取的物品重設為預設名稱。",
+		["zh-cn"] = "将当前选中的物品重置为默认名称。",
+	},
 	pickup_name_replacement = {
 		en = "Replacement Name",
 		fr = "Nouveau nom",
