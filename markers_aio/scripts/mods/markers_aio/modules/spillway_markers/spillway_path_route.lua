@@ -1229,14 +1229,7 @@ local function draw_arrow_route()
 						local back_left = center - direction * half + perpendicular * half
 						local back_right = center - direction * half - perpendicular * half
 
-						LineObject.add_segmented_line(
-							line_object,
-							color,
-							back_left,
-							tip,
-							ARROW_GAP,
-							ARROW_SUBDIVISIONS
-						)
+						LineObject.add_segmented_line(line_object, color, back_left, tip, ARROW_GAP, ARROW_SUBDIVISIONS)
 						LineObject.add_segmented_line(
 							line_object,
 							color,
@@ -1278,14 +1271,7 @@ local function spawn_particle_at_position(position)
 		return
 	end
 
-	local id = World.create_particles(
-		state.world,
-		config.path,
-		position + Vector3(0, 0, config.z),
-		nil,
-		nil,
-		group
-	)
+	local id = World.create_particles(state.world, config.path, position + Vector3(0, 0, config.z), nil, nil, group)
 
 	if id then
 		state.particle_spawned = state.particle_spawned + 1

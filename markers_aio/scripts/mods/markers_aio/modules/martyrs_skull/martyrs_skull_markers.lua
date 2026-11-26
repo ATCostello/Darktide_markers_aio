@@ -2076,7 +2076,8 @@ mod.setup_walkthrough_markers = function(self)
 				local near = false
 
 				if markers_enabled then
-					local marker = mod.check_guide_marker_exists(self, wmarker_check_position(wmarker), wmarker_guide_key(wmarker))
+					local marker =
+						mod.check_guide_marker_exists(self, wmarker_check_position(wmarker), wmarker_guide_key(wmarker))
 					near = mod:is_player_near_marker(marker, 30)
 				end
 
@@ -2112,7 +2113,8 @@ mod.setup_walkthrough_markers = function(self)
 
 			for i = #walkthrough_markers.markers, 1, -1 do
 				local wmarker = walkthrough_markers.markers[i]
-				local marker = mod.check_guide_marker_exists(self, wmarker_check_position(wmarker), wmarker_guide_key(wmarker))
+				local marker =
+					mod.check_guide_marker_exists(self, wmarker_check_position(wmarker), wmarker_guide_key(wmarker))
 
 				if markers_enabled then
 					if wmarker.placed == false and marker == nil then

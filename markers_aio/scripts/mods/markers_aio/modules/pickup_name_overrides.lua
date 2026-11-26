@@ -132,6 +132,78 @@ local function refresh_pickup_names()
 	mod.refresh_pickup_name_options()
 end
 
+mod.refresh_pickup_names = refresh_pickup_names
+
+local function apply_reset_all_pickup_names()
+	local options = mod.pickup_name_options
+
+	if not options then
+		return
+	end
+
+	for i = 1, #options do
+		local option = options[i]
+
+		if option and option.value then
+			mod:set(key_setting_id(option.value), "")
+		end
+	end
+
+	local default_target = options[1] and options[1].value
+
+	if default_target and mod:get("pickup_name_target") ~= default_target then
+		mod:set("pickup_name_target", default_target, true)
+	end
+
+	if (mod:get("pickup_name_replacement") or "") ~= "" then
+		mod:set("pickup_name_replacement", "", true)
+	end
+
+	refresh_pickup_names()
+end
+
+mod.reset_all_pickup_names = function(view)
+	local event_manager = Managers and Managers.event
+
+	if not event_manager or type(event_manager.trigger) ~= "function" then
+		return
+	end
+
+	event_manager:trigger("event_show_ui_popup", {
+		title_text_unlocalized = mod:localize("pickup_name_reset_all"),
+		description_text_unlocalized = mod:localize("pickup_name_reset_all_description"),
+		type = "warning",
+		options = {
+			{
+				text = "loc_popup_button_settings_reset_default",
+				close_on_pressed = true,
+				callback = function()
+					apply_reset_all_pickup_names()
+
+					if view then
+						view._popup_id = nil
+					end
+				end,
+			},
+			{
+				text = "loc_popup_button_cancel_settings_reset_default",
+				template_type = "terminal_button_small",
+				close_on_pressed = true,
+				hotkey = "back",
+				callback = function()
+					if view then
+						view._popup_id = nil
+					end
+				end,
+			},
+		},
+	}, function(id)
+		if view then
+			view._popup_id = id
+		end
+	end)
+end
+
 mod.reset_pickup_name = function()
 	local target = mod:get("pickup_name_target")
 
@@ -143,21 +215,37 @@ mod.reset_pickup_name = function()
 	local per_key_id = key_setting_id(target)
 
 	if mod:get(per_key_id) ~= nil then
-		mod:set(per_key_id, nil)
+		mod:set(per_key_id, "")
 	end
 
 	mod:set("pickup_name_replacement", base_name, true)
 	refresh_pickup_names()
 end
 
+local function is_pickup_name_setting_id(setting_id)
+	if type(setting_id) ~= "string" then
+		return false
+	end
+
+	return setting_id == "pickup_name_target"
+		or setting_id == "pickup_name_replacement"
+		or (string.sub(setting_id, 1, 14) == "pickup_rename_" and string.sub(setting_id, -12) == "_custom_name")
+end
+
 mod.update_pickup_name_settings = function(setting_id)
-	if setting_id and setting_id ~= "pickup_name_target" and setting_id ~= "pickup_name_replacement" then
+	if setting_id and not is_pickup_name_setting_id(setting_id) then
+		return
+	end
+
+	if setting_id ~= nil and setting_id ~= "pickup_name_target" and setting_id ~= "pickup_name_replacement" then
+		refresh_pickup_names()
 		return
 	end
 
 	local target = mod:get("pickup_name_target")
 
 	if not target then
+		refresh_pickup_names()
 		return
 	end
 
@@ -169,7 +257,7 @@ mod.update_pickup_name_settings = function(setting_id)
 
 		if replacement == "" or (base_name and replacement == base_name) then
 			if mod:get(per_key_id) ~= nil then
-				mod:set(per_key_id, nil)
+				mod:set(per_key_id, "")
 			end
 		elseif mod:get(per_key_id) ~= replacement then
 			mod:set(per_key_id, replacement)
@@ -230,12 +318,20 @@ local function install_reset_button_hook()
 	end
 
 	mod:hook(view_class, "cb_on_settings_pressed", function(func, self, widget, entry)
-		if entry and entry.widget_type == "button" and entry.setting_id == "pickup_name_reset" then
-			if entry.pressed_function then
-				entry.pressed_function(self, widget, entry)
-			end
+		if entry and entry.widget_type == "button" then
+			if entry.setting_id == "pickup_name_reset" then
+				if entry.pressed_function then
+					entry.pressed_function(self, widget, entry)
+				end
 
-			return
+				return
+			elseif entry.setting_id == "pickup_name_reset_all" then
+				if type(mod.reset_all_pickup_names) == "function" then
+					mod.reset_all_pickup_names(self)
+				end
+
+				return
+			end
 		end
 
 		return func(self, widget, entry)

@@ -110,7 +110,9 @@ local function aio_marker_display_name_key(marker)
 	elseif aio_type == "ammo_med" then
 		if
 			marker.data and marker.data._active_interaction_type == "health_station"
-			or marker.unit and type(marker.unit) == "userdata" and Unit.alive(marker.unit)
+			or marker.unit
+				and type(marker.unit) == "userdata"
+				and Unit.alive(marker.unit)
 				and has_extension(marker.unit, "health_station_system")
 		then
 			return "mod_marker_medicae_station_name"
@@ -382,7 +384,8 @@ mod:hook_safe(HudElementSmartTagging, "_update_tag_interaction_information", fun
 					local marker_distance = marker.distance
 					local meters = marker_distance and marker_distance > 1 and math.floor(marker_distance) or 0
 
-					if marker._aio_tag_text_status ~= status
+					if
+						marker._aio_tag_text_status ~= status
 						or marker._aio_tag_text_display_name ~= data.display_name
 						or marker._aio_tag_text_meters ~= meters
 						or marker._aio_tag_text_version ~= mod._settings_version

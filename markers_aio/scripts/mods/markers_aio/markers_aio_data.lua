@@ -318,6 +318,16 @@ local pickup_name_sub_widgets = {
 		function_name = "reset_pickup_name",
 		tooltip = mod:localize("pickup_name_reset_tooltip"),
 	},
+	{
+		setting_id = "pickup_name_reset_all",
+		type = "button",
+		localize = false,
+		title = "",
+		button_text = mod:localize("pickup_name_reset_all"),
+		button_trigger = "pressed",
+		function_name = "reset_all_pickup_names",
+		tooltip = mod:localize("pickup_name_reset_all_tooltip"),
+	},
 }
 
 local proximity_sub_widgets = {

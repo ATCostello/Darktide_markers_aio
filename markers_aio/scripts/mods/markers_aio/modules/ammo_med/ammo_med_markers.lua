@@ -1050,7 +1050,9 @@ mod.update_ammo_med_markers = function(self, marker)
 
 		local is_health_station = unit and mod.get_marker_extension(marker, "health_station_system") or nil
 
-		local is_med_station = (data and data._active_interaction_type == "health_station") or is_health_station or false
+		local is_med_station = (data and data._active_interaction_type == "health_station")
+			or is_health_station
+			or false
 
 		marker.aio_med_station = is_med_station
 
@@ -1185,52 +1187,52 @@ mod.update_ammo_med_markers = function(self, marker)
 					end
 
 					if fs.change_colour_for_ammo_charges == true and marker.widget.style.background then
-					if remaining_charges == 4 then
+						if remaining_charges == 4 then
+							mod.set_colour_argb(
+								marker.widget.style.background.color,
+								255,
+								fs.charges_4_colour_R,
+								fs.charges_4_colour_G,
+								fs.charges_4_colour_B
+							)
+						elseif remaining_charges == 3 then
+							mod.set_colour_argb(
+								marker.widget.style.background.color,
+								255,
+								fs.charges_3_colour_R,
+								fs.charges_3_colour_G,
+								fs.charges_3_colour_B
+							)
+						elseif remaining_charges == 2 then
+							mod.set_colour_argb(
+								marker.widget.style.background.color,
+								255,
+								fs.charges_2_colour_R,
+								fs.charges_2_colour_G,
+								fs.charges_2_colour_B
+							)
+						elseif remaining_charges == 1 then
+							mod.set_colour_argb(
+								marker.widget.style.background.color,
+								255,
+								fs.charges_1_colour_R,
+								fs.charges_1_colour_G,
+								fs.charges_1_colour_B
+							)
+						end
+					end
+
+					if marker.widget.style.icon then
 						mod.set_colour_argb(
-							marker.widget.style.background.color,
-							255,
-							fs.charges_4_colour_R,
-							fs.charges_4_colour_G,
-							fs.charges_4_colour_B
-						)
-					elseif remaining_charges == 3 then
-						mod.set_colour_argb(
-							marker.widget.style.background.color,
-							255,
-							fs.charges_3_colour_R,
-							fs.charges_3_colour_G,
-							fs.charges_3_colour_B
-						)
-					elseif remaining_charges == 2 then
-						mod.set_colour_argb(
-							marker.widget.style.background.color,
-							255,
-							fs.charges_2_colour_R,
-							fs.charges_2_colour_G,
-							fs.charges_2_colour_B
-						)
-					elseif remaining_charges == 1 then
-						mod.set_colour_argb(
-							marker.widget.style.background.color,
-							255,
-							fs.charges_1_colour_R,
-							fs.charges_1_colour_G,
-							fs.charges_1_colour_B
+							marker.widget.style.icon.color,
+							100,
+							fs.ammo_crate_colour_R,
+							fs.ammo_crate_colour_G,
+							fs.ammo_crate_colour_B
 						)
 					end
 				end
-
-				if marker.widget.style.icon then
-					mod.set_colour_argb(
-						marker.widget.style.icon.color,
-						100,
-						fs.ammo_crate_colour_R,
-						fs.ammo_crate_colour_G,
-						fs.ammo_crate_colour_B
-					)
-				end
 			end
-		end
 
 			self.max_distance = max_distance
 			marker.max_distance = max_distance

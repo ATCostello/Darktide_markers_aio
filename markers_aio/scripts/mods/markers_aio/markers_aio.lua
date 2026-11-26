@@ -790,6 +790,16 @@ mod.refresh_templates = function()
 	end
 end
 
+mod.on_settings_profile_applied = function()
+	if type(mod.update_pickup_name_settings) == "function" then
+		mod.update_pickup_name_settings(nil)
+	end
+
+	if type(mod.refresh_templates) == "function" then
+		mod.refresh_templates()
+	end
+end
+
 mod.on_all_mods_loaded = function()
 	if mod.refresh_pickup_name_options then
 		mod.refresh_pickup_name_options()
@@ -2391,13 +2401,31 @@ mod.remove_mod_markers = function()
 	local hud = ui_manager and ui_manager:get_hud()
 	local world_markers = hud and hud:element("HudElementWorldMarkers")
 	local markers = world_markers and world_markers._markers
+	local removed_units = {}
 
 	if markers then
 		for i = #markers, 1, -1 do
 			local marker = markers[i]
 
 			if marker and marker.id and (marker.markers_aio_type or MOD_MARKER_TYPES[marker.type]) then
+				local unit = marker.unit
+
+				if unit and type(unit) == "userdata" and Unit.alive(unit) then
+					removed_units[unit] = true
+				end
+
 				Managers.event:trigger("remove_world_marker", marker.id)
+			end
+		end
+	end
+
+	local interaction_element = hud and hud:element("HudElementInteraction")
+	local interaction_units = interaction_element and interaction_element._interaction_units
+
+	if interaction_units then
+		for unit, data in pairs(interaction_units) do
+			if data and type(unit) == "userdata" and (removed_units[unit] or not Unit.alive(unit)) then
+				interaction_units[unit] = nil
 			end
 		end
 	end

@@ -148,7 +148,8 @@ function Dispatcher.initialize()
 		local fs = mod.frame_settings
 
 		return mod.get_player_units()[unit] == true
-			or (fs and fs.servo_skull_equipped and fs.inject_ally and fs.servo_skull_injecting) or false
+			or (fs and fs.servo_skull_equipped and fs.inject_ally and fs.servo_skull_injecting)
+			or false
 	end)
 
 	Dispatcher.register("tainted_skull", "event", function(self, marker)
@@ -174,9 +175,11 @@ function Dispatcher.initialize()
 	end, function(self, marker)
 		local pickup_name = marker_pickup_name(marker)
 
-		if pickup_name == "live_event_saints_01_pickup_small"
+		if
+			pickup_name == "live_event_saints_01_pickup_small"
 			or pickup_name == "live_event_saints_01_pickup_medium"
-			or pickup_name == "live_event_saints_01_pickup_large" then
+			or pickup_name == "live_event_saints_01_pickup_large"
+		then
 			return true
 		end
 
@@ -185,7 +188,8 @@ function Dispatcher.initialize()
 		local default_context = type(contexts) == "table" and rawget(contexts, "default") or nil
 
 		return type(default_context) == "table"
-			and rawget(default_context, "action_text") == "loc_saints_shrine_interaction_action_text" or false
+				and rawget(default_context, "action_text") == "loc_saints_shrine_interaction_action_text"
+			or false
 	end)
 
 	Dispatcher.register("spillway_path", "spillway_path", function(self, marker)

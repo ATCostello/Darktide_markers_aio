@@ -105,8 +105,7 @@ local function fallback_name(marker_type, marker)
 	local subtype = marker and rawget(marker, "aio_proximity_subtype")
 
 	if subtype and marker_type then
-		local key = mod.proximity_subtype_setting_id
-			and mod.proximity_subtype_setting_id(marker_type, subtype)
+		local key = mod.proximity_subtype_setting_id and mod.proximity_subtype_setting_id(marker_type, subtype)
 			or ("proximity_" .. marker_type .. "_" .. subtype)
 		local subtype_name = mod:localize(key)
 

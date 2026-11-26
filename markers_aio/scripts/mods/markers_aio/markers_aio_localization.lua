@@ -208,6 +208,27 @@ local loc = {
 		["zh-tw"] = "將目前選取的物品重設為預設名稱。",
 		["zh-cn"] = "将当前选中的物品重置为默认名称。",
 	},
+	pickup_name_reset_all = {
+		en = "Reset All",
+		fr = "Tout réinitialiser",
+		ru = "Сбросить все",
+		["zh-tw"] = "全部重設",
+		["zh-cn"] = "全部重置",
+	},
+	pickup_name_reset_all_tooltip = {
+		en = "Resets every pickup name to its default name.",
+		fr = "Réinitialise tous les noms d'objets à leur nom d'origine.",
+		ru = "Сбрасывает все названия предметов к исходным названиям.",
+		["zh-tw"] = "將所有物品名稱重設為預設名稱。",
+		["zh-cn"] = "将所有物品名称重置为默认名称。",
+	},
+	pickup_name_reset_all_description = {
+		en = "Reset every pickup name to its default name? This cannot be undone.",
+		fr = "Réinitialiser tous les noms d'objets à leur nom d'origine ? Cette action est irréversible.",
+		ru = "Сбросить все названия предметов к исходным названиям? Это действие нельзя отменить.",
+		["zh-tw"] = "確定要將所有物品名稱重設為預設名稱嗎？此動作無法復原。",
+		["zh-cn"] = "确定要将所有物品名称重置为默认名称吗？此操作无法撤销。",
+	},
 	pickup_name_replacement = {
 		en = "Replacement Name",
 		fr = "Nouveau nom",
@@ -3971,7 +3992,7 @@ local loc = {
 	},
 	dots = {
 		en = "Dots",
-		ru = "Точки",
+		ru = "��очки",
 		["zh-cn"] = "圆点",
 		["zh-tw"] = "圓點",
 	},
@@ -4140,7 +4161,7 @@ local loc = {
 		fr = "Affiche un petit cercle dans le coin supérieur droit des marqueurs de munitions, coloré selon l'état (vert = tout prendre, orange = un coéquipier en a plus besoin, rouge = perte de munitions). L'icône de classe d'un coéquipier dans sa couleur est dessinée sur le cercle quand il en a plus besoin.",
 		ru = "Показывает маленький круг в правом верхнем углу метки боеприпасов, окрашенный по статусу (зелёный = можно забрать всё, оранжевый = союзнику нужнее, красный = будет потеря). Когда союзнику нужнее, на круге отображается иконка его класса в цвете команды.",
 		["zh-tw"] = "在彈藥拾取標記右上角顯示小圓點，並依狀���著色：綠色表示可全數取得、橘色表示隊友更需要、紅色表示拾取會浪費彈藥。隊友更需要時，圓點上會顯示該隊友的職業圖示與對應顏色。",
-		["zh-cn"] = "在弹药拾取标记的右上角显示小圆点，按弹药状态着色（绿=可全拿、橙=队友更需要、红=会浪费）。当队友更需要时，圆上叠加其职业图标并显示队友颜色。",
+		["zh-cn"] = "在弹药拾取标记的右上角显示小圆点，按弹药状态着色（绿=可全拿、橙=队友更需要、红=会浪费）。当队友更需要���，圆上叠加其职业图标并显示队友颜色。",
 	},
 	ammo_status_numeric_enable_tooltip = {
 		en = "Master toggle for the gain (+G) and waste (-W) numbers. When enabled you can pick where they appear: on the world marker, in the interact prompt, or both.",

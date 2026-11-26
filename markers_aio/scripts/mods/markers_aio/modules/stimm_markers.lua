@@ -121,8 +121,7 @@ mod.update_stimm_markers = function(self, marker)
 					"speed_stimm_icon_colour_B"
 				)
 			elseif
-				pickup_type == "syringe_ability_boost_pocketable"
-				or data_type == "syringe_ability_boost_pocketable"
+				pickup_type == "syringe_ability_boost_pocketable" or data_type == "syringe_ability_boost_pocketable"
 			then
 				marker.aio_check_line_of_sight = fs.boost_stimm_require_line_of_sight
 				set_stimm_colours(
