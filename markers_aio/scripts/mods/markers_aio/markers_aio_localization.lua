@@ -1,6 +1,5 @@
 local mod = get_mod("markers_aio")
-mod.version = "2.17.3"
-mod:info("Markers Improved AIO Improved is installed, using version: " .. tostring(mod.version))
+local gradient_text = mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/gradient_text")
 
 mod.lookup_border_color = function(colour_string)
 	local border_colours = {
@@ -82,48 +81,16 @@ local insert_fonts = function(localisation_table)
 	end
 end
 
-local function lerp(a, b, t)
-	return a + (b - a) * t
-end
+local title_colour = colours.title
 
-local function utf8_chars(s)
-	local chars = {}
-	for char in string.gmatch(s, "[%z\1-\127\194-\244][\128-\191]*") do
-		table.insert(chars, char)
-	end
-	return chars
-end
-
-mod.gradientText = function(text, startColor, endColor, colorSpaces)
-	local result = ""
-	local chars = utf8_chars(text)
-	local visibleIndex = 0
-
-	for _, char in ipairs(chars) do
-		if colorSpaces or char ~= " " then
-			visibleIndex = visibleIndex + 1
-		end
+mod.gradientText = function(text, start_colour, end_colour, colour_spaces)
+	if type(gradient_text) ~= "function" then
+		return text
 	end
 
-	local currentIndex = 0
+	local gradient = gradient_text(text, start_colour, end_colour, colour_spaces) or ""
 
-	for _, char in ipairs(chars) do
-		if not colorSpaces and char == " " then
-			result = result .. char
-		else
-			currentIndex = currentIndex + 1
-			local t = (visibleIndex <= 1) and 0 or (currentIndex - 1) / (visibleIndex - 1)
-
-			local r = math.floor(lerp(startColor[1], endColor[1], t))
-			local g = math.floor(lerp(startColor[2], endColor[2], t))
-			local b = math.floor(lerp(startColor[3], endColor[3], t))
-
-			result = result .. string.format("{#color(%d,%d,%d)}%s", r, g, b, char)
-		end
-	end
-
-	result = "{#color(" .. colours.title .. ")} " .. result .. "{#reset()}"
-	return result
+	return "{#color(" .. title_colour .. ")} " .. gradient .. "{#reset()}"
 end
 
 local colours = {
@@ -447,11 +414,6 @@ local loc = {
 			.. colours.text
 			.. ")}Alfthebigheaded\n"
 			.. "{#color("
-			.. colours.subtitle
-			.. ")}Version: {#color("
-			.. colours.text
-			.. ")}"
-			.. mod.version
 			.. "{#reset()}",
 		fr = "Combine tous mes mods 'Marqueurs' en un seul paquet facile à installer. ",
 		ru = "{#color("
@@ -464,11 +426,6 @@ local loc = {
 			.. colours.text
 			.. ")}Alfthebigheaded\n"
 			.. "{#color("
-			.. colours.subtitle
-			.. ")}Версия: {#color("
-			.. colours.text
-			.. ")}"
-			.. mod.version
 			.. "{#reset()}",
 		["zh-tw"] = "將所有「標記」模組整合成一個方便安裝的套件。",
 		["zh-cn"] = "为各类可收集物品添加全新标记，支持距离、颜色、视野显示等设置，内置殉道者颅骨收集攻略等功能。",
@@ -5271,16 +5228,18 @@ insert_fonts(loc)
 apply_colours()
 
 mod.toggle_pizazz = function()
-	for key, values in pairs(loc) do
-		if key == "mod_name" then
-			for language, text in pairs(values) do
-				if mod:get("mod_name_pizazz_toggle") then
-					loc[key][language] = loc["mod_name_pizazz"][language]
-				else
-					loc[key][language] = loc["mod_name_boring"][language]
-				end
-			end
-		end
+	local source = loc.mod_name_boring
+
+	if mod:get("mod_name_pizazz_toggle") ~= false then
+		source = loc.mod_name_pizazz
+	end
+
+	if type(source) ~= "table" or type(loc.mod_name) ~= "table" then
+		return
+	end
+
+	for language, name in pairs(source) do
+		loc.mod_name[language] = name
 	end
 end
 
