@@ -700,7 +700,6 @@ mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/player_assistance_ma
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_path_markers")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/spillway_markers/spillway_path_route")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/modules/proximity_notifications")
-mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/icon_package_loader")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/markers_aio_localization")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/utilities")
 mod:io_dofile("markers_aio/scripts/mods/markers_aio/utils/tagging_utils")
@@ -743,19 +742,6 @@ mod.refresh_templates = function()
 				is_mod_loading = false
 			end
 		end)
-
-		local load_package = function(path, id)
-			if not Managers.package:has_loaded(path) then
-				Managers.package:load(path, id)
-				return
-			end
-		end
-
-		mod._ensure_icon_packages_loaded()
-
-		load_package("content/levels/training_grounds/missions/mission_tg_basic_combat_01", "medkit_radius")
-		load_package("packages/ui/views/options_view/options_view", "large_ammo1")
-		load_package("packages/ui/views/inventory_background_view/inventory_background_view", "large_ammo2")
 
 		mod.marker_dispatcher.initialize()
 
