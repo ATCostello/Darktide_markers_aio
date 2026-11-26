@@ -138,7 +138,8 @@ local function update_options_view(self)
 
 	local state_changed = false
 
-	for _, entry in ipairs(mod.category_toggles) do
+	for i = 1, #mod.category_toggles do
+		local entry = mod.category_toggles[i]
 		local enabled = mod:get(entry.setting_id) ~= false
 
 		if category_toggle_state[entry.setting_id] ~= enabled then
@@ -153,11 +154,9 @@ local function update_options_view(self)
 		if dmf and type(dmf.update_mod_options_visibility) == "function" then
 			dmf:update_mod_options_visibility(options_templates, "markers_aio")
 		end
-	end
 
-	mod.apply_category_toggle_visibility(options_templates)
+		mod.apply_category_toggle_visibility(options_templates)
 
-	if state_changed then
 		self._dynamic_options_changed_entry = {
 			setting_id = "category_toggles_settings",
 			mod_name = "markers_aio",

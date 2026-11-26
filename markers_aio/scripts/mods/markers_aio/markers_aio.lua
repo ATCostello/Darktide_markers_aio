@@ -633,13 +633,16 @@ mod.update_runtime_state = function(dt)
 	inject_data.companion_unit = comp_unit
 	fs.inject_ally = inject_data
 
-	local game_session = Managers.state.game_session:game_session()
+	local state = Managers and Managers.state
+	local game_session_manager = state and state.game_session
+	local game_session = game_session_manager and game_session_manager:game_session()
 
 	if not game_session then
 		return
 	end
 
-	local go_id = Managers.state.unit_spawner:game_object_id(comp_unit)
+	local unit_spawner = state.unit_spawner
+	local go_id = unit_spawner and unit_spawner:game_object_id(comp_unit)
 
 	if not go_id then
 		return
@@ -978,7 +981,8 @@ local smart_tag_system_cache
 local smart_tag_system_manager
 
 mod.get_smart_tag_system = function()
-	local extension_manager = Managers.state.extension
+	local state = Managers and Managers.state
+	local extension_manager = state and state.extension
 
 	if smart_tag_system_manager ~= extension_manager then
 		smart_tag_system_manager = extension_manager
@@ -1463,6 +1467,7 @@ mod.on_enabled = function(initial_call)
 end
 
 HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service, ui_renderer, render_settings)
+	local marker_position_scratch = Vector3.zero()
 	self._next_update = self._next_update or 0
 	if t < self._next_update then
 		return
@@ -1654,7 +1659,7 @@ HudElementWorldMarkers._calculate_markers = function(self, dt, t, input_service,
 									node = marker._aio_node_id or 1
 								end
 
-								marker_position = Unit.world_position(unit, node)
+								marker_position = Unit.world_position(unit, node, marker_position_scratch)
 							else
 								remove = true
 							end
@@ -1959,8 +1964,8 @@ local HudElementInteraction = require("scripts/ui/hud/elements/interaction/hud_e
 local DEFAULT_HUD_INTERACTION_MAX_SPAWN_DISTANCE_SQ = HudElementInteractionSettings.max_spawn_distance_sq
 
 local function interaction_marker_spawn_distance_sq(interactee_unit, extension)
-	local max_distance_sq = HUDElementInteractionSettings
-			and tonumber(HUDElementInteractionSettings.max_spawn_distance_sq)
+	local max_distance_sq = HudElementInteractionSettings
+			and tonumber(HudElementInteractionSettings.max_spawn_distance_sq)
 		or 3600
 	local fs = mod.frame_settings
 
@@ -1979,6 +1984,7 @@ local function interaction_marker_spawn_distance_sq(interactee_unit, extension)
 end
 
 HudElementInteraction._update_interactee_data = function(self, interactee_unit, extension)
+	local interaction_position_scratch = Vector3.zero()
 	local parent = self._parent
 	local player = parent:player()
 	local player_unit = get_player_unit(player)
@@ -2007,7 +2013,7 @@ HudElementInteraction._update_interactee_data = function(self, interactee_unit, 
 	local max_spawn_distance_sq = interaction_marker_spawn_distance_sq(interactee_unit, extension)
 
 	if interactee_unit ~= player_unit and render_marker and camera_position then
-		local interactee_position = Unit.world_position(interactee_unit, 1)
+		local interactee_position = Unit.world_position(interactee_unit, 1, interaction_position_scratch)
 		local distance_sq = vector_distance_squared(interactee_position, camera_position)
 
 		render_marker = distance_sq <= max_spawn_distance_sq

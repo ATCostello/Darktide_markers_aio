@@ -41,8 +41,12 @@ DestructibleExtension.update = function(self, unit, dt, t)
 		self._timer_to_despawn = math.max(self._timer_to_despawn, 0)
 
 		if self._timer_to_despawn == 0 then
-			-- self._owner_system:disable_update_function(self.__class_name, "update", self._unit, self)
-			Managers.state.unit_spawner:mark_for_deletion(unit)
+			local state = Managers and Managers.state
+			local unit_spawner = state and state.unit_spawner
+
+			if unit_spawner then
+				unit_spawner:mark_for_deletion(unit)
+			end
 		end
 	end
 
@@ -94,16 +98,24 @@ DestructibleExtension._add_damage = function(self, damage_amount, attack_directi
 			self:_dequeue_stage(attack_direction, false)
 
 			if self._collectible_data then
-				local collectibles_manager = Managers.state.collectibles
+				local state = Managers and Managers.state
+				local collectibles_manager = state and state.collectibles
 
-				collectibles_manager:collectible_destroyed(self._collectible_data, attacking_unit)
+				if collectibles_manager then
+					collectibles_manager:collectible_destroyed(self._collectible_data, attacking_unit)
+				end
 			end
 		elseif self._is_server then
 			Unit.flow_event(unit, "lua_damage_taken")
 
-			local is_level_unit, unit_id = Managers.state.unit_spawner:game_object_id_or_level_index(unit)
+			local state = Managers and Managers.state
+			local unit_spawner = state and state.unit_spawner
+			local game_session_manager = state and state.game_session
 
-			Managers.state.game_session:send_rpc_clients("rpc_destructible_damage_taken", unit_id, is_level_unit)
+			if unit_spawner and game_session_manager then
+				local is_level_unit, unit_id = unit_spawner:game_object_id_or_level_index(unit)
+				game_session_manager:send_rpc_clients("rpc_destructible_damage_taken", unit_id, is_level_unit)
+			end
 		end
 	end
 end

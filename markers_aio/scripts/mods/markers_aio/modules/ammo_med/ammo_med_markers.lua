@@ -121,7 +121,8 @@ local function player_ammo_percentage(slots, slot_count)
 end
 
 local function get_ammo_pickup_modifier()
-	local game_mode_manager = Managers.state.game_mode
+	local state = Managers and Managers.state
+	local game_mode_manager = state and state.game_mode
 	local game_mode = game_mode_manager and game_mode_manager:game_mode()
 	local havoc_extension = game_mode and game_mode.extension and game_mode:extension("havoc")
 	local havoc_modifier = havoc_extension and havoc_extension:get_modifier_value("ammo_pickup_modifier")
@@ -130,7 +131,7 @@ local function get_ammo_pickup_modifier()
 		return havoc_modifier
 	end
 
-	local difficulty = Managers.state.difficulty
+	local difficulty = state and state.difficulty
 	return difficulty and difficulty:get_ammo_modifier() or 1
 end
 
@@ -181,7 +182,8 @@ local function predict_ammo_restore(slots, slot_count, pickup_data)
 end
 
 local function find_most_needy_teammate(self_unit, local_percentage)
-	local player_unit_spawn = Managers.state.player_unit_spawn
+	local state = Managers and Managers.state
+	local player_unit_spawn = state and state.player_unit_spawn
 	local alive_players = player_unit_spawn and player_unit_spawn:alive_players()
 
 	if not alive_players or not UISettings or not UISettings.archetype_font_icon then
@@ -294,11 +296,11 @@ local function compute_ammo_status(status_fs, pickup_type, player_unit)
 end
 
 local function update_ammo_status(marker, unit, player_unit)
-	marker.ammo_status = nil
-
 	if not marker or not unit or not player_unit or not Unit.alive(player_unit) then
 		return
 	end
+
+	marker.ammo_status = nil
 
 	if marker.widget and marker.widget.style and marker.widget.style.ammo_needy_icon then
 		marker.widget.content.ammo_needy_icon = ""
@@ -712,7 +714,8 @@ local function estimate_medcrate_consumption(unit, dt)
 		return 0
 	end
 
-	local player_unit_spawn = Managers.state.player_unit_spawn
+	local state = Managers and Managers.state
+	local player_unit_spawn = state and state.player_unit_spawn
 	local alive_players = player_unit_spawn and player_unit_spawn:alive_players()
 
 	if not alive_players then
@@ -906,7 +909,8 @@ mod.check_players_talents_for_Field_Improvisation = function()
 	mod._field_improv_frame = frame
 
 	local result = false
-	local player_unit_spawn = Managers.state.player_unit_spawn
+	local state = Managers and Managers.state
+	local player_unit_spawn = state and state.player_unit_spawn
 	local alive_players = player_unit_spawn and player_unit_spawn:alive_players()
 
 	if alive_players then
@@ -1166,25 +1170,21 @@ mod.update_ammo_med_markers = function(self, marker)
 			local field_improv_active = mod.check_players_talents_for_Field_Improvisation()
 
 			if pickup_type == "ammo_cache_deployable" or data_type == "ammo_cache_deployable" then
-				local game_session = Managers.state.game_session:game_session()
-				local game_object_id = Managers.state.unit_spawner:game_object_id(unit)
-				local remaining_charges = GameSession.game_object_field(game_session, game_object_id, "charges")
+				local state = Managers and Managers.state
+				local game_session_manager = state and state.game_session
+				local game_session = game_session_manager and game_session_manager:game_session()
+				local unit_spawner = state and state.unit_spawner
+				local game_object_id = unit_spawner and unit_spawner:game_object_id(unit)
+				local remaining_charges = game_session
+					and game_object_id
+					and GameSession.game_object_field(game_session, game_object_id, "charges")
 
-				if
-					marker.widget
-					and marker.widget.style
-					and marker.widget.style.marker_text_ammo_med
-					and marker.widget.style.icon
-					and marker.widget.style.icon.size[1]
-				then
-					--marker.widget.style.marker_text.font_size = marker.widget.style.icon.size[1]
-				end
+				if marker.widget and marker.widget.style then
+					if fs.display_ammo_charges == true and marker.widget.content then
+						marker.widget.content.marker_text_ammo_med = tostring(remaining_charges)
+					end
 
-				if fs.display_ammo_charges == true then
-					marker.widget.content.marker_text_ammo_med = tostring(remaining_charges)
-				end
-
-				if fs.change_colour_for_ammo_charges == true then
+					if fs.change_colour_for_ammo_charges == true and marker.widget.style.background then
 					if remaining_charges == 4 then
 						mod.set_colour_argb(
 							marker.widget.style.background.color,
@@ -1220,14 +1220,17 @@ mod.update_ammo_med_markers = function(self, marker)
 					end
 				end
 
-				mod.set_colour_argb(
-					marker.widget.style.icon.color,
-					100,
-					fs.ammo_crate_colour_R,
-					fs.ammo_crate_colour_G,
-					fs.ammo_crate_colour_B
-				)
+				if marker.widget.style.icon then
+					mod.set_colour_argb(
+						marker.widget.style.icon.color,
+						100,
+						fs.ammo_crate_colour_R,
+						fs.ammo_crate_colour_G,
+						fs.ammo_crate_colour_B
+					)
+				end
 			end
+		end
 
 			self.max_distance = max_distance
 			marker.max_distance = max_distance
@@ -1421,7 +1424,7 @@ mod.update_ammo_med_markers = function(self, marker)
 end
 
 mod:hook(CLASS.HudElementWorldMarkers, "_create_widget", function(func, self, name, definition)
-	fs = mod.frame_settings
+	local fs = mod.frame_settings
 
 	-- add new marker text widget to definitions
 	local marker_text_style = table.clone(UIFontSettings.header_2)

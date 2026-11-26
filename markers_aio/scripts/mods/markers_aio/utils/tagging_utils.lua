@@ -26,14 +26,15 @@ HudElementSmartTagging._is_marker_valid_for_tagging = function(self, player_unit
 	end
 
 	local marker_unit = marker.unit
-	local smart_tag_extension = marker_unit and has_extension(marker_unit, "smart_tag_system")
+	local marker_unit_alive = marker_unit and Unit.alive(marker_unit)
+	local smart_tag_extension = marker_unit_alive and has_extension(marker_unit, "smart_tag_system")
 	local tag_id = template.get_smart_tag_id and template.get_smart_tag_id(marker)
 
-	if marker_unit and not smart_tag_extension and not tag_id then
+	if marker_unit_alive and not smart_tag_extension and not tag_id then
 		if marker.markers_aio_type then
 			--
 		else
-			local ie = has_extension(marker_unit, "interactee_system")
+			local ie = marker_unit_alive and has_extension(marker_unit, "interactee_system")
 			if not (ie and ie:interaction_type() == "decoding") then
 				return false
 			end
@@ -268,7 +269,7 @@ HudElementSmartTagging._handle_interaction_draw = function(self, dt, t, input_se
 		local best_marker, best_unit, _ =
 			self:_find_best_smart_tag_interaction(ui_renderer, render_settings, force_update_targets)
 		local parent = self._parent
-		local player = parent:player()
+		local player = parent and parent:player()
 		local player_unit = mod.get_player_unit(player)
 		local previous_active_interaction_data = self._active_interaction_data
 
@@ -317,7 +318,7 @@ end
 
 HudElementSmartTagging._can_present_tag_interaction = function(self)
 	local parent = self._parent
-	local player = parent:player()
+	local player = parent and parent:player()
 
 	if not player then
 		return false
