@@ -373,7 +373,6 @@ local proximity_subtypes = {
 		"syringe_speed_boost_pocketable",
 		"syringe_ability_boost_pocketable",
 		"syringe_corruption_pocketable",
-		"syringe_broker_pocketable",
 	},
 	expedition = {
 		"expedition_grenade_airstrike_pocketable",
