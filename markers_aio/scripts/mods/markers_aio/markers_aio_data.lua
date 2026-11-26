@@ -4,6 +4,8 @@ local apply_color_to_text = function(text, r, g, b)
 	return "{#color(" .. r .. "," .. g .. "," .. b .. ")}" .. text .. "{#reset()}"
 end
 
+mod.apply_color_to_text = apply_color_to_text
+
 local fonts = mod._get_font_options()
 
 local Gold = mod.lookup_border_color("Gold")

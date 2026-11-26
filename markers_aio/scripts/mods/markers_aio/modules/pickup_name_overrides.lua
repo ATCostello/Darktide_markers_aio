@@ -31,11 +31,43 @@ end
 mod.get_pickup_base_name = function(key)
 	local manager = Managers and rawget(Managers, "localization")
 
-	if not key or not manager or not base_localize then
+	if not key or not manager then
 		return nil
 	end
 
-	return clean_base_name(base_localize(manager, key))
+	if type(manager._lookup) == "function" then
+		local raw = manager:_lookup(key)
+
+		if type(raw) == "string" and raw ~= "" then
+			if type(manager._process_string) == "function" then
+				local processed = manager:_process_string(key, raw)
+
+				if type(processed) == "string" and processed ~= "" then
+					raw = processed
+				end
+			end
+
+			return clean_base_name(raw)
+		end
+	end
+
+	if not base_localize then
+		return nil
+	end
+
+	return clean_base_name(base_localize(manager, key, true))
+end
+
+local function faded_name(value)
+	local color_class = rawget(_G, "Color")
+	local color = color_class and color_class.ui_grey_light and color_class.ui_grey_light(180, true)
+	local bracketed = "(" .. value .. ")"
+
+	if color and mod.apply_color_to_text then
+		return mod.apply_color_to_text(bracketed, color[2], color[3], color[4])
+	end
+
+	return bracketed
 end
 
 mod.refresh_pickup_name_options = function()
@@ -45,12 +77,25 @@ mod.refresh_pickup_name_options = function()
 		return
 	end
 
+	local target = mod:get("pickup_name_target")
+	local replacement = mod:get("pickup_name_replacement") or ""
+
 	for i = 1, #options do
 		local option = options[i]
 
 		if option then
+			local base_name = mod.get_pickup_base_name(option.value)
 			local custom = mod:get(key_setting_id(option.value))
-			local name = type(custom) == "string" and custom ~= "" and custom or mod.get_pickup_base_name(option.value)
+
+			if option.value == target and replacement ~= "" then
+				custom = replacement
+			end
+
+			local name = type(custom) == "string" and custom ~= "" and custom or base_name
+
+			if name and base_name then
+				name = base_name .. " " .. faded_name(name)
+			end
 
 			if name then
 				option.text = name
