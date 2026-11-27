@@ -13,6 +13,22 @@ local function key_setting_id(key)
 	return "pickup_rename_" .. suffix .. "_custom_name"
 end
 
+mod.get_preset_setting_ids = function()
+	local options = mod.pickup_name_options or {}
+	local ids, count = {}, 0
+
+	for index = 1, #options do
+		local option = options[index]
+
+		if option and option.value then
+			count = count + 1
+			ids[count] = key_setting_id(option.value)
+		end
+	end
+
+	return ids, count
+end
+
 local function clean_base_name(value)
 	if type(value) ~= "string" or value == "" then
 		return nil
@@ -357,4 +373,16 @@ if ui_manager_class then
 end
 
 install_reset_button_hook()
+
+local pickup_name_options = mod.pickup_name_options or {}
+
+for index = 1, #pickup_name_options do
+	local option = pickup_name_options[index]
+	local setting_id = option and option.value and key_setting_id(option.value) or nil
+
+	if setting_id then
+		mod:set(setting_id, mod:get(setting_id) or "")
+	end
+end
+
 refresh_pickup_names()
